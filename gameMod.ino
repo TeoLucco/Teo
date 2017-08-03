@@ -51,18 +51,18 @@ void waitAnswer(){
 void rightAnswer(){
   int randNumber=rand()%4+make_happy0;
   gameState=mov;
-  //if(dir==1)
-  playS(4);
-  //else
-  //playS(5);
+  if(dir==1)
+    playS(4);
+  else
+    playS(5);
   dir=rand()%2;
   startMovement(randNumber); //at the end of makeHappy function there's the gameStateChange
 }
 void wrongAnswer(){
-  //if(dir==1)
-  playS(6);
-  //else
-  //playS(7);
+  if(dir==1)
+    playS(6);
+  else
+    playS(7);
   dir=rand()%2;
   gameState=mov;
   startMovement(make_sad1);

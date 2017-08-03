@@ -6,7 +6,7 @@ void iMfollowingU(){
     if(last_obstacle==none) triskar.run(0.0,0.0);
     if(last_obstacle==right) triskar.run(0.0,-(2.0f*(float)PI)/6.0f);
     if(last_obstacle==left) triskar.run(0.0,(2.0f*(float)PI)/6.0f);
-    if(last_obstacle==front) triskar.run(35.0,0.0);
+    if(last_obstacle==front) triskar.run(25.0,0.0);
   }else{
     if(veryclose_back_obstacle && millis()-lastround>10000 && backI>=100 &&triskar.isStopped()){
       lastround=millis();
@@ -22,16 +22,16 @@ void iMfollowingU(){
     }else{
       if(actual_obstacle==right){
         if(!close_front_obstacle && !close_right_obstacle)
-          triskar.run(20.0,-(2.0f*(float)PI)/20.0f);
+          triskar.run(15.0,-(2.0f*(float)PI)/20.0f);
         else triskar.run(0.0,0.0);
       }else if(actual_obstacle==left){
         if(!close_front_obstacle && !close_left_obstacle)
-          triskar.run(20.0f,(2.0f*(float)PI)/20.0f);
+          triskar.run(15.0f,(2.0f*(float)PI)/20.0f);
         else triskar.run(0.0,0.0);
       }else if(actual_obstacle==front){
             if(close_front_obstacle ||close_right_obstacle||close_left_obstacle)
             triskar.run(0.0,0.0);
-            else triskar.run(25.0,0.0);
+            else triskar.run(20.0,0.0);
       }
     }  
   }
@@ -531,16 +531,12 @@ void makeScaredRound(){
 }
 
 
-void makeOneMeter(){
-  
-    if(triskar.getPosX()<startPosX+100.0)
-      triskar.run(20.0f,0.0f);
-    else
-      stopMovement();     
-   
+void makeOneMeter(){  
+  if(triskar.getPosX()<startPosX+100.0)
+    triskar.run(20.0f,0.0f);
+  else
+    stopMovement();     
 }
-
-
 
 #define DONTWONNA_ANGULAR_SP 1.5f
 void makeDontWonna(){
