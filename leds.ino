@@ -209,7 +209,7 @@ void headLedUpdate(ledStates ledState){
         case color_wipe:    headLedWipe(); break;
         case rainbow_cycle: headLedRainbow();break;
         case led_off:       headLedOff();break;
-      }    
+    }    
   } 
 }
 void headLedUpdate(uint32_t color){

@@ -157,10 +157,8 @@ void famMod(){
         if(!cerchio){
           cerchio=true;
           //startMovement(make_happy[3]);
-          //CODICE PER DISATTIVARE FOLLOWING
-          stopMovement();
-          prec_movement=no_movement;
-          last_obstacle=none;
+          //CODICE PER DISATTIVARE FOLLOWING E AUTONOMOUS MOVEMENT
+          stopAutFollow();
           
           //CODICE PER DISATTIVARE AUTONOMOUS MOVEMENT
          /* autonomous_movement=false;

@@ -115,6 +115,21 @@ void startMovement(byte movement,uint32_t color,ledStates ledState){
   movementI=0;
   move=true;
 }
+void startMovement(byte movement,uint32_t color){
+  triskar.resetIterm();
+  movStartTime=millis();
+  triskar.setPosTh(0);
+  triskar.setPosX(0);
+  triskar.setPosY(0);
+  startPosTh=triskar.getPosTh();
+  startPosX=triskar.getPosX();
+  startPosY=triskar.getPosY();
+  actual_movement=movement;
+  headLedUpdate(color);
+  updateSong();
+  movementI=0;
+  move=true;
+}
 
 void startMovement(byte movement,ledStates ledState){
   triskar.resetIterm();
@@ -142,7 +157,7 @@ void startMovement(byte movement){
   startPosX=triskar.getPosX();
   startPosY=triskar.getPosY();
   actual_movement=movement;
-  headLedPulse();
+  headLedUpdate(color_pulse);
   updateSong();
   movementI=0;
   move=true;
@@ -156,10 +171,18 @@ void stopMovement(){
   actual_movement=no_movement;
   move=false;
   head_strip.setBrightness(255);
-  headLedRainbow();
+  if(!aut_mov && !follow2) headLedRainbow();
   //stopS();
   movementFinishTime=millis();
   if(gameState==mov) gameState=make_question;
+}
+
+void stopAutFollow(){
+  aut_mov=false;
+  follow2=false;
+  stopMovement();
+  prec_movement=no_movement;
+  last_obstacle=none;
 }
 
 void obstacle_stop_movement(){
@@ -168,13 +191,13 @@ void obstacle_stop_movement(){
       if(veryclose_front_obstacle || veryclose_left_obstacle || veryclose_right_obstacle){
         actual_movement=no_movement;
         //makeCircle=false;
-        startMovement(dontwonna);
+        startMovement(dontwonna,red);
       }  
     }else if(triskar.getDirection()==2){
       if(veryclose_back_obstacle){
         actual_movement=no_movement;
         //makeCircle=false;
-        startMovement(dontwonna);
+        startMovement(dontwonna,red);
       }      
     }
   }
@@ -378,17 +401,14 @@ void makeHappy1(){
 void makeHappy2(){
     if(triskar.getPosTh() < startPosTh+PI/2.0 && movementI==0){
       triskar.run(0.0f,-2.0f);
-      Serial.println("LOOP1");
     }else if(movementI==0) movementI=1;
 
     if(triskar.getPosTh() > startPosTh-PI/2.0 && movementI==1){
       triskar.run(0.0f,2.0f);
-      Serial.println("LOOP2");
       }else if(movementI==1) movementI=2;
 
     if(triskar.getPosTh() < startPosTh+2.0*PI && movementI==2){
       triskar.run(0.0f,-2.0f);
-      Serial.println("LOOP3");
     }else if(movementI==2) movementI=3;
 
     if(movementI==3){
@@ -401,16 +421,13 @@ void makeHappy3(){
   
     if(triskar.getPosTh() < startPosTh+2.0*PI && movementI==0){
       triskar.run(0.0f,-2.0f);
-      //Serial.println("LOOP1");
     }else if(movementI==0) movementI=1;
   
     if(triskar.getPosTh() > startPosTh && movementI==1){
       triskar.run(0.0f,2.0f);
-      //Serial.println("LOOP2");
       }else if(movementI==1) movementI=2;
   
     if(movementI==2){
-      //Serial.println("LOOP4");
       stopMovement();
     }
   
@@ -420,16 +437,13 @@ void makeSad0(){
   
    if(triskar.getPosTh() < startPosTh+PI && movementI==0){
     triskar.run(0.0f,-0.5f);
-    //Serial.println("LOOP1");
     }else if(movementI==0) movementI=1;
   
     if(triskar.getPosX() < startPosX+100.0f && movementI==1){
       triskar.run(10.0f,0.0f);
-      //Serial.println("LOOP2");
     }else if(movementI==1) movementI=2;
   
     if(movementI==2){
-      //Serial.println("LOOP4");
       stopMovement();
     }
   

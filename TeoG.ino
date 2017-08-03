@@ -263,6 +263,7 @@ void setup() {
   bodyCapacitiveSetup();
   dfPlayerSetup();
   voltageCheckSetup();
+  fotoresSetup();
   sonarSetup();
   ledSetup();
   headLedRainbow();
@@ -334,9 +335,10 @@ void print()  {                                                      // display 
       //Serial.print("triskar PosX  "); Serial.println(triskar.getPosX());
       //Serial.print("target: "); Serial.println(startPosX+100.0f);
     
-    //Serial.println(voltage);
-*/
+    Serial.println(voltage);
+
     Serial.println(fotores_value);
+    
     /*Serial.print("millis()-movementFinishTime:  "); Serial.println(millis()-movementFinishTime);
 
     Serial.print("actual_movement  "); Serial.println(actual_movement);
