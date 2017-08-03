@@ -9,10 +9,25 @@
 #include <CapacitiveSensor.h>
 #include <DFRobotDFPlayerMini.h>
 
+#define TIME_TO_SETUP 9000
+
+//FOTORESISTOR
+#define FOTORES_PIN A3
+int fotores_value;
+
+//VOLTAGE CHECKER
+#define NUM_SAMPLES 10
+#define VOLT_CHECKER_PIN A4
+int sum = 0;                    // sum of samples taken
+unsigned char sample_count = 0; // current sample number
+float voltage = 0.0;            // calculated voltage
+unsigned long int lastWarning=0;//last time warning advice
+
 //SOUND VARIABLES
 boolean firstSound=false;
 int playI = 0;
 DFRobotDFPlayerMini myDFPlayer;
+#define BUSY_PIN 5
 
 //GAME VARIABLES
 enum gameStates {no_game, setting, make_question, wait_answer, right_answer,wrong_answer,end_game,mov};
@@ -76,11 +91,15 @@ const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
 #define soundPin  A11 //sound sensor attach to A11
-#define microISequence 400
-#define microSoglia 180.00f
+#define microISequence 200
+#define microISequenceShortMin 10
+#define microISequenceShortMax 40
+#define microSoglia 120.00f
 int microI = 0;
 float microFilterFrequency = 1.0;
 FilterOnePole microLowpassFilter( LOWPASS, microFilterFrequency );
+unsigned long int lastadd=0;
+unsigned long int movementFinishTime=TIME_TO_SETUP+1000;
 
 //MOTORS AND ENCODERS PINS AND OBJECTS
 //-------SHIELD 1-------
@@ -135,15 +154,16 @@ boolean move = false;
 #define make_circle   9
 #define scared_round  10
 #define dontwonna     11
-#define angrymov      12
-#define scared_behind 13
-#define make_happy0   14
-#define make_happy1   15
-#define make_happy2   16
-#define make_happy3   17
-#define make_sad0     18
-#define make_sad1     19
-#define make_sad2     20
+#define scared_behind 12
+#define make_happy0   13
+#define make_happy1   14
+#define make_happy2   15
+#define make_happy3   16
+#define make_sad0     17
+#define make_sad1     18
+#define make_sad2     19
+#define angrymov      20
+
 double alpha = 0;
 byte next_movement=make_circle;
 byte actual_movement = no_movement;
@@ -174,7 +194,7 @@ boolean startbutton;
 boolean select;
 char b = ' ';
 //interpreter states
-enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality};
+enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, discharge};
 btStates interpreterState = choose_modality;
 
 //---------SONARS---------
@@ -233,7 +253,7 @@ boolean veryclose_left_obstacle = false;
 boolean veryclose_back_obstacle = false;
 boolean no_obstacle = true;
 
-#define TIME_TO_SETUP 9000
+
 
 void setup() {
   Serial.begin(115200);
@@ -242,6 +262,7 @@ void setup() {
   srand(millis());
   bodyCapacitiveSetup();
   dfPlayerSetup();
+  voltageCheckSetup();
   sonarSetup();
   ledSetup();
   headLedRainbow();
@@ -287,11 +308,7 @@ void print()  {                                                      // display 
         Serial.print(f_left);
         Serial.print("  BACK: ");
         Serial.println(f_back);
-        Serial.print("  FLAG: ");
-        Serial.print(veryclose_front_obstacle);
-        Serial.print("  movement: ");
-        Serial.println(actual_movement);
-
+      */
       /*
       //    Serial.print("  TargetPos:  ");
       //    Serial.print(targetPos);
@@ -316,16 +333,26 @@ void print()  {                                                      // display 
       /*
       //Serial.print("triskar PosX  "); Serial.println(triskar.getPosX());
       //Serial.print("target: "); Serial.println(startPosX+100.0f);
-    */
-    Serial.print("micro val: "); Serial.println(microLowpassFilter.output());
+    
+    //Serial.println(voltage);
+*/
+    Serial.println(fotores_value);
+    /*Serial.print("millis()-movementFinishTime:  "); Serial.println(millis()-movementFinishTime);
 
-      Serial.print("microI: "); Serial.println(microI);
-      Serial.print("actual_movement:  "); Serial.println(actual_movement);
+    Serial.print("actual_movement  "); Serial.println(actual_movement);
+    Serial.print("digitalRead(BUSY_PIN)  "); Serial.println(digitalRead(BUSY_PIN));
+    Serial.print("gameState  "); Serial.println(gameState);
+    Serial.print("triskar.isStopped()  "); Serial.println(triskar.isStopped());*/   
+/*    Serial.print("micro val: "); Serial.println(microLowpassFilter.output());
+    Serial.print("microI: "); Serial.println(microI);
+*/
+      
+    /*  Serial.print("actual_movement:  "); Serial.println(actual_movement);
       Serial.print("myDFPlayer.available():  "); Serial.println(myDFPlayer.available());
-      Serial.print("gameState:  "); Serial.println(gameState);
+     /* Serial.print("gameState:  "); Serial.println(gameState);
       
 
-    /*//Serial.print("led val: "); Serial.println(ledI);*/
+    //Serial.print("led val: "); Serial.println(ledI);*/
     /*Serial.print("obstacleCount: "); Serial.print(obstacleCount);
       //Serial.print("  millis: "); Serial.print(millis());
       Serial.print("  millis - mov Start Time: "); Serial.print(millis()-movStartTime);
@@ -378,18 +405,20 @@ void pidLoop() {
 void loop() {
   //sensori
   //bodyCapacitiveLoop2();
+  voltageCheckloop();
   sonarLoop();
+  fotoresLoop();
   microLoop();
-  FirstSound();
+  //FirstSound();
   btInterpreter();
   //attuatori
   pidLoop();
   makeMovement();
-  obstacle_stop_movement();
   headLedLoop();
   gameModality();
   //InversePath();
   //printMotorInfo();
   print();
 }
+
 

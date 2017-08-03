@@ -157,7 +157,7 @@ void stopMovement(){
   move=false;
   head_strip.setBrightness(255);
   headLedRainbow();
-  stopS();
+  //stopS();
   movementFinishTime=millis();
   if(gameState==mov) gameState=make_question;
 }
@@ -564,6 +564,7 @@ void makeDontWonna(){
 //    stopMovement(dontwonna);
 }
 
+double error2=0.1f;
 #define ANGRY_ANGULAR_SP 5.0f
 void makeBeAngry(){ 
     triskar.setKi(2.0);
@@ -575,10 +576,10 @@ void makeBeAngry(){
     else
       triskar.run(0.0,ANGRY_ANGULAR_SP);
     movementI++;
-    if(t>2400){
-    stopMovement();
+    if(t>2400 && triskar.getPosTh() < startPosTh+error2 && triskar.getPosTh() > startPosTh-error2){
     triskar.resetKi();
     triskar.resetKp();
+    stopMovement();
     }
 }
 
@@ -609,5 +610,6 @@ void makeMovement(){
       case make_sad1:           makeSad1();break;
       case make_sad2:           break;
     }
+    obstacle_stop_movement();
   }
 }

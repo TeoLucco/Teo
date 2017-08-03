@@ -300,6 +300,10 @@ void gameMod(){
   FromRobotToApp(); 
 }
 
+void disCharge(){
+  FromRobotToApp();
+}
+
 void btInterpreter(){
   switch(interpreterState){
     case choose_modality: chooseModality();break;
@@ -307,6 +311,8 @@ void btInterpreter(){
     case sg_waiting:      sgWaiting();break;
     case game_modality:   gameMod();break;
     case fam_modality:    famMod();break;
+    case discharge:       disCharge();break;
   }
 }
+
 

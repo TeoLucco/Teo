@@ -8,9 +8,8 @@ void bodyCapacitiveSetup(){
 //  bodySensor[2] = new CapacitiveSensor(BODY_CAPACITIVE_COMMONPIN,BODY_BEHIND_PIN);//behind
 //  bodySensor[3] = new CapacitiveSensor(BODY_CAPACITIVE_COMMONPIN,BODY_FRONT_PIN);//front  
   for(int i=0;i<bodyNumberSensors;i++)
-  bodySensor[i]->set_CS_AutocaL_Millis(10000);
+  bodySensor[i]->set_CS_AutocaL_Millis(5000);
 }
-
 
 
 void bodyCapacitiveLoop(){
@@ -34,23 +33,40 @@ void bodyCapacitiveLoop(){
     }   
   }
 }
+unsigned long int startTime=0;
+boolean overTheLimit=false;
+#define SCALIBRATION_VALUE 100
 
 void bodyCapacitiveLoop2(){
-     if(!move){
-       long sensorValue;
-       boolean flag=false;
-       for(int i=0;i < bodyNumberSensors;i++){
-       sensorValue = bodySensor[i]->capacitiveSensor(30);
-       Serial3.print(sensorValue);Serial3.print(" ");
-         if(sensorValue > bodyThreshold){
-            pressedButton=i;
-            flag=true;
-         }
-       }Serial3.println("");
-       if(flag==false){
-        pressedButton=-1;
-       }
-       flag=false;
+ if(!move){
+   long sensorValue;
+   boolean flag=false;
+   for(int i=0;i < bodyNumberSensors;i++){
+     sensorValue = bodySensor[i]->capacitiveSensor(30);
+     Serial3.print(sensorValue);Serial3.print(" ");
+     if(sensorValue > bodyThreshold){
+       pressedButton=i;
+       flag=true;
      }
+     if(sensorValue>=SCALIBRATION_VALUE && !overTheLimit){
+      startTime=millis();
+      overTheLimit=true;
+     }
+     if(sensorValue<SCALIBRATION_VALUE && overTheLimit)
+      overTheLimit=false;
+     if(overTheLimit && millis()-startTime>5000){
+      Serial.println("AUTOCALIBRAZIONE");
+      bodySensor[i]->reset_CS_AutoCal();
+      overTheLimit=false;
+     }
+   }
+   Serial3.println("");
+   if(flag==false){
+    pressedButton=-1;
+   }
+   flag=false;
+ }
+ 
 }
+
 

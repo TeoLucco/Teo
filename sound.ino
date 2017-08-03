@@ -23,29 +23,29 @@ void FirstSound(){
   }
 }
 void playS(int Index){
-  if(myDFPlayer.readState()!=Busy)
     myDFPlayer.play(Index);
 }
 
 void stopS(){
-  if(!myDFPlayer.available())
+  if(digitalRead(BUSY_PIN)==LOW){
     myDFPlayer.stop();
+  }
 }
 
 void updateSong(){
   switch(actual_movement){
       case no_movement:         break;
-      case follow:              /*playS(54);*/break;
+      case follow:              break;
       case make_eight:          break;
       case make_circle:         break;
       case turn180r:            break;
       case turn180l:            break;
       case makeOnem:            break;
-      case scared_round:        /*playS(56);*/break;  
-      case dontwonna:           /*playS(55);*/break;
+      case scared_round:        break;  
+      case dontwonna:           break;
       case angrymov:            break;
-      case scared_behind:       /*playS(57);*/break;
-      case autonomous_movement:break;
+      case scared_behind:       break;
+      case autonomous_movement: break;
       case make_happy0:         break;
       case make_happy1:         break;
       case make_happy2:         break;
@@ -57,5 +57,6 @@ void updateSong(){
     }
   
 }
+
 
 

@@ -2,10 +2,9 @@ void getDownMicroFilter(){
   for(int i=0;i<1500;i++) //metto 0 per n volte al fine di abbassare il valore del filtro
       microLowpassFilter.input(0);
 }
-unsigned long int lastadd=0;
-unsigned long int movementFinishTime=TIME_TO_SETUP+1000;
+
 void microLoop(){
-  if( (millis()-movementFinishTime>1000) && (actual_movement==no_movement) && myDFPlayer.available() && gameState==no_game && triskar.isStopped()){
+  if( (millis()-movementFinishTime>2000) && (actual_movement==no_movement) && digitalRead(BUSY_PIN)==HIGH && gameState==no_game && triskar.isStopped()){
     int wave = analogRead(soundPin);//read the value of A0. range 0-1024
     int value= abs(wave-512); //range 0-512
     microLowpassFilter.input(value);
@@ -20,12 +19,13 @@ void microLoop(){
       //getDownMicroFilter();
       microI=0;
     }else
-    if(microLowpassFilter.output() < microSoglia && (microI>10 && microI<microISequence)){
+    if(microLowpassFilter.output() < microSoglia && (microI>=microISequenceShortMin && microI<=microISequenceShortMax)){
       startMovement(scared_round);
       microLowpassFilter.setToNewValue(0.0);
       microI=0;
     } 
-  }
+  }else
+  microLowpassFilter.setToNewValue(0.0);
   if(millis()-lastadd>500){
       microI=0;
   }

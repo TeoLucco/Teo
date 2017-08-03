@@ -33,7 +33,7 @@ void waitAnswer(){
   }
   //if(millis()-startWaitingTime > timePerAnsw && repeatQuestionCounter<max_q_repeat){
   if(millis()-startWaitingTime > timePerAnsw){
-    //play sound per dire che ripeterò la domanda
+    //play sound per dire che ripeterÃ² la domanda
     gameState=make_question;
     repeatQuestionCounter++;
   }
@@ -104,4 +104,5 @@ void gameModality(){
     case mov:             break;
   }
 }
+
 
