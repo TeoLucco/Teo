@@ -48,30 +48,43 @@ float questionTime[questionsPerEx];
 int tries[questionsPerEx];
 
 
-//BODY CAPACITIVES
-#define BODY_CAPACITIVE_COMMONPIN 49
-#define BODY_SX_PIN 47
-#define BODY_DX_PIN 45
-#define BODY_FRONT_PIN 41
-#define BODY_BEHIND_PIN 43
-const int bodyNumberSensors = 4;
-CapacitiveSensor* bodySensor[bodyNumberSensors];
-long bodySensorValue[bodyNumberSensors];
-int bodyThreshold = 500;
-int behindBodyThreshold = 3500;
-boolean leftCapacitive = false;
-boolean rightCapacitive = false;
-boolean frontCapacitive = false;
-boolean behindCapacitive = false;
-
-
-//HEAD CAPACITIVES
-const int headNumberSensors = 4;
-CapacitiveSensor* headSensor[headNumberSensors];
-long headSensorValue[headNumberSensors];
-int headThreshold = 500;
-int headSpecialThreshold = 3500;
-int pressedButton = -1;
+//CAPACITIVES
+  #define CAPACITIVE_COMMONPIN 49
+  
+  #define SCALIBRATION_VALUE 200
+  #define SCALIBRATION_TIMER 5000
+  #define N_SENSORS 4
+  
+  //BODY CAPACITIVES
+  #define BODY_SX_PIN 47
+  #define BODY_DX_PIN 45
+  #define BODY_FRONT_PIN 41
+  #define BODY_BEHIND_PIN 43
+  
+  #define lowBodyThreshold 500
+  #define middleBodyThreshold 5000
+  #define highBodyThreshold 10000
+  
+  #define lowBehindBodyThreshold 3500
+  #define middleBehindBodyThreshold 7000
+  #define highBehindBodyThreshold 13000
+  CapacitiveSensor* bodySensor[N_SENSORS];
+  long bodySensorValue[N_SENSORS];
+  enum bodyCapacitiveStates {no_touch, soft_touch, middle_touch, strong_touch};
+  bodyCapacitiveStates capacitiveState[4];
+  bodyCapacitiveStates previousCapacitiveState[4];
+  unsigned long int stateStartTime[4]={0,0,0,0};
+  
+  //HEAD CAPACITIVES
+  #define HEAD_BUTTON_0 39
+  #define HEAD_BUTTON_1 37
+  #define HEAD_BUTTON_2 35
+  #define HEAD_BUTTON_3 33
+  
+  const int headThreshold = 500;
+  CapacitiveSensor* headSensor[N_SENSORS];
+  long headSensorValue[N_SENSORS];
+  int pressedButton = -1;
 
 //FRONT LEDS PINS, CONSTANT AND VARIABLES
 #define FRONT_LEDPIN 9
@@ -261,12 +274,13 @@ void setup() {
   //serial.println("Remember to select Both NL & CR in the serial monitor");
   srand(millis());
   bodyCapacitiveSetup();
+  headCapacitiveSetup();
   dfPlayerSetup();
   voltageCheckSetup();
   fotoresSetup();
   sonarSetup();
   ledSetup();
-  headLedRainbow();
+  setHeadLedRainbow();
   //historyPosX[0]=posX;
   //historyPosY[0]=posY;
   //historyIndex++;
@@ -366,8 +380,13 @@ void print()  {                                                      // display 
       Serial.print("actual pos: "); Serial.println(triskar.getPosTh());
       /*Serial.print("target pos: "); Serial.println(startPosTh+PI/12.0);
 
-      Serial.print(gameState);Serial.print("    Pressed Button: ");Serial.println(pressedButton);
-    
+      Serial.print(gameState);
+      */
+/*      Serial.print(leftCapacitive);     Serial.print("  "); Serial.print(rightCapacitive); Serial.print("  ");
+      Serial.print(behindCapacitive);   Serial.print("  "); Serial.print(frontCapacitive); Serial.print("  ");
+      Serial.print("Pressed Button: "); Serial.println(pressedButton);
+
+/*    
     Serial.print("Actual_movement:   "); Serial.print(actual_movement); Serial.print("  prec_movement:   "); Serial.println(prec_movement);
 */
 
@@ -405,13 +424,14 @@ void pidLoop() {
 }
 
 void loop() {
+  FirstSound();
   //sensori
-  //bodyCapacitiveLoop2();
+  bodyCapacitiveLoop();
+  headCapacitiveLoop();
   voltageCheckloop();
   sonarLoop();
   fotoresLoop();
   microLoop();
-  //FirstSound();
   btInterpreter();
   //attuatori
   pidLoop();

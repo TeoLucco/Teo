@@ -125,7 +125,7 @@ void startMovement(byte movement,uint32_t color){
   startPosX=triskar.getPosX();
   startPosY=triskar.getPosY();
   actual_movement=movement;
-  headLedUpdate(color);
+  headLedSetColor(color);
   updateSong();
   movementI=0;
   move=true;
@@ -171,7 +171,7 @@ void stopMovement(){
   actual_movement=no_movement;
   move=false;
   head_strip.setBrightness(255);
-  if(!aut_mov && !follow2) headLedRainbow();
+  if(!aut_mov && !follow2) setHeadLedRainbow();
   //stopS();
   movementFinishTime=millis();
   if(gameState==mov) gameState=make_question;

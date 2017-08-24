@@ -5,43 +5,44 @@ uint16_t ledJ=0;
 uint16_t ledQ=0;
 uint16_t ledZ=0;
 
-void headLedPulse(uint32_t color){
+void setHeadLedPulse(uint32_t color){
    led_state=color_pulse;
    resetCounters();
-   headLedUpdate(color);
+   headLedSetColor(color);
 }
 //funzione che usa i colori prefissati per i vari dei movimenti
-void headLedPulse(){
+void setHeadLedPulse(){
    led_state=color_pulse;
    resetCounters();
-   headLedUpdate();
+   headLedSetColor();
 }
 
-void headLedWipe(uint32_t color){
+void setHeadLedWipe(uint32_t color){
    led_state=color_wipe;
    resetCounters();
-   headLedUpdate(color);
+   headLedSetColor(color);
 }
 
-void headLedWipe(){
+void setHeadLedWipe(){
    led_state=color_wipe;
    resetCounters();
-   headLedUpdate();
+   headLedSetColor();
 }
 
-void headLedRainbow(){
+void setHeadLedRainbow(){
    led_state=rainbow_cycle;
    resetCounters();
 }
 
-void headLedOff(){
+void setHeadLedOff(){
+  resetLed();
   led_state=led_off;
 }
 
 //Loop e Setup
 void headLedLoop(){
   switch(led_state){
-    case led_off: resetCounters();break;
+    case led_off: break;
     case rainbow_cycle: rainbowCycle(5); break;
     case color_wipe: colorWipe(head_color, 50);break;
     case color_pulse: colorPulse(head_color, 50); break;
@@ -194,10 +195,10 @@ uint32_t Wheel(byte WheelPos) {
 void headLedUpdate(uint32_t color,ledStates ledState){
   if(head_color!=color || led_state!=ledState){ 
     switch(ledState){
-      case color_pulse:   headLedPulse(color); break;
-      case color_wipe:    headLedWipe(color); break;
-      case rainbow_cycle: headLedRainbow();break;
-      case led_off:       headLedOff();break;
+      case color_pulse:   setHeadLedPulse(color); break;
+      case color_wipe:    setHeadLedWipe(color); break;
+      case rainbow_cycle: setHeadLedRainbow();break;
+      case led_off:       setHeadLedOff();break;
     } 
   }
 }
@@ -205,18 +206,19 @@ void headLedUpdate(uint32_t color,ledStates ledState){
 void headLedUpdate(ledStates ledState){
   if(led_state!=ledState){
     switch(ledState){
-        case color_pulse:   headLedPulse(); break;
-        case color_wipe:    headLedWipe(); break;
-        case rainbow_cycle: headLedRainbow();break;
-        case led_off:       headLedOff();break;
+        case color_pulse:   setHeadLedPulse(); break;
+        case color_wipe:    setHeadLedWipe(); break;
+        case rainbow_cycle: setHeadLedRainbow();break;
+        case led_off:       setHeadLedOff();break;
     }    
   } 
 }
-void headLedUpdate(uint32_t color){
+void headLedSetColor(uint32_t color){
+  if(head_color!=color)
   head_color=color;
 }
 
-void headLedUpdate(){
+void headLedSetColor(){
   switch(actual_movement){
       case no_movement:         break;
       case follow:              head_color=green;break;
