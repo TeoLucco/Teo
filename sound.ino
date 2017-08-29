@@ -40,7 +40,8 @@ void updateSong(){
       case make_circle:         break;
       case turn180r:            break;
       case turn180l:            break;
-      case makeOnem:            break;
+      case makeOnemF:            break;
+      case makeOnemB:            break;
       case scared_round:        break;  
       case dontwonna:           break;
       case angrymov:            break;

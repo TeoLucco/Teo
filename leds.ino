@@ -226,7 +226,8 @@ void headLedSetColor(){
       case make_circle:         head_color=green;break;
       case turn180r:            head_color=yellow;break;
       case turn180l:            head_color=yellow;break;
-      case makeOnem:            head_color=green;break;
+      case makeOnemF:            head_color=green;break;
+      case makeOnemB:            head_color=green;break;
       case scared_round:        head_color=yellow;break;  
       case dontwonna:           head_color=red;break;
       case angrymov:            head_color=red;break;

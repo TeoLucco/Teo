@@ -1,8 +1,8 @@
 void headCapacitiveSetup(){
-  headSensor[0] = new CapacitiveSensor(CAPACITIVE_COMMONPIN,HEAD_BUTTON_0);//sx
-  headSensor[1] = new CapacitiveSensor(CAPACITIVE_COMMONPIN,HEAD_BUTTON_1);//dx
-  headSensor[2] = new CapacitiveSensor(CAPACITIVE_COMMONPIN,HEAD_BUTTON_2);//behind
-  headSensor[3] = new CapacitiveSensor(CAPACITIVE_COMMONPIN,HEAD_BUTTON_3);//front  
+  headSensor[0] = new CapacitiveSensor(CAPACITIVE_COMMONPIN_HEAD,HEAD_BUTTON_0);//sx
+  headSensor[1] = new CapacitiveSensor(CAPACITIVE_COMMONPIN_HEAD,HEAD_BUTTON_1);//dx
+  headSensor[2] = new CapacitiveSensor(CAPACITIVE_COMMONPIN_HEAD,HEAD_BUTTON_2);//behind
+  headSensor[3] = new CapacitiveSensor(CAPACITIVE_COMMONPIN_HEAD,HEAD_BUTTON_3);//front  
   for(int i=0;i<N_SENSORS;i++)
   headSensor[i]->set_CS_AutocaL_Millis(SCALIBRATION_TIMER);
 }
@@ -15,8 +15,8 @@ void headCapacitiveLoop(){
    long sensorValue;
    boolean flag=false;
    for(int i=0;i < N_SENSORS;i++){
-     sensorValue = headSensor[i]->capacitiveSensor(30);
-     Serial3.print(sensorValue);Serial3.print(" ");
+     sensorValue = headSensor[i]->capacitiveSensor(20);
+//     Serial3.print(sensorValue);Serial3.print(" ");
      if(sensorValue > headThreshold){
        pressedButton=i;
        flag=true;

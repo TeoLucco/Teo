@@ -531,9 +531,16 @@ void makeScaredRound(){
 }
 
 
-void makeOneMeter(){  
+void makeOneMeterForward(){  
   if(triskar.getPosX()<startPosX+100.0)
     triskar.run(20.0f,0.0f);
+  else
+    stopMovement();     
+}
+
+void makeOneMeterBackward(){  
+  if(triskar.getPosX()>startPosX-100.0)
+    triskar.run(-20.0f,0.0f);
   else
     stopMovement();     
 }
@@ -606,7 +613,8 @@ void makeMovement(){
       case turn180l:            turn180_left();break;
       case turnAlphaR:          turn_alpha_right();break;
       case turnAlphaL:          turn_alpha_left();break;
-      case makeOnem:            makeOneMeter();break;
+      case makeOnemF:           makeOneMeterForward();break;
+      case makeOnemB:           makeOneMeterBackward();break;
       case scared_round:        makeScaredRound();break;  
       case dontwonna:           makeDontWonna();break;
       case angrymov:            makeBeAngry();break;
