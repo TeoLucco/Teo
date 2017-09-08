@@ -49,42 +49,46 @@ int tries[questionsPerEx];
 
 
 //CAPACITIVES
-  #define CAPACITIVE_COMMONPIN_HEAD 49
-  #define CAPACITIVE_COMMONPIN_BODY 31
-  
-  #define SCALIBRATION_VALUE 200
+  #define SCALIBRATION_VALUE 300
   #define SCALIBRATION_TIMER 5000
-  #define N_SENSORS 4
+  #define N_HEAD_SENSORS 4
+  #define N_BODY_SENSORS 3
   
   //BODY CAPACITIVES
-  #define BODY_SX_PIN 39
-  #define BODY_DX_PIN 33
-  #define BODY_FRONT_PIN 35
-  #define BODY_BEHIND_PIN 37
+  #define BODY_FRONT_S 45
+  #define BODY_FRONT_R 43
+  #define BODY_SX_S 49
+  #define BODY_SX_R 47
   
-  #define lowBodyThreshold 500
-  #define middleBodyThreshold 5000
-  #define highBodyThreshold 10000
+  #define BODY_DX_S 26
+  #define BODY_DX_R 28
+  
+  #define lowBodyThreshold 300
+  //#define middleBodyThreshold 5000
+  #define highBodyThreshold 700
   
  
-  CapacitiveSensor* bodySensor[N_SENSORS];
-  long maxSensor=0;
-  long bodySensorValue[N_SENSORS];
-  enum bodyCapacitiveStates {no_touch, soft_touch, middle_touch, strong_touch};
-  bodyCapacitiveStates capacitiveState[4];
+  CapacitiveSensor* bodySensor[N_BODY_SENSORS];
+  long bodySensorValue[N_BODY_SENSORS];
+  enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
+  bodyCapacitiveStates capacitiveState[3];
   bodyCapacitiveStates previousCapacitiveState[4];
   unsigned long int stateStartTime[4]={0,0,0,0};
   unsigned long int previousStateStartTime[4]={0,0,0,0};
   
   //HEAD CAPACITIVES
-  #define HEAD_BUTTON_0 47
-  #define HEAD_BUTTON_1 45
-  #define HEAD_BUTTON_2 43
-  #define HEAD_BUTTON_3 41
+  #define HEAD_BUTTON_0S 27
+  #define HEAD_BUTTON_0R 29
+  #define HEAD_BUTTON_1S 31
+  #define HEAD_BUTTON_1R 33
+  #define HEAD_BUTTON_2S 35
+  #define HEAD_BUTTON_2R 37
+  #define HEAD_BUTTON_3S 39
+  #define HEAD_BUTTON_3R 41
   
-  const int headThreshold = 500;
-  CapacitiveSensor* headSensor[N_SENSORS];
-  long headSensorValue[N_SENSORS];
+  const int headThreshold = 1500;
+  CapacitiveSensor* headSensor[N_HEAD_SENSORS];
+  long headSensorValue[N_HEAD_SENSORS];
   int pressedButton = -1;
 
 //FRONT LEDS PINS, CONSTANT AND VARIABLES
@@ -177,7 +181,14 @@ boolean move = false;
 #define make_sad1     18
 #define make_sad2     19
 #define angrymov      20
-#define makeOnemB      21
+#define makeOnemB     21
+#define scared_hit    22
+#define turnAlphaR2   23  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
+#define turnAlphaL2   24
+#define make_sad2L    25
+#define make_sad2R    26
+#define scared_hitL   27
+#define scared_hitR   28
 
 double alpha = 0;
 byte next_movement=make_circle;
@@ -187,6 +198,7 @@ boolean follow2 = false;
 boolean aut_mov = false;
 boolean makeInverse = false;
 int movementI = 0;
+int movementI2m = 0;
 unsigned long int randomTurnTime = 15000 + rand() % (20000);
 unsigned long int lastObstacleTime = 0;
 int obstacleCount = 0;
@@ -280,7 +292,7 @@ void setup() {
   dfPlayerSetup();
   voltageCheckSetup();
   fotoresSetup();
-  sonarSetup();
+  //sonarSetup();
   ledSetup();
   setHeadLedRainbow();
   //historyPosX[0]=posX;
@@ -383,15 +395,18 @@ void print()  {                                                      // display 
       /*Serial.print("target pos: "); Serial.println(startPosTh+PI/12.0);
 
       Serial.print(gameState);
-      */
+      /*
       Serial3.print("left: ");Serial3.print(bodySensorValue[0]);
       /*if(bodySensorValue[0]>maxSensor)
       maxSensor=bodySensorValue[0];
       Serial3.print("   max: ");Serial3.println(maxSensor);
-      */Serial3.print("    right: ");Serial3.print(bodySensorValue[1]);
+      Serial3.print("    right: ");Serial3.print(bodySensorValue[1]);
       Serial3.print("    behind: ");Serial3.print(bodySensorValue[2]);Serial3.print("    front: ");Serial3.print(bodySensorValue[3]);
       Serial3.print("    Pressed Button: "); Serial3.println(pressedButton);
-
+*/
+Serial3.print(bodySensorValue[0]); Serial3.print("    ");Serial3.print(capacitiveState[0]); Serial3.print("    ");
+Serial3.print(bodySensorValue[1]); Serial3.print("    ");Serial3.print(capacitiveState[1]); Serial3.print("    ");
+Serial3.print(bodySensorValue[2]); Serial3.print("    ");Serial3.println(capacitiveState[2]);
 /*    
     Serial.print("Actual_movement:   "); Serial.print(actual_movement); Serial.print("  prec_movement:   "); Serial.println(prec_movement);
 */
@@ -435,7 +450,7 @@ void loop() {
   bodyCapacitiveLoop();
   headCapacitiveLoop();
   voltageCheckloop();
-  sonarLoop();
+  //sonarLoop();
   fotoresLoop();
   microLoop();
   btInterpreter();
