@@ -408,10 +408,10 @@ void makeRunScaredBehind2L() { //at the end of the scared movement the robot wil
     triskar.run(0.0, angular_speed);
   else if (movementI == 0) movementI = 1;
 
-  if (movementI == 1)
+  if (movementI == 1) {
     triskar.stop();
-  else if (movementI == 1) movementI = 2;
-
+    movementI = 2;
+  }
   if ((triskar.getPosTh() < startPosTh + PI / 12.0) && movementI == 2)
     triskar.run(-forward_speed, -angular_speed);
   else if (movementI == 2) movementI = 3;
@@ -446,10 +446,10 @@ void makeRunScaredBehind2R() { //at the end of the scared movement the robot wil
     triskar.run(0.0, -angular_speed);
   else if (movementI == 0) movementI = 1;
 
-  if (movementI == 1)
+  if (movementI == 1){
     triskar.stop();
-  else if (movementI == 1) movementI = 2;
-
+    movementI = 2;
+  }
   if ((triskar.getPosTh() < startPosTh + PI / 12.0) && movementI == 2)
     triskar.run(-forward_speed, -angular_speed);
   else if (movementI == 2) movementI = 3;
@@ -617,7 +617,7 @@ void makeSad1() {
 
 void makeSad2() {
   float angular_speed = SAD_ANGULAR_SP;
-  
+
 
   if (triskar.getPosX() > startPosX - 100.0f && movementI == 0) {
     triskar.run(-10.0f, 0.0f);
@@ -662,10 +662,10 @@ void makeSad2L() {
     triskar.run(0.0, SAD_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
-  if (movementI == 1)
+  if (movementI == 1){
     triskar.stop();
-  else if (movementI == 1) movementI = 2;
-
+    movementI = 2;
+  }
   if (triskar.getPosX() > startPosX - 100.0f && movementI == 2) {
     triskar.run(-10.0f, 0.0f);
   } else if (movementI == 2) movementI = 3;
@@ -710,10 +710,10 @@ void makeSad2R() {
     triskar.run(0.0, -angular_speed);
   else if (movementI == 0) movementI = 1;
 
-  if (movementI == 1)
+  if (movementI == 1){
     triskar.stop();
-  else if (movementI == 1) movementI = 2;
-
+    movementI = 2;
+  }
   if (triskar.getPosX() > startPosX - 100.0f && movementI == 2) {
     triskar.run(-10.0f, 0.0f);
   } else if (movementI == 2) movementI = 3;

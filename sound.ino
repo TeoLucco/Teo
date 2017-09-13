@@ -13,7 +13,7 @@ void dfPlayerSetup(){
   }
   Serial.println(F("DFPlayer Mini online."));
   
-  myDFPlayer.volume(30);  //Set volume value. From 0 to 30
+  myDFPlayer.volume(03);  //Set volume value. From 0 to 30
   
 }
 void FirstSound(){

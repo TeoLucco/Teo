@@ -9,7 +9,7 @@ void bodyCapacitiveSetup() {
 }
 
 void bodyCapacitiveLoop() {
-  if (interpreterState == fam_modality) {
+  if (interpreterState == fam_modality && triskar.isStopped()) {
     updateCapacitiveFlags();
     reactions();
   }
@@ -22,22 +22,23 @@ void updateCapacitiveFlags() {
   // catturo i valori di output di ogni sensore capacitivo
   for (int i = 0; i < N_BODY_SENSORS; i++) {
     bodySensorValue[i] = bodySensor[i]->capacitiveSensor(10);
-    if (bodySensorValue[i] >= SCALIBRATION_VALUE && !overTheLimitBody) {
-      startTimeBody[i] = millis();
-      overTheLimitBody[i] = true;
-    }
-    if (bodySensorValue[i] < SCALIBRATION_VALUE && overTheLimitBody[i])
-      overTheLimitBody[i] = false;
-    if (overTheLimitBody[i] && millis() - startTimeBody[i] > SCALIBRATION_TIMER) {
-      Serial.println("AUTOCALIBRAZIONE");
-      bodySensor[i]->reset_CS_AutoCal();
-      overTheLimitBody[i] = false;
-    }
+    //    if (bodySensorValue[i] >= SCALIBRATION_VALUE && !overTheLimitBody) {
+    //      startTimeBody[i] = millis();
+    //      overTheLimitBody[i] = true;
+    //    }
+    //    if (bodySensorValue[i] < SCALIBRATION_VALUE && overTheLimitBody[i])
+    //      overTheLimitBody[i] = false;
+    //    if (overTheLimitBody[i] && millis() - startTimeBody[i] > SCALIBRATION_TIMER) {
+    //      Serial.println("AUTOCALIBRAZIONE");
+    //      bodySensor[i]->reset_CS_AutoCal();
+    //      overTheLimitBody[i] = false;
+    //    }
     updateBodyState(i);
   }
 }
 
 void updateBodyState(int i) {
+  previousDynamicCapacitiveState[i] = capacitiveState[i];
   if (bodySensorValue[i] < lowBodyThreshold) {
     if (capacitiveState[i] != no_touch) {
       previousCapacitiveState[i] = capacitiveState[i];
@@ -53,6 +54,7 @@ void updateBodyState(int i) {
       previousStateStartTime[i] = stateStartTime[i];
       stateStartTime[i] = millis();
     }
+
   }
   //  else if (bodySensorValue[i] >= middleBodyThreshold && bodySensorValue[i] < highBodyThreshold) {
   //    if (capacitiveState[i] != middle_touch) {
@@ -69,75 +71,228 @@ void updateBodyState(int i) {
       previousStateStartTime[i] = stateStartTime[i];
       stateStartTime[i] = millis();
     }
+
   }
 }
-
-#define REACTION_TIME 100
-int angryCount = 0;
-int happyCount = 0;
 
 void reactions() {
-  if ( (millis() - movementFinishTime > 2000) && (actual_movement == no_movement) && (gameState == no_game) && (interpreterState == fam_modality) && digitalRead(BUSY_PIN) == HIGH && triskar.isStopped()) {
-    if (happyCount < 3) {
-      if (capacitiveState[2] == soft_touch && capacitiveState[0] == soft_touch && capacitiveState[1] == soft_touch && stateStartTime[0] - millis() > REACTION_TIME && stateStartTime[1] - millis() > REACTION_TIME && stateStartTime[2] - millis() > REACTION_TIME) {
-        //abbraccio completo
-        setHeadLedPulse(green);
-        playS(19);
-        happyCount++;
+  if ( (actual_movement == no_movement)) {
+    // abbraccio se in stato soft touch sul sensore centale ed uno laterale per almeno tot secondi
+    if (touchState == nothing) {
+      resetLedTimer();
+      resetHitCountTimer();
+      resetPatCountTimer();
+      hugsCount = 0;
+      if ((bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] < lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold) ||
+          (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] <= lowBodyThreshold) ||
+          (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold)) {
+        touchState = hug;
       }
-      else if ((capacitiveState[2] == soft_touch && capacitiveState[0] == soft_touch && stateStartTime[2] - millis() > REACTION_TIME && stateStartTime[0] - millis() > REACTION_TIME) ||
-               (capacitiveState[3] == soft_touch && capacitiveState[1] == soft_touch && stateStartTime[3] - millis() > REACTION_TIME && stateStartTime[1] - millis() > REACTION_TIME)) {
-        //abbraccio incompleto, stringi più forte, allarga l'abbraccio!
-        setHeadLedWipe(green);
-        playS(20);
-        happyCount++;
+      else if (capacitiveState[0] == soft_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
+        touchState = pat0;
       }
-      else if (capacitiveState[2] == soft_touch && stateStartTime[2] - millis() > REACTION_TIME) {
-        happyCount++;
-        if (millis() - stateStartTime[2] < 1000)
-          setHeadLedWipe(yellow);
-        else
-          setHeadLedWipe(green);
-        //colpo o carezza? dammi un abbraccio! stringimi!
+      else if (capacitiveState[0] == no_touch && capacitiveState[1] == soft_touch && capacitiveState[2] == no_touch) {
+        touchState = pat1;
       }
-    } else {
-      happyCount = 0;
-      startMovement(make_happy0, green, color_pulse, 50);
-    }
-    if (angryCount < 3) {
-      if (capacitiveState[2] == strong_touch) {
-        angryCount++;
-        startMovement(scared_hit, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      else if (capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == soft_touch) {
+        touchState = pat2;
       }
-
-      else if (capacitiveState[0] == strong_touch) {
-        angryCount++;
-        alpha = PI / 3;
-        startMovement(scared_hitL, red, color_pulse, 34);
+      else if (capacitiveState[0] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
+        touchState = hit0;
       }
-      else if (capacitiveState[1] == strong_touch) {
-        angryCount++;
-        alpha = PI / 3;
-        startMovement(scared_hitR, red, color_pulse, 34);
+      else if (capacitiveState[1] == strong_touch && capacitiveState[0] == no_touch && capacitiveState[2] == no_touch) {
+        touchState = hit1;
       }
-
-    } else {
-
-      if (capacitiveState[2] == strong_touch) {
-        angryCount = 0;
-        startMovement(make_sad2, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      else if (capacitiveState[2] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch) {
+        touchState = hit2;
       }
-      else if (capacitiveState[0] == strong_touch) {
-        angryCount = 0;
-        alpha = PI / 3;
-        startMovement(make_sad2L, red, color_pulse, 33);
+    } else switch (touchState) {
+        case hug:  checkHug(); break;
+        case pat0: checkPat0(); break;
+        case pat1: checkPat1(); break;
+        case pat2: checkPat2(); break;
+        case hit0: checkHit0(); break;
+        case hit1: checkHit1(); break;
+        case hit2: checkHit2(); break;
       }
-      else if (capacitiveState[1] == strong_touch) {
-        angryCount = 0;
-        alpha = PI / 3;
-        startMovement(make_sad2R, red, color_pulse, 33);
-      }
-
+  }
+}
+void resetPatCountTimer() {
+  for (int i = 0; i < N_BODY_SENSORS; i++) {
+    if (millis() - stateStartTime[i] > RESET_PAT_TIME && capacitiveState[i] == no_touch) {
+      pat[i] = 0;
     }
   }
 }
+
+void resetHitCountTimer() {
+  for (int i = 0; i < N_BODY_SENSORS; i++) {
+    if (millis() - stateStartTime[i] > RESET_HIT_TIME && capacitiveState[i] == no_touch) {
+      hit[i] = 0;
+    }
+  }
+}
+void resetLedTimer() {
+  if (millis() - stateStartTime[0] > RESET_PAT_TIME && capacitiveState[0] == no_touch &&
+      millis() - stateStartTime[1] > RESET_PAT_TIME && capacitiveState[1] == no_touch &&
+      millis() - stateStartTime[2] > RESET_PAT_TIME && capacitiveState[2] == no_touch && led_state != rainbow_cycle) {
+    head_strip.setBrightness(255);
+    headLedUpdate(rainbow_cycle);
+  }
+}
+void checkHug() {
+  if ((millis() - stateStartTime[2] >= HUGTIME && bodySensorValue[2] >= lowBodyThreshold) &&
+      ((millis() - stateStartTime[0] >= HUGTIME && bodySensorValue[0] >= lowBodyThreshold) ||
+       (millis() - stateStartTime[1] >= HUGTIME && bodySensorValue[1] >= lowBodyThreshold) )) {
+    playS(23);
+    setHeadLedPulse(green);
+    for (int j = 0; j < N_BODY_SENSORS; j++) {
+      pat[j] = 0;
+      hit[j] = 0;
+      stateStartTime[j] = millis();
+    }
+    
+    hugsCount++;
+    //abbraccio = true;
+    if (hugsCount == 1)
+      Serial3.println("ABBRACCIO!");
+    else {
+      Serial3.print("ABBRACCIO durata "); Serial3.println(hugsCount);
+    }
+  }
+  if (capacitiveState[2] == no_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch)
+    touchState = nothing;
+}
+void checkPat0() {
+  if (previousDynamicCapacitiveState[0] == soft_touch && previousDynamicCapacitiveState[1] == no_touch && previousDynamicCapacitiveState[2] == no_touch &&
+      capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch &&
+      stateStartTime[0] - previousStateStartTime[0] >= MIN_PAT_TIME && stateStartTime[0] - previousStateStartTime[0] <= MAX_PAT_TIME) {
+    touchState = nothing;
+    for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
+    if (pat[0] == N_PATS) {
+      for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
+      playS(23);
+      setHeadLedPulse(green);
+      Serial3.println("N CAREZZE!");
+    } else {
+      pat[0]++;
+      playS(23);
+      setHeadLedPulse(green);
+      Serial3.println("UNA CAREZZA!");
+    }
+  }
+  else if (capacitiveState[0] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
+    touchState = hit0;
+  } else patHitStatusExitCond();
+}
+void checkPat1() {
+  if (previousDynamicCapacitiveState[1] == soft_touch && previousDynamicCapacitiveState[0] == no_touch && previousDynamicCapacitiveState[2] == no_touch &&
+      capacitiveState[1] == no_touch && capacitiveState[0] == no_touch && capacitiveState[2] == no_touch &&
+      stateStartTime[1] - previousStateStartTime[1] >= MIN_PAT_TIME && stateStartTime[1] - previousStateStartTime[1] <= MAX_PAT_TIME) {
+    touchState = nothing;
+    for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
+    if (pat[1] == N_PATS) {
+      for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
+      playS(23);
+      setHeadLedPulse(green);
+      Serial3.println("N CAREZZE!");
+    } else {
+      pat[1]++;
+      playS(23);
+      setHeadLedPulse(green);
+      Serial3.println("UNA CAREZZA!");
+    }
+  }
+  else if (capacitiveState[1] == strong_touch && capacitiveState[0] == no_touch && capacitiveState[2] == no_touch) {
+    touchState = hit1;
+  } else patHitStatusExitCond();
+}
+void checkPat2() {
+  if (previousDynamicCapacitiveState[2] == soft_touch && previousDynamicCapacitiveState[0] == no_touch && previousDynamicCapacitiveState[1] == no_touch &&
+      capacitiveState[2] == no_touch && capacitiveState[0] == no_touch && capacitiveState[1] == no_touch &&
+      stateStartTime[2] - previousStateStartTime[2] >= MIN_PAT_TIME && stateStartTime[2] - previousStateStartTime[2] <= MAX_PAT_TIME) {
+    touchState = nothing;
+    for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
+    if (pat[2] == N_PATS) {
+      for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
+      playS(23);
+      setHeadLedPulse(green);
+      Serial3.println("N CAREZZE!");
+    } else {
+      pat[2]++;
+      playS(23);
+      setHeadLedPulse(green);
+      Serial3.println("UNA CAREZZA!");
+    }
+  }
+  else if (capacitiveState[2] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch) {
+    touchState = hit2;
+  } else patHitStatusExitCond();
+}
+
+void checkHit0() {
+  if ((previousDynamicCapacitiveState[0] == strong_touch || previousDynamicCapacitiveState[0] == soft_touch) && previousDynamicCapacitiveState[1] == no_touch && previousDynamicCapacitiveState[2] == no_touch &&
+      capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch &&
+      stateStartTime[0] - previousStateStartTime[0] >= MIN_HIT_TIME && stateStartTime[0] - previousStateStartTime[0] <= MAX_HIT_TIME) {
+    touchState = nothing;
+    for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
+    if (hit[0] == N_HITS) {
+      for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
+      startMovement(make_sad2L, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      Serial3.println("N COLPI A SX!");
+    } else {
+      hit[0]++;
+      startMovement(scared_hitL, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      Serial3.println("UN COLPO A SX!");
+    }
+  } else patHitStatusExitCond();
+}
+
+void checkHit1() {
+  if ((previousDynamicCapacitiveState[1] == strong_touch || previousDynamicCapacitiveState[1] == soft_touch) && previousDynamicCapacitiveState[0] == no_touch && previousDynamicCapacitiveState[2] == no_touch &&
+      capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch &&
+      stateStartTime[1] - previousStateStartTime[1] >= MIN_HIT_TIME && stateStartTime[1] - previousStateStartTime[1] <= MAX_HIT_TIME) {
+    touchState = nothing;
+    for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
+    if (hit[1] == N_HITS) {
+      for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
+      startMovement(make_sad2R, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      Serial3.println("N COLPI A DX!");
+    } else {
+      hit[1]++;
+      startMovement(scared_hitR, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      Serial3.println("UN COLPO A DX!");
+    }
+  } else patHitStatusExitCond();
+}
+void checkHit2() {
+  if ((previousDynamicCapacitiveState[2] == strong_touch || previousDynamicCapacitiveState[2] == soft_touch) && previousDynamicCapacitiveState[0] == no_touch && previousDynamicCapacitiveState[1] == no_touch &&
+      capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch &&
+      stateStartTime[2] - previousStateStartTime[2] >= MIN_HIT_TIME && stateStartTime[2] - previousStateStartTime[2] <= MAX_HIT_TIME) {
+    touchState = nothing;
+    for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
+    if (hit[2] == N_HITS) {
+      for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
+      startMovement(make_sad2, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      Serial3.println("N COLPI AL CENTRO!");
+    } else {
+      hit[2]++;
+      startMovement(scared_hit, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      Serial3.println("UN COLPO AL CENTRO!");
+    }
+  } else
+    patHitStatusExitCond();
+  
+}
+
+void patHitStatusExitCond() {
+  if ((bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] < lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold) ||
+      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] <= lowBodyThreshold) ||
+      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold)) {
+    touchState = hug;
+  } else if (capacitiveState[2] == no_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch)
+    touchState = nothing;
+
+}
+
+
