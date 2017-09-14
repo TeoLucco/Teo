@@ -19,6 +19,8 @@ unsigned long int startTimeBody[N_BODY_SENSORS] = {0, 0, 0};
 boolean overTheLimitBody[N_BODY_SENSORS] = {false, false, false};
 
 void updateCapacitiveFlags() {
+  pats=0;
+  hits=0;
   // catturo i valori di output di ogni sensore capacitivo
   for (int i = 0; i < N_BODY_SENSORS; i++) {
     bodySensorValue[i] = bodySensor[i]->capacitiveSensor(10);
@@ -34,6 +36,10 @@ void updateCapacitiveFlags() {
     //      overTheLimitBody[i] = false;
     //    }
     updateBodyState(i);
+  }
+  for (int i = 0; i < N_BODY_SENSORS; i++) {
+    pats+=pat[i];
+    hits+=hit[i];
   }
 }
 

@@ -137,9 +137,9 @@ void famMod(){
         if(!quadrato){
           quadrato=true;
           startMovement(next_movement);
-          if(next_movement<make_sad1)
+          if(next_movement<scared_hitR)
             next_movement++;
-          else next_movement=make_circle;
+          else next_movement=make_sad0;
         }
         break;
         

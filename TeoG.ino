@@ -11,6 +11,16 @@
 
 #define TIME_TO_SETUP 9000
 
+//HARDWARE TESTS
+enum testStates { no_test, choose_test, wait_choose_test,
+                  sonar_test_pre,           sonar_test_wait,           sonar_test, 
+                  head_capacitive_test_pre, head_capacitive_test_wait, head_capacitive_test, 
+                  body_capacitive_test_pre, body_capacitive_test_wait, body_capacitive_test, 
+                  fotores_test_pre,         fotores_test_wait,         fotores_test, 
+                  speaker_test_pre,         speaker_test_wait,         speaker_test, 
+                  micro_test_pre,           micro_test_wait,           micro_test};
+testStates testState = no_test;
+
 //FOTORESISTOR
 #define FOTORES_PIN A3
 int fotores_value;
@@ -57,10 +67,10 @@ int tries[questionsPerEx];
 //BODY CAPACITIVES
 #define BODY_FRONT_S 45
 #define BODY_FRONT_R 43
-#define BODY_SX_S 49
-#define BODY_SX_R 47
-#define BODY_DX_S 26
-#define BODY_DX_R 28
+#define BODY_SX_S 26
+#define BODY_SX_R 28
+#define BODY_DX_S 49
+#define BODY_DX_R 47
 
 #define lowBodyThreshold 200
 //#define middleBodyThreshold 5000
@@ -187,30 +197,29 @@ boolean move = false;
 #define turnAlphaR    6  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
 #define turnAlphaL    7
 #define makeOnemF     8
-#define make_circle   9
-#define scared_round  10
-#define dontwonna     11
-#define scared_behind 12
-#define make_happy0   13
-#define make_happy1   14
-#define make_happy2   15
-#define make_happy3   16
-#define make_sad0     17
-#define make_sad1     18
-#define make_sad2     19
-#define angrymov      20
-#define makeOnemB     21
+#define makeOnemB     9
+#define make_circle   10
+#define scared_round  11
+#define dontwonna     12
+#define scared_behind 13
+#define make_happy0   14
+#define make_happy1   15
+#define make_happy2   16
+#define make_happy3   17
+#define make_sad0     18
+#define make_sad1     19
+#define make_sad2     20
+#define angrymov      21
 #define scared_hit    22
-#define turnAlphaR2   23  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
-#define turnAlphaL2   24
-#define make_sad2L    25
-#define make_sad2R    26
-#define scared_hitL   27
-#define scared_hitR   28
-#define guided 29
+#define make_sad2L    23
+#define make_sad2R    24
+#define scared_hitL   25
+#define scared_hitR   26
+#define turnAlphaR2   27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
+#define turnAlphaL2   28
 
 double alpha = 0;
-byte next_movement = make_circle;
+byte next_movement = make_sad0;
 byte actual_movement = no_movement;
 byte prec_movement = no_movement;
 boolean follow2 = false;
@@ -278,11 +287,11 @@ FilterOnePole left_sonar_f( LOWPASS, FILTERFREQUENCY );
 FilterOnePole right_sonar_f( LOWPASS, FILTERFREQUENCY );
 FilterOnePole back_sonar_f( LOWPASS, FILTERFREQUENCY );
 //-----objects-----
-NewPing sonar[SONAR_NUM] = {     // Sensor object array.
-  NewPing(30, 28, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
-  NewPing(26, 24, MAX_DISTANCE),
-  NewPing(34, 32, MAX_DISTANCE),
-  NewPing(36, 25, MAX_DISTANCE)
+NewPing sonar[SONAR_NUM] = {      // Sensor object array.
+  NewPing(30, 28, MAX_DISTANCE),  // front sonar
+  NewPing(26, 24, MAX_DISTANCE),  //right sonar
+  NewPing(34, 32, MAX_DISTANCE),  //left sonar
+  NewPing(36, 25, MAX_DISTANCE)   //back sonar
 };
 //-----booleans-----
 boolean front_obstacle = false;
@@ -304,19 +313,15 @@ boolean no_obstacle = true;
 void setup() {
   Serial.begin(115200);
   Serial.println("Arduino is ready");
-  //serial.println("Remember to select Both NL & CR in the serial monitor");
   srand(millis());
-  bodyCapacitiveSetup();
-  headCapacitiveSetup();
+  //bodyCapacitiveSetup();
+  //headCapacitiveSetup();
   dfPlayerSetup();
   voltageCheckSetup();
   fotoresSetup();
-  //sonarSetup();
+  sonarSetup();
   ledSetup();
   setHeadLedRainbow();
-  //historyPosX[0]=posX;
-  //historyPosY[0]=posY;
-  //historyIndex++;
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
   Serial3.println("Are YOU ready??");
@@ -347,7 +352,7 @@ void print()  {                                                      // display 
       else if (targetPos<0) Serial.println("LEFT");
       else if (targetPos>0) Serial.println("RIGHT");
     */
-    /*
+    
         Serial.print("RIGHT: ");
         Serial.print(f_right);
         Serial.print("  CENTER: ");
@@ -356,7 +361,7 @@ void print()  {                                                      // display 
         Serial.print(f_left);
         Serial.print("  BACK: ");
         Serial.println(f_back);
-    */
+    
     /*
       //    Serial.print("  TargetPos:  ");
       //    Serial.print(targetPos);
@@ -435,7 +440,7 @@ void print()  {                                                      // display 
     Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
     Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]); Serial3.print("    ");
     Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.print("    ");
-    Serial3.println(touchState);
+    Serial3.print(pats); Serial3.print("    ");Serial3.print(hits); Serial3.print("    ");Serial3.println(touchState);
 
     /*
       Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
@@ -484,18 +489,17 @@ void loop() {
   //FirstSound();
   //sensori
   btInterpreter();
-  bodyCapacitiveLoop();
-  headCapacitiveLoop();
+  //bodyCapacitiveLoop();
+  //headCapacitiveLoop();
   voltageCheckloop();
-  //sonarLoop();
+  sonarLoop();
   fotoresLoop();
-  //microLoop();
+  microLoop();
   //attuatori
   pidLoop();
   makeMovement();
   headLedLoop();
   gameModality();
-  //InversePath();
   //printMotorInfo();
   print();
 }

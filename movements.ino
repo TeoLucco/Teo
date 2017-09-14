@@ -4,7 +4,7 @@
 #define HAPPY_FORWARD_SP 30.0f
 #define HAPPY_ANGULAR_SP 2.0f
 #define SAD_ANGULAR_SP 0.6f
-#define SAD_FORWARD_SP  10.0f
+#define SAD_FORWARD_SP  13.0f
 #define DONTWONNA_ANGULAR_SP 1.5f
 #define ANGRY_ANGULAR_SP 4.0f
 #define ANGRY_FORWARD_SP 20.0f
@@ -348,19 +348,16 @@ void makeAnEight2() {
 
 void makeRunScaredBehind() {
 
-  float forward_speed = SCARED_FORWARD_SP;
-  float angular_speed = SCARED_ANGULAR_SP;
-
   if ((triskar.getPosTh() < startPosTh + PI / 12.0) && movementI == 0)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if ((triskar.getPosTh() > startPosTh - PI / 12.0) && movementI == 1)
-    triskar.run(-forward_speed, +angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, +SCARED_ANGULAR_SP);
   else if (movementI == 1) movementI = 2;
 
   if ((triskar.getPosTh() < startPosTh) && movementI == 2)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 2) movementI = 3;
 
   if (movementI == 3) {
@@ -370,20 +367,16 @@ void makeRunScaredBehind() {
 
 void makeRunScaredBehind2() { //at the end of the scared movement the robot will go in the opposite direction in line way like makeonemF
 
-  float forward_speed = SCARED_FORWARD_SP;
-  float forward_speed2 = SAD_FORWARD_SP;
-  float angular_speed = SCARED_ANGULAR_SP;
-
   if ((triskar.getPosTh() < startPosTh + PI / 12.0) && movementI == 0)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if ((triskar.getPosTh() > startPosTh - PI / 12.0) && movementI == 1)
-    triskar.run(-forward_speed, +angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, +SCARED_ANGULAR_SP);
   else if (movementI == 1) movementI = 2;
 
   if ((triskar.getPosTh() < startPosTh) && movementI == 2)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 2) movementI = 3;
 
   if (movementI == 3) {
@@ -391,7 +384,7 @@ void makeRunScaredBehind2() { //at the end of the scared movement the robot will
     movementI = 4;
   }
   if (triskar.getPosX() < startPosX + 100.0 && movementI == 4)
-    triskar.run(forward_speed2, 0.0f);
+    triskar.run(SAD_FORWARD_SP, 0.0f);
   else if (movementI == 4) movementI = 5;
 
   if (movementI == 5)
@@ -400,12 +393,8 @@ void makeRunScaredBehind2() { //at the end of the scared movement the robot will
 
 void makeRunScaredBehind2L() { //at the end of the scared movement the robot will go in the opposite direction in line way like makeonemF
 
-  float forward_speed = SCARED_FORWARD_SP;
-  float forward_speed2 = SAD_FORWARD_SP;
-  float angular_speed = SCARED_ANGULAR_SP;
-
   if (triskar.getPosTh() > startPosTh - alpha && movementI == 0)
-    triskar.run(0.0, angular_speed);
+    triskar.run(0.0, SCARED_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if (movementI == 1) {
@@ -413,15 +402,15 @@ void makeRunScaredBehind2L() { //at the end of the scared movement the robot wil
     movementI = 2;
   }
   if ((triskar.getPosTh() < startPosTh + PI / 12.0) && movementI == 2)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 2) movementI = 3;
 
   if ((triskar.getPosTh() > startPosTh - PI / 12.0) && movementI == 3)
-    triskar.run(-forward_speed, +angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, +SCARED_ANGULAR_SP);
   else if (movementI == 3) movementI = 4;
 
   if ((triskar.getPosTh() < startPosTh) && movementI == 4)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 4) movementI = 5;
 
   if (movementI == 5) {
@@ -429,7 +418,7 @@ void makeRunScaredBehind2L() { //at the end of the scared movement the robot wil
     movementI = 6;
   }
   if (triskar.getPosX() < startPosX + 100.0 && movementI == 6)
-    triskar.run(forward_speed2, 0.0f);
+    triskar.run(SAD_FORWARD_SP, 0.0f);
   else if (movementI == 6) movementI = 7;
 
   if (movementI == 7)
@@ -438,12 +427,8 @@ void makeRunScaredBehind2L() { //at the end of the scared movement the robot wil
 
 void makeRunScaredBehind2R() { //at the end of the scared movement the robot will go in the opposite direction in line way like makeonemF
 
-  float forward_speed = SCARED_FORWARD_SP;
-  float forward_speed2 = SAD_FORWARD_SP;
-  float angular_speed = SCARED_ANGULAR_SP;
-
   if (triskar.getPosTh() < startPosTh + alpha && movementI == 0)
-    triskar.run(0.0, -angular_speed);
+    triskar.run(0.0, -SCARED_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if (movementI == 1){
@@ -451,15 +436,15 @@ void makeRunScaredBehind2R() { //at the end of the scared movement the robot wil
     movementI = 2;
   }
   if ((triskar.getPosTh() < startPosTh + PI / 12.0) && movementI == 2)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 2) movementI = 3;
 
   if ((triskar.getPosTh() > startPosTh - PI / 12.0) && movementI == 3)
-    triskar.run(-forward_speed, +angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, +SCARED_ANGULAR_SP);
   else if (movementI == 3) movementI = 4;
 
   if ((triskar.getPosTh() < startPosTh) && movementI == 4)
-    triskar.run(-forward_speed, -angular_speed);
+    triskar.run(-SCARED_FORWARD_SP, -SCARED_ANGULAR_SP);
   else if (movementI == 4) movementI = 5;
 
   if (movementI == 5) {
@@ -467,7 +452,7 @@ void makeRunScaredBehind2R() { //at the end of the scared movement the robot wil
     movementI = 6;
   }
   if (triskar.getPosX() < startPosX + 100.0 && movementI == 6)
-    triskar.run(forward_speed2, 0.0f);
+    triskar.run(SAD_FORWARD_SP, 0.0f);
   else if (movementI == 6) movementI = 7;
 
   if (movementI == 7)
@@ -577,11 +562,16 @@ void makeSad0() {
     triskar.run(0.0f, -0.5f);
   } else if (movementI == 0) movementI = 1;
 
-  if (triskar.getPosX() < startPosX + 100.0f && movementI == 1) {
-    triskar.run(10.0f, 0.0f);
-  } else if (movementI == 1) movementI = 2;
+  if(movementI==1){
+    triskar.stop();
+    movementI=2;
+  }
+  
+  if (triskar.getPosX() < startPosX + 100.0f && movementI == 2) {
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  } else if (movementI == 2) movementI = 3;
 
-  if (movementI == 2) {
+  if (movementI == 3) {
     stopMovement();
   }
 
@@ -589,25 +579,25 @@ void makeSad0() {
 
 
 void makeSad1() {
-  float angular_speed = SAD_ANGULAR_SP;
+
   if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 0)
-    triskar.run(0.0f, -angular_speed);
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 1)
-    triskar.run(0.0f, +angular_speed);
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
   else if (movementI == 1) movementI = 2;
 
   if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 2)
-    triskar.run(0.0f, -angular_speed);
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
   else if (movementI == 2) movementI = 3;
 
   if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 3)
-    triskar.run(0.0f, +angular_speed);
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
   else if (movementI == 3) movementI = 4;
 
   if ((triskar.getPosTh() < startPosTh) && movementI == 4)
-    triskar.run(0.0f, -angular_speed);
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
   else if (movementI == 4) movementI = 5;
 
   if (movementI == 5)
@@ -616,11 +606,9 @@ void makeSad1() {
 
 
 void makeSad2() {
-  float angular_speed = SAD_ANGULAR_SP;
-
 
   if (triskar.getPosX() > startPosX - 100.0f && movementI == 0) {
-    triskar.run(-10.0f, 0.0f);
+    triskar.run(-SCARED_FORWARD_SP, 0.0f);
   } else if (movementI == 0) movementI = 1;
 
   if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 1)
@@ -659,7 +647,7 @@ void makeSad2() {
 void makeSad2L() {
 
   if (triskar.getPosTh() > startPosTh - alpha && movementI == 0)
-    triskar.run(0.0, SAD_ANGULAR_SP);
+    triskar.run(0.0, SCARED_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if (movementI == 1){
@@ -667,7 +655,7 @@ void makeSad2L() {
     movementI = 2;
   }
   if (triskar.getPosX() > startPosX - 100.0f && movementI == 2) {
-    triskar.run(-10.0f, 0.0f);
+    triskar.run(-SCARED_FORWARD_SP, 0.0f);
   } else if (movementI == 2) movementI = 3;
 
   if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 3)
@@ -704,10 +692,9 @@ void makeSad2L() {
 }
 
 void makeSad2R() {
-  float angular_speed = 0.6f;
 
   if (triskar.getPosTh() < startPosTh + alpha && movementI == 0)
-    triskar.run(0.0, -angular_speed);
+    triskar.run(0.0, -SCARED_ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
 
   if (movementI == 1){
@@ -715,27 +702,27 @@ void makeSad2R() {
     movementI = 2;
   }
   if (triskar.getPosX() > startPosX - 100.0f && movementI == 2) {
-    triskar.run(-10.0f, 0.0f);
+    triskar.run(-SCARED_FORWARD_SP, 0.0f);
   } else if (movementI == 2) movementI = 3;
 
   if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 3)
-    triskar.run(0.0f, -angular_speed);
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
   else if (movementI == 3) movementI = 4;
 
   if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 4)
-    triskar.run(0.0f, +angular_speed);
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
   else if (movementI == 4) movementI = 5;
 
   if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 5)
-    triskar.run(0.0f, -angular_speed);
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
   else if (movementI == 5) movementI = 6;
 
   if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 6)
-    triskar.run(0.0f, +angular_speed);
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
   else if (movementI == 6) movementI = 7;
 
   if ((triskar.getPosTh() < startPosTh + PI) && movementI == 7)
-    triskar.run(0.0f, -angular_speed);
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
   else if (movementI == 7) movementI = 8;
 
   if (movementI == 8) {
