@@ -12,14 +12,12 @@
 #define TIME_TO_SETUP 9000
 
 //HARDWARE TESTS
-enum testStates { no_test, choose_test, wait_choose_test,
-                  sonar_test_pre,           sonar_test_wait,           sonar_test, 
-                  head_capacitive_test_pre, head_capacitive_test_wait, head_capacitive_test, 
-                  body_capacitive_test_pre, body_capacitive_test_wait, body_capacitive_test, 
-                  fotores_test_pre,         fotores_test_wait,         fotores_test, 
-                  speaker_test_pre,         speaker_test_wait,         speaker_test, 
-                  micro_test_pre,           micro_test_wait,           micro_test};
-testStates testState = no_test;
+enum testStates { tests_descr, choose_test, start_test, test_exe};
+testStates testState = tests_descr;
+
+enum testTypes { no_one, sonar_t, head_capacitives_t, body_capacitives_t, fotores_t, speaker_t, micro_t};
+testTypes testType = no_one;
+
 
 //FOTORESISTOR
 #define FOTORES_PIN A3
@@ -35,6 +33,7 @@ unsigned long int lastWarning = 0; //last time warning advice
 
 //SOUND VARIABLES
 boolean firstSound = false;
+unsigned long int startPlayTime = 0;
 int playI = 0;
 DFRobotDFPlayerMini myDFPlayer;
 #define BUSY_PIN 5
@@ -90,7 +89,7 @@ int hit[N_BODY_SENSORS] = {0, 0, 0};
 int pats;
 int hits;
 int hugsCount = 0;
-enum touchTypes {nothing, hug, pat0,pat1,pat2, hit0,hit1,hit2};
+enum touchTypes {nothing, hug, pat0, pat1, pat2, hit0, hit1, hit2};
 touchTypes touchState = nothing;
 
 
@@ -249,7 +248,7 @@ boolean startbutton;
 boolean select;
 char b = ' ';
 //interpreter states
-enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, discharge};
+enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, test_modality, discharge};
 btStates interpreterState = choose_modality;
 
 //---------SONARS---------
@@ -352,16 +351,16 @@ void print()  {                                                      // display 
       else if (targetPos<0) Serial.println("LEFT");
       else if (targetPos>0) Serial.println("RIGHT");
     */
-    
-        Serial.print("RIGHT: ");
-        Serial.print(f_right);
-        Serial.print("  CENTER: ");
-        Serial.print(f_front);
-        Serial.print("  LEFT: ");
-        Serial.print(f_left);
-        Serial.print("  BACK: ");
-        Serial.println(f_back);
-    
+
+    Serial.print("RIGHT: ");
+    Serial.print(f_right);
+    Serial.print("  CENTER: ");
+    Serial.print(f_front);
+    Serial.print("  LEFT: ");
+    Serial.print(f_left);
+    Serial.print("  BACK: ");
+    Serial.println(f_back);
+
     /*
       //    Serial.print("  TargetPos:  ");
       //    Serial.print(targetPos);
@@ -440,7 +439,7 @@ void print()  {                                                      // display 
     Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
     Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]); Serial3.print("    ");
     Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.print("    ");
-    Serial3.print(pats); Serial3.print("    ");Serial3.print(hits); Serial3.print("    ");Serial3.println(touchState);
+    Serial3.print(pats); Serial3.print("    "); Serial3.print(hits); Serial3.print("    "); Serial3.println(touchState);
 
     /*
       Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
@@ -496,12 +495,14 @@ void loop() {
   fotoresLoop();
   microLoop();
   //attuatori
-  pidLoop();
-  makeMovement();
-  headLedLoop();
-  gameModality();
-  //printMotorInfo();
-  print();
+  if (interpreterState != test_modality) {
+    pidLoop();
+    makeMovement();
+    headLedLoop();
+    gameModality();
+    //printMotorInfo();
+    print();
+  }
 }
 
 

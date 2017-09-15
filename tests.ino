@@ -1,67 +1,77 @@
 void hardwareTests() {
   switch (testState) {
-    case no_test:                   break;
-    case choose_test:               chooseTest(); break;
-    case wait_choose_test:          waitChooseTest(); break;
-    case sonar_test_pre:            sonarTestPre(); break;
-    case sonar_test_wait:           sonarTestWait(); break;
-    case sonar_test:                sonarTest(); break;
-    case head_capacitive_test_pre:  headCapacitiveTestPre(); break;
-    case head_capacitive_test_wait: headCapacitiveTestWait(); break;
-    case head_capacitive_test:      headCapacitiveTest(); break;
-    case body_capacitive_test_pre:  bodyCapacitiveTestPre(); break;
-    case body_capacitive_test_wait: bodyCapacitiveTestWait(); break;
-    case body_capacitive_test:      bodyCapacitiveTest(); break;
-    case fotores_test_pre:    fotoresTestPre(); break;
-    case fotores_test_wait:   fotoresTestWait(); break;
-    case fotores_test:        fotoresTest(); break;
-    case speaker_test_pre:          speakerTestPre(); break;
-    case speaker_test_wait:         speakerTestWait(); break;
-    case speaker_test:              speakerTest(); break;
-    case micro_test_pre:            microTestPre(); break;
-    case micro_test_wait:           microTestWait(); break;
-    case micro_test:                microTest(); break;
+    case tests_descr: testDescr(); break;
+    case choose_test: chooseTest(); break;
+    case start_test:  startTest(); break;
+    case test_exe:    testExecution(); break;
   }
+}
+int numSonarTest = 0;
+int numBodyTest = 0;
+
+void testDescr() {
+  Serial3.println("##########SESSIONE TEST##########");
+  Serial3.println("Scegliere il test da eseguire:");
+  Serial3.println("0 - Test Sonar");
+  Serial3.println("1 - Test Capacitivi Testa");
+  Serial3.println("2 - Test Capacitivi Corpo");
+  Serial3.println("3 - Test Fotoresistenza");
+  Serial3.println("4 - Test Casse");
+  Serial3.println("5 - Test Microfono");
+  Serial3.println("9 - Esci da Sessione Test");
+  testState = choose_test;
 }
 
 void chooseTest() {
-  Serial3.println("##########SESSIONE TEST##########");
-  Serial3.println("Scegliere il test da eseguire:");
-  Serial3.println("0 - test Sonar");
-  Serial3.println("1 - test Capacitivi Testa");
-  Serial3.println("2 - test Capacitivi Corpo");
-  Serial3.println("3 - test Fotoresistenza");
-  Serial3.println("4 - test Casse");
-  Serial3.println("5 - test Microfono");
-  testState = wait_choose_test;
-}
-
-void waitChooseTest() {
   if (Serial3.available()) {
     b = Serial3.read();
     switch (b) {
-      case '0':
-        testState = sonar_test_pre;
-        break;
-
       case '1':
-        testState = head_capacitive_test_pre;
+        testType = sonar_t;
+        Serial3.println("Verrà visualizzata la distanza captata dal Sonar Frontale. Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
+        Serial3.println("Premere START per iniziare, END per terminare il test");
+        testState = start_test;
         break;
 
       case '2':
-        testState = body_capacitive_test_pre;
+        testType = head_capacitives_t;
+        Serial3.println("Verrà visualizzato il numero[0-3] del capacitivo toccato. Toccare uno alla volta i capacitivi posti sulla testa del robot per verificarne il corretto funzionamento.");
+        Serial3.println("Premere START per iniziare, END per terminare il test");
+        testState = start_test;
         break;
 
       case '3':
-        testState = fotores_test_pre;
+        testType = body_capacitives_t;
+        Serial3.println("Verranno visualizzati il valore e lo stato captato dal capacitivo posto nella parte posteriore sinistra(del robot). Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
+        Serial3.println("Premere START per iniziare, END per terminare il test");
+        testState = start_test;
         break;
 
       case '4':
-        testState = speaker_test_pre;
+        testType = fotores_t;
+        Serial3.println("Verrà visualizzato il valore captato dalla fotoresistenza posta in prossimità dei led ed il suo stato. Coprire il robot o la fotoresistenza con differenti materiali per verificarne il corretto funzionamento.");
+        Serial3.println("Premere START per iniziare, END per terminare il test");
+        testState = start_test;
         break;
 
       case '5':
-        testState = micro_test_pre;
+        testType = speaker_t;
+        Serial3.println("Verrà riprodotto un audio per verificare il corretto funzionamento delle casse.");
+        Serial3.println("Premere START per avviare la riproduzione dell'audio");
+        testState = start_test;
+        break;
+
+      case '6':
+        testType = micro_t;
+        Serial3.println("Verrà visualizzato il valore captato dal microfono. Emettere suoni di diversa intensità per verificarne il corretto funzionamento.");
+        Serial3.println("Premere START(1) per iniziare, END(2) per terminare il test");
+        testState = start_test;
+        break;
+
+      case '0':
+        interpreterState = choose_modality;
+        testState = tests_descr;
+        testType = no_one;
         break;
 
       default:
@@ -72,97 +82,179 @@ void waitChooseTest() {
   }
 }
 
-void sonarTestPre() {
-  Serial3.println("Verranno visualizzate le distanze captate dai sonar. Muovere una mano davanti ad un sonar alla volta per verificarne il corretto funzionamento.");
-  Serial3.println("Premere START per iniziare, END per terminare il test");
-  testState = sonar_test_wait;
+void startTest() {
+  if (Serial3.available()) {
+    b = Serial3.read();
+    switch (b) {
+      case '1':
+        testState = test_exe;
+        if (testType == speaker_t) playS(1);
+        break;
+      case '2':
+        testState = tests_descr;
+        testType = no_one;
+        if (testType == speaker_t) {
+          Serial3.println("Test Casse terminato");
+        }
+        break;
+
+      default:
+        // default code (should never run)
+        break;
+    }
+
+  }
 }
 
-void sonarTestWait() {
-  if (Serial3.available()) {
 
-    b = Serial3.read();
-    if (b == 0) testState = sonar_test;
+void testExecution() {
+  switch (testType) {
+    case sonar_t:             sonarTest(); break;
+    case head_capacitives_t:  headCapacitiveTest(); break;
+    case body_capacitives_t:  bodyCapacitiveTest(); break;
+    case fotores_t :          fotoresistorTest(); break;
+    case speaker_t :          speakerTest();      break;
+    case micro_t:             microTest();      break;
   }
 }
 
 void sonarTest() {
-
-}
-void headCapacitiveTestPre() {
-  Serial3.println("Verrà visualizzato il numero[0-3] del capacitivo toccato. Toccare uno alla volta i capacitivi posti sulla testa del robot per verificarne il corretto funzionamento.");
-  Serial3.println("Premere START per iniziare, END per terminare il test");
-  testState = head_capacitive_test_wait;
-}
-void headCapacitiveTestWait() {
+  printSonarDetail();
   if (Serial3.available()) {
-
     b = Serial3.read();
-    if (b == 0) testState = head_capacitive_test;
+    if (b == '1') {
+      if (numSonarTest < SONAR_NUM - 1) {
+        numSonarTest++;
+        testState = start_test;
+        switch (numSonarTest) {
+          case 1:
+            Serial3.println("Verrà visualizzata la distanza captata dal Sonar Frontale Destro(destra del robot). Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
+            break;
+          case 2:
+            Serial3.println("Verrà visualizzata la distanza captata dal Sonar Frontale Sinistro(sinistra del robot). Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
+            break;
+          case 3:
+            Serial3.println("Verrà visualizzata la distanza captata dal Sonar Posteriore. Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
+            break;
+        }
+        Serial3.println("Premere START per iniziare, END per terminare il test");
+      }
+      else {
+        numSonarTest = 0;
+        testState = tests_descr;
+        testType = no_one;
+        Serial3.println("Test dei Sonar terminato.");
+      }
+    }
   }
 }
+
 void headCapacitiveTest() {
-
-}
-
-void bodyCapacitiveTestPre() {
-  Serial3.println("Verranno visualizzati i valori e lo stato captati dai tre capacitivi posti sulla testa. Toccare un capacitivo alla volta per verificarne il corretto funzionamento.");
-  Serial3.println("Premere START per iniziare, END per terminare il test");
-  testState = head_capacitive_test_wait;
-}
-
-void bodyCapacitiveTestWait() {
+  printCapacitiveHeadPressed();
   if (Serial3.available()) {
     b = Serial3.read();
-    if (b == 0) testState = body_capacitive_test;
+    if (b == '1') {
+      testState = tests_descr;
+      testType = no_one;
+      Serial3.println("Test dei Capacitivi Testa terminato.");
+    }
   }
 }
 
 void bodyCapacitiveTest() {
-
-}
-void fotoresTestPre() {
-  Serial3.println("Verrà visualizzato il valore captato dalla fotoresistenza posta in prossimità dei led ed il suo stato. Coprire il robot o la fotoresistenza con differenti materiali per verificarne il corretto funzionamento.");
-  Serial3.println("Premere START per iniziare, END per terminare il test");
-  testState = fotores_test_wait;
-
-}
-void fotoresTestWait() {
+  printCapacitiveBodyValueAndStatus();
   if (Serial3.available()) {
     b = Serial3.read();
-    if (b == 0) testState = fotores_test;
+    if (b == '1') {
+      if (numBodyTest < N_BODY_SENSORS - 1) {
+        numBodyTest++;
+        testState = start_test;
+        switch (numBodyTest) {
+          case 1:
+            Serial3.println("Verranno visualizzati il valore e lo stato captato dal capacitivo posto nella parte posteriore destra(del robot). Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
+            break;
+          case 2:
+            Serial3.println("Verranno visualizzati il valore e lo stato captato dal capacitivo posto nella parte anteriore del robot. Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
+            break;
+        }
+        Serial3.println("Premere START per iniziare, END per terminare il test");
+      }
+      else {
+        numBodyTest = 0;
+        testState = tests_descr;
+        testType = no_one;
+        Serial3.println("Test dei Capacitivi Corpo terminato.");
+      }
+    }
   }
 }
-void fotoresTest() {
 
-}
-void speakerTestPre() {
-  Serial3.println("Verrà riprodotto un audio per verificare il corretto funzionamento delle casse.");
-  Serial3.println("Premere START per avviare la riproduzione dell'audio");
-  testState = speaker_test_wait;
-}
-void speakerTestWait() {
+void fotoresistorTest() {
+  printFotoresValueAndState();
   if (Serial3.available()) {
     b = Serial3.read();
-    if (b == 0) testState = speaker_test;
+    if (b == '2') {
+      testState = tests_descr;
+      testType = no_one;
+      Serial3.println("Test Fotoresistenza terminato.");
+    }
   }
 }
+
 void speakerTest() {
-
-}
-void microTestPre() {
-  Serial3.println("Verrà visualizzato il valore captato dal microfono. Emettere suoni di diversa intensità per verificarne il corretto funzionamento.");
-  Serial3.println("Premere START per iniziare, END per terminare il test");
-  testState = micro_test_wait;
-
-}
-void microTestWait() {
-  if (Serial3.available()) {
-    b = Serial3.read();
-    if (b == 0) testState = micro_test;
+  if (millis() - startPlayTime >= 5000) {
+    Serial3.println("L'audio è stato riprodotto?");
+    Serial3.println("Premere (0) per ripetere, (1) per uscire");
+    testState = start_test;
   }
 }
+
 void microTest() {
+  Serial3.println(microLowpassFilter.output());
+  if (Serial3.available()) {
+    b = Serial3.read();
+    if (b == '2') {
+      testState = tests_descr;
+      testType = no_one;
+      Serial3.println("Test Microfono terminato.");
+    }
+  }
+}
+
+void printFotoresValueAndState() {
+  Serial3.print(fotores_value); Serial3.print("   ");
+  switch (fotoresistorState) {
+    case 0: Serial3.println("Libero"); break;
+    case 1: Serial3.println("Lenzuolo"); break;
+    case 2: Serial3.println("Coperto"); break;
+  }
+}
+
+void printCapacitiveBodyValueAndStatus() {
+  Serial3.print(bodySensorValue[numBodyTest]); Serial3.print("  ");
+  switch (capacitiveState[numBodyTest]) {
+    case 0: Serial3.println("Nessun tocco"); break;
+    case 1: Serial3.println("Tocco Leggero"); break;
+    case 2: Serial3.println("Tocco Forte"); break;
+  }
 
 }
 
+void printSonarDetail() {
+  switch (numSonarTest) {
+    case 0: Serial3.println(f_front); break;
+    case 1: Serial3.println(f_right); break; //Robot's right
+    case 2: Serial3.println(f_left); break; //Robot's left
+    case 3: Serial3.println(f_back); break;
+  }
+}
+
+void printCapacitiveHeadPressed() {
+  switch (pressedButton) {
+    case -1: Serial3.println("Nessuno"); break;
+    case 0: Serial3.println("Bottone 0"); break;
+    case 1: Serial3.println("Bottone 1"); break;
+    case 2: Serial3.println("Bottone 2"); break;
+    case 3: Serial3.println("Bottone 3"); break;
+  }
+}

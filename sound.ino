@@ -24,6 +24,7 @@ void FirstSound(){
 }
 void playS(int Index){
     myDFPlayer.play(Index);
+    startPlayTime=millis();
 }
 
 void stopS(){

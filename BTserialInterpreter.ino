@@ -197,6 +197,13 @@ void chooseModality(){
           interpreterState=fam_modality;
         }
         break;
+      case 'A':
+        Serial.println("A-CERCHIO");
+        if(!cerchio){
+          cerchio=true;
+          interpreterState=test_modality;
+        }
+        break;
         
       default:
         break;
@@ -310,6 +317,7 @@ void btInterpreter(){
     case game_modality:   gameMod();break;
     case fam_modality:    famMod();break;
     case discharge:       disCharge();break;
+    case test_modality:   hardwareTests();break;
   }
 }
 
