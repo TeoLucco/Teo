@@ -25,6 +25,10 @@ void FirstSound(){
 void playS(int Index){
     myDFPlayer.play(Index);
     startPlayTime=millis();
+    lastPlayed=Index;
+}
+void timedPlayS(int Index,int millisec){
+  if((millis()-startPlayTime>millisec && Index==lastPlayed) || (Index!=lastPlayed)) playS(Index);
 }
 
 void stopS(){

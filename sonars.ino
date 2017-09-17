@@ -35,6 +35,8 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
   f_left = left_sonar_f.output();
   f_back = back_sonar_f.output();
 
+  previous_distance=actual_distance;
+  
   /*
   if(abs(f_front-prec_f_front)>150.00)
        f_front=(frontMedian.getMedian() + prec_f_front + prec_f_front2) / 3;
@@ -135,7 +137,6 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
     veryclose_front_obstacle=false;
     veryclose_left_obstacle=false;
     //veryclose_back_obstacle=false;
-    
     actual_distance=400;
     no_obstacle=true;
     targetPos=0;

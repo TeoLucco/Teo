@@ -34,7 +34,7 @@ unsigned long int lastWarning = 0; //last time warning advice
 //SOUND VARIABLES
 boolean firstSound = false;
 unsigned long int startPlayTime = 0;
-int playI = 0;
+int lastPlayed=0;
 DFRobotDFPlayerMini myDFPlayer;
 #define BUSY_PIN 5
 
@@ -46,6 +46,7 @@ gameStates gameState = no_game;
 int gameNumber = 0;
 #define timePerAnsw 50000
 #define questionsPerEx 10
+int playI = 0;
 int questionI = 0;
 #define max_q_repeat 5
 int repeatQuestionCounter = 0;
@@ -275,6 +276,7 @@ float f_back = 400;
 
 int backI = 0;
 int targetPos = 0;                  //variable for suppose where the person to follow/obstacle is. Positive is right, negative is left.
+float previous_distance = 400;
 float actual_distance = 400;        //viariable for store the distance of the closest object saw by sonars
 enum obstacle {left, right, front, none};
 obstacle last_obstacle = none;      //variable to define the last sonar that saw an obstacle
