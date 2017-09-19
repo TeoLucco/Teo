@@ -24,7 +24,7 @@ void famMod(){
       case '0':
         //Serial.println("0");
         resetButtons();
-        if(actual_movement==no_movement && prec_movement!=follow && prec_movement!=autonomous_movement){
+        if(actual_movement==no_movement && prec_movement!=follow && actual_movement!=dontwonna && prec_movement!=autonomous_movement){
           triskar.stop2();
           move=false;
         }else if(actual_movement==no_movement && prec_movement==follow){
@@ -139,7 +139,7 @@ void famMod(){
           startMovement(next_movement);
           if(next_movement<scared_hitR)
             next_movement++;
-          else next_movement=make_sad0;
+          else next_movement=make_circle;
         }
         break;
         

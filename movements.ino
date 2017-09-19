@@ -601,7 +601,7 @@ void rotateRobot(double dTh, double speedTh, double speedX, int i) {
 }
 void traslateRobot(double dX, double speedX, double speedTh, int i) {
   if (triskar.getPosX() < startPosX + dX && movementI == i)
-    triskar.run(speedX, 0.0f);
+    triskar.run(speedX, speedTh);
   else if (movementI == i) movementI = i + 1;
 }
 

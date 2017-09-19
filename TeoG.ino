@@ -67,10 +67,10 @@ int tries[questionsPerEx];
 //BODY CAPACITIVES
 #define BODY_FRONT_S 45
 #define BODY_FRONT_R 43
-#define BODY_SX_S 26
-#define BODY_SX_R 28
-#define BODY_DX_S 49
-#define BODY_DX_R 47
+#define BODY_SX_S 41
+#define BODY_SX_R 39
+#define BODY_DX_S 37
+#define BODY_DX_R 35
 
 #define lowBodyThreshold 200
 //#define middleBodyThreshold 5000
@@ -219,14 +219,12 @@ boolean move = false;
 #define turnAlphaL2   28
 
 double alpha = 0;
-byte next_movement = make_sad0;
+byte next_movement = make_circle;
 byte actual_movement = no_movement;
 byte prec_movement = no_movement;
 boolean follow2 = false;
 boolean aut_mov = false;
-boolean makeInverse = false;
 int movementI = 0;
-int movementI2m = 0;
 unsigned long int randomTurnTime = 15000 + rand() % (20000);
 unsigned long int lastObstacleTime = 0;
 int obstacleCount = 0;
@@ -315,7 +313,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Arduino is ready");
   srand(millis());
-  //bodyCapacitiveSetup();
+  bodyCapacitiveSetup();
   //headCapacitiveSetup();
   dfPlayerSetup();
   voltageCheckSetup();
@@ -353,7 +351,7 @@ void print()  {                                                      // display 
       else if (targetPos<0) Serial.println("LEFT");
       else if (targetPos>0) Serial.println("RIGHT");
     */
-
+/*
     Serial.print("RIGHT: ");
     Serial.print(f_right);
     Serial.print("  CENTER: ");
@@ -438,10 +436,15 @@ void print()  {                                                      // display 
       Serial3.print(bodySensorValue[1]); Serial3.print("    ");Serial3.print(capacitiveState[1]); Serial3.print("    ");
       Serial3.print(previousDynamicCapacitiveState[1]); Serial3.print("    "); Serial3.print(previousCapacitiveState[1]); Serial3.print("    ");
       Serial3.print("    ");*/
-    Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
+   /* Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
     Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]); Serial3.print("    ");
-    Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.print("    ");
-    Serial3.print(pats); Serial3.print("    "); Serial3.print(hits); Serial3.print("    "); Serial3.println(touchState);
+    Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.println("    ");
+*/ Serial.print("PosX:  "); Serial.print(triskar.getPosX());
+   Serial.print(" PosY:  "); Serial.print(triskar.getPosY());
+   Serial.print(" PosTh:  "); Serial.print(triskar.getPosTh());
+   Serial.print(" SpeedX:  "); Serial.print(triskar.getSpeedX());
+   Serial.print(" SpeedY:  "); Serial.print(triskar.getSpeedY());
+   Serial.print(" SpeedTh:  "); Serial.println(triskar.getSpeedTh());  
 
     /*
       Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
