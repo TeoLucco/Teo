@@ -101,7 +101,7 @@ void famMod(){
         if(!startbutton){
           startbutton=true;
           speed_trg += 3;
-          if(speed_trg>400)   speed_trg=400;
+          if(speed_trg>35)   speed_trg=35;
           Serial.print("Speed trg:  ");
           Serial.println(speed_trg);
         }
@@ -137,7 +137,7 @@ void famMod(){
         if(!quadrato){
           quadrato=true;
           startMovement(next_movement);
-          if(next_movement<scared_hitR)
+          if(next_movement<angrymov)
             next_movement++;
           else next_movement=make_circle;
         }

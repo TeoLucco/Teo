@@ -65,12 +65,12 @@ int tries[questionsPerEx];
 #define N_BODY_SENSORS 3
 
 //BODY CAPACITIVES
-#define BODY_FRONT_S 45
-#define BODY_FRONT_R 43
-#define BODY_SX_S 41
-#define BODY_SX_R 39
-#define BODY_DX_S 37
-#define BODY_DX_R 35
+#define BODY_FRONT_S 43
+#define BODY_FRONT_R 45
+#define BODY_SX_S 39
+#define BODY_SX_R 41
+#define BODY_DX_S 35
+#define BODY_DX_R 37
 
 #define lowBodyThreshold 200
 //#define middleBodyThreshold 5000
@@ -93,7 +93,6 @@ int hugsCount = 0;
 enum touchTypes {nothing, hug, pat0, pat1, pat2, hit0, hit1, hit2};
 touchTypes touchState = nothing;
 
-
 CapacitiveSensor* bodySensor[N_BODY_SENSORS];
 long bodySensorValue[N_BODY_SENSORS];
 enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
@@ -103,6 +102,8 @@ bodyCapacitiveStates previousDynamicCapacitiveState[N_BODY_SENSORS];
 unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int softStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
+
+FastRunningMedian<unsigned int, 10, 0> body_median[3];
 
 //HEAD CAPACITIVES
 #define HEAD_BUTTON_0S 27
@@ -137,10 +138,10 @@ const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
 #define soundPin  A11 //sound sensor attach to A11
-#define microISequence 200
-#define microISequenceShortMin 10
-#define microISequenceShortMax 40
-#define microSoglia 120.00f
+#define microISequence 250
+#define microISequenceShortMin 20
+#define microISequenceShortMax 100
+#define microSoglia 250.00f
 int microI = 0;
 float microFilterFrequency = 1.0;
 FilterOnePole microLowpassFilter( LOWPASS, microFilterFrequency );
@@ -208,15 +209,16 @@ boolean move = false;
 #define make_happy3   17
 #define make_sad0     18
 #define make_sad1     19
-#define make_sad2     20
-#define angrymov      21
-#define scared_hit    22
+#define scared_hit    20
+#define make_sad2     21
+#define angrymov      22
 #define make_sad2L    23
 #define make_sad2R    24
 #define scared_hitL   25
 #define scared_hitR   26
 #define turnAlphaR2   27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
 #define turnAlphaL2   28
+
 
 double alpha = 0;
 byte next_movement = make_circle;
@@ -235,7 +237,7 @@ double startPosX = 0;
 double startPosY = 0;
 double startPosTh = 0;
 
-double speed_trg = 0;
+double speed_trg = 18.0f;
 
 //BLUETOOTH
 //buttons
@@ -313,14 +315,14 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Arduino is ready");
   srand(millis());
-  bodyCapacitiveSetup();
+  //bodyCapacitiveSetup();
   //headCapacitiveSetup();
-  dfPlayerSetup();
-  voltageCheckSetup();
-  fotoresSetup();
+  //dfPlayerSetup();
+  //voltageCheckSetup();
+  //fotoresSetup();
   sonarSetup();
-  ledSetup();
-  setHeadLedRainbow();
+  //ledSetup();
+  //setHeadLedRainbow();
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
   Serial3.println("Are YOU ready??");
@@ -351,7 +353,7 @@ void print()  {                                                      // display 
       else if (targetPos<0) Serial.println("LEFT");
       else if (targetPos>0) Serial.println("RIGHT");
     */
-/*
+    
     Serial.print("RIGHT: ");
     Serial.print(f_right);
     Serial.print("  CENTER: ");
@@ -403,7 +405,7 @@ void print()  {                                                      // display 
       Serial.print("triskar.isStopped()  "); Serial.println(triskar.isStopped());*/
     /*    Serial.print("micro val: "); Serial.println(microLowpassFilter.output());
         Serial.print("microI: "); Serial.println(microI);
-    */
+    
 
     /*  Serial.print("actual_movement:  "); Serial.println(actual_movement);
       Serial.print("myDFPlayer.available():  "); Serial.println(myDFPlayer.available());
@@ -439,12 +441,12 @@ void print()  {                                                      // display 
    /* Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
     Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]); Serial3.print("    ");
     Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.println("    ");
-*/ Serial.print("PosX:  "); Serial.print(triskar.getPosX());
-   Serial.print(" PosY:  "); Serial.print(triskar.getPosY());
-   Serial.print(" PosTh:  "); Serial.print(triskar.getPosTh());
-   Serial.print(" SpeedX:  "); Serial.print(triskar.getSpeedX());
-   Serial.print(" SpeedY:  "); Serial.print(triskar.getSpeedY());
-   Serial.print(" SpeedTh:  "); Serial.println(triskar.getSpeedTh());  
+/* Serial3.print("PosX:  "); Serial3.print(triskar.getPosX());
+   Serial3.print(" PosY:  "); Serial3.print(triskar.getPosY());
+   Serial3.print(" PosTh:  "); Serial3.print(triskar.getPosTh());
+   Serial3.print(" SpeedX:  "); Serial3.print(triskar.getSpeedX());
+   Serial3.print(" SpeedY:  "); Serial3.print(triskar.getSpeedY());
+   Serial3.print(" SpeedTh:  "); Serial3.println(triskar.getSpeedTh());  
 
     /*
       Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
@@ -492,22 +494,23 @@ void pidLoop() {
 void loop() {
   //FirstSound();
   //sensori
-  btInterpreter();
+  //btInterpreter();
   //bodyCapacitiveLoop();
   //headCapacitiveLoop();
-  voltageCheckloop();
+  //voltageCheckloop();
   sonarLoop();
-  fotoresLoop();
-  microLoop();
+  //fotoresLoop();
+  //microLoop();
   //attuatori
-  if (interpreterState != test_modality) {
+  /*if (interpreterState != test_modality) {
     pidLoop();
     makeMovement();
     headLedLoop();
     gameModality();
     //printMotorInfo();
+    */
     print();
-  }
+  //}
 }
 
 

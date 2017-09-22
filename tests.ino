@@ -12,13 +12,13 @@ int numBodyTest = 0;
 void testDescr() {
   Serial3.println("##########SESSIONE TEST##########");
   Serial3.println("Scegliere il test da eseguire:");
-  Serial3.println("0 - Test Sonar");
-  Serial3.println("1 - Test Capacitivi Testa");
-  Serial3.println("2 - Test Capacitivi Corpo");
-  Serial3.println("3 - Test Fotoresistenza");
-  Serial3.println("4 - Test Casse");
-  Serial3.println("5 - Test Microfono");
-  Serial3.println("9 - Esci da Sessione Test");
+  Serial3.println("1 - Test Sonar");
+  Serial3.println("2 - Test Capacitivi Testa");
+  Serial3.println("3 - Test Capacitivi Corpo");
+  Serial3.println("4 - Test Fotoresistenza");
+  Serial3.println("5 - Test Casse");
+  Serial3.println("6 - Test Microfono");
+  Serial3.println("0 - Esci da Sessione Test");
   testState = choose_test;
 }
 
@@ -28,42 +28,42 @@ void chooseTest() {
     switch (b) {
       case '1':
         testType = sonar_t;
-        Serial3.println("Verrà visualizzata la distanza captata dal Sonar Frontale. Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
+        Serial3.println("Viene visualizzata la distanza captata dal Sonar Frontale. Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
         testState = start_test;
         break;
 
       case '2':
         testType = head_capacitives_t;
-        Serial3.println("Verrà visualizzato il numero[0-3] del capacitivo toccato. Toccare uno alla volta i capacitivi posti sulla testa del robot per verificarne il corretto funzionamento.");
+        Serial3.println("Viene visualizzato il numero[0-3] del capacitivo toccato. Toccare uno alla volta i capacitivi posti sulla testa del robot per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
         testState = start_test;
         break;
 
       case '3':
         testType = body_capacitives_t;
-        Serial3.println("Verranno visualizzati il valore e lo stato captato dal capacitivo posto nella parte posteriore sinistra(del robot). Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
+        Serial3.println("Vengono visualizzati il valore e lo stato captato dal capacitivo posto nella parte posteriore sinistra(del robot). Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
         testState = start_test;
         break;
 
       case '4':
         testType = fotores_t;
-        Serial3.println("Verrà visualizzato il valore captato dalla fotoresistenza posta in prossimità dei led ed il suo stato. Coprire il robot o la fotoresistenza con differenti materiali per verificarne il corretto funzionamento.");
+        Serial3.println("Viene visualizzato il valore captato dalla fotoresistenza posta in prossimità dei led ed il suo stato. Coprire il robot o la fotoresistenza con differenti materiali per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
         testState = start_test;
         break;
 
       case '5':
         testType = speaker_t;
-        Serial3.println("Verrà riprodotto un audio per verificare il corretto funzionamento delle casse.");
+        Serial3.println("Viene riprodotto un audio per verificare il corretto funzionamento delle casse.");
         Serial3.println("Premere START per avviare la riproduzione dell'audio");
         testState = start_test;
         break;
 
       case '6':
         testType = micro_t;
-        Serial3.println("Verrà visualizzato il valore captato dal microfono. Emettere suoni di diversa intensità per verificarne il corretto funzionamento.");
+        Serial3.println("Viene visualizzato il valore captato dal microfono. Emettere suoni di diversa intensità per verificarne il corretto funzionamento.");
         Serial3.println("Premere START(1) per iniziare, END(2) per terminare il test");
         testState = start_test;
         break;
