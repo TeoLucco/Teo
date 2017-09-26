@@ -111,6 +111,52 @@ void autonomousMovement() {
   }
 }
 
+
+void idleMovement() {
+  if (millis() - movStartTime >= randomIdleTurnTime) {//Turn randomly left/right 90 degrees at random time
+    alpha = PI / 6 + (rand() % (6));
+    stopMovement();
+    if (dir == 1)
+      startMovement(turnAlphaL, rainbow_cycle, 13);
+    else
+      startMovement(turnAlphaR, rainbow_cycle, 13);
+    dir = rand() % 2;
+    randomIdleTurnTime = 3000 + rand() % (7000);
+    obstacleCount = 0;
+  } else {
+    if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
+      triskar.run(20.0f, 0.0f);
+      if (millis() - lastObstacleTime > 1000)
+        obstacleCount = 0;
+    } else {                                                                    // if obstacles, define a new time for random turn and turn in the opposite direction to the closest obstacle
+      randomIdleTurnTime = 3000 + rand() % (7000);
+      lastObstacleTime = millis();
+      if ((f_right < f_front && f_right < f_left) || (f_front < f_right && f_right < f_left)) {//if closest obstacle on right(or at center, but right sonar reads a closest value than left one), turn left
+        if (f_right > VERYCLOSE_DISTANCE)                 //if not veryclose, turn still going straight
+          triskar.run(10.0f, (2.0f * (float)PI) / 8.0f);
+        else {                                            //if robot is veryclose to an obstacle, stop to go straight and rotates only
+          if (obstacleCount >= 4)  alpha = PI + PI / 6;
+          else                  alpha = PI / 3;
+          stopMovement();
+          startMovement(turnAlphaL, rainbow_cycle, 14);
+          obstacleCount++;
+        }
+      }
+      else if ((f_left < f_front && f_left < f_right) || (f_front < f_left && f_left < f_right)) {
+        if (f_left > VERYCLOSE_DISTANCE)
+          triskar.run(10.0f, -(2.0f * (float)PI) / 8.0f);
+        else {
+          if (obstacleCount >= 4)  alpha = PI + PI / 6;
+          else                  alpha = PI / 3;
+          stopMovement();
+          startMovement(turnAlphaR, rainbow_cycle, 14);
+          obstacleCount++;
+        }
+      }
+    }
+  }
+}
+
 void startMovement(byte movement, uint32_t color, ledStates ledState, byte audio) {
   triskar.resetIterm();
   movStartTime = millis();
@@ -120,8 +166,26 @@ void startMovement(byte movement, uint32_t color, ledStates ledState, byte audio
   startPosTh = triskar.getPosTh();
   startPosX = triskar.getPosX();
   startPosY = triskar.getPosY();
+  prev_movement = actual_movement;
   actual_movement = movement;
   headLedUpdate(color, ledState);
+  playS(audio);
+  movementI = 0;
+  move = true;
+}
+
+void startMovement(byte movement, ledStates ledState, byte audio) {
+  triskar.resetIterm();
+  movStartTime = millis();
+  triskar.setPosTh(0);
+  triskar.setPosX(0);
+  triskar.setPosY(0);
+  startPosTh = triskar.getPosTh();
+  startPosX = triskar.getPosX();
+  startPosY = triskar.getPosY();
+  prev_movement = actual_movement;
+  actual_movement = movement;
+  headLedUpdate(ledState);
   playS(audio);
   movementI = 0;
   move = true;
@@ -136,6 +200,7 @@ void startMovement(byte movement, uint32_t color, ledStates ledState) {
   startPosTh = triskar.getPosTh();
   startPosX = triskar.getPosX();
   startPosY = triskar.getPosY();
+  prev_movement = actual_movement;
   actual_movement = movement;
   headLedUpdate(color, ledState);
   updateSong();
@@ -151,6 +216,7 @@ void startMovement(byte movement, uint32_t color) {
   startPosTh = triskar.getPosTh();
   startPosX = triskar.getPosX();
   startPosY = triskar.getPosY();
+  prev_movement = actual_movement;
   actual_movement = movement;
   headLedSetColor(color);
   updateSong();
@@ -168,6 +234,7 @@ void startMovement(byte movement, ledStates ledState) {
   startPosX = triskar.getPosX();
   startPosY = triskar.getPosY();
   actual_movement = movement;
+  prev_movement = actual_movement;
   headLedUpdate(ledState);
   updateSong();
   movementI = 0;
@@ -183,6 +250,7 @@ void startMovement(byte movement) {
   startPosTh = triskar.getPosTh();
   startPosX = triskar.getPosX();
   startPosY = triskar.getPosY();
+  prev_movement = actual_movement;
   actual_movement = movement;
   headLedUpdate(color_pulse);
   updateSong();
@@ -195,7 +263,12 @@ void stopMovement() {
   triskar.setPosTh(0);
   triskar.setPosX(0);
   triskar.setPosY(0);
-  actual_movement = no_movement;
+  if (prev_movement != idle) {
+    prev_movement = actual_movement;
+    actual_movement = no_movement;
+  } else
+    actual_movement = idle;
+
   move = false;
   head_strip.setBrightness(255);
   if (!aut_mov && !follow2) setHeadLedRainbow();
@@ -208,7 +281,7 @@ void stopAutFollow() {
   aut_mov = false;
   follow2 = false;
   stopMovement();
-  prec_movement = no_movement;
+  prev_movement = no_movement;
   last_obstacle = none;
 }
 
@@ -897,35 +970,20 @@ void makeBeAngry() {
     stopMovement();
   }
 }
+#define switchToIdleTime 5000
 
-void rotateRobot(double alpha, double angularSp, double forwardSP, int i) {
-  if (alpha > 0) {
-    if ((triskar.getPosTh() < startPosTh + alpha) && movementI == i)
-      triskar.run(forwardSP, -angularSp);
-    else if (movementI == i) movementI = i + 1;
-  } else {
-    if ((triskar.getPosTh() > startPosTh - alpha) && movementI == i)
-      triskar.run(forwardSP, angularSp);
-    else if (movementI == i) movementI = i + 1;
-  }
-}
-
-void traslateRobot(double dist, double forwardSP, double angularSp,  int i) {
-  if (dist > 0) {
-    if ((triskar.getPosTh() < startPosTh + dist) && movementI == i)
-      triskar.run(forwardSP, -angularSp);
-    else if (movementI == i) movementI = i + 1;
-  } else {
-    if ((triskar.getPosTh() > startPosTh - dist) && movementI == i)
-      triskar.run(-forwardSP, -angularSp);
-    else if (movementI == i) movementI = i + 1;
+void switchToIdle() {
+  if (millis() - movementFinishTime > switchToIdleTime) {
+    actual_movement = idle;
+    prev_movement = no_movement;
   }
 }
 
 void makeMovement() {
   if (move) {
     switch (actual_movement) {
-      case no_movement:         break;
+      case no_movement:         switchToIdle(); break;
+      case idle:                idleMovement(); break;
       case follow:              iMfollowingU(); break;
       case make_eight:          break;
       case make_circle:         make_Circle(); break;

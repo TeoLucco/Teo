@@ -24,16 +24,16 @@ void famMod(){
       case '0':
         //Serial.println("0");
         resetButtons();
-        if(actual_movement==no_movement && prec_movement!=follow && actual_movement!=dontwonna && prec_movement!=autonomous_movement){
+        if(actual_movement==no_movement && actual_movement!=dontwonna && prev_movement!=follow && prev_movement!=autonomous_movement){
           triskar.stop2();
           move=false;
-        }else if(actual_movement==no_movement && prec_movement==follow){
+        }else if(actual_movement==no_movement && prev_movement==follow){
           actual_movement=follow;
-          prec_movement=no_movement;
+          prev_movement=no_movement;
         }
-        else if(actual_movement==no_movement && prec_movement==autonomous_movement){
+        else if(actual_movement==no_movement && prev_movement==autonomous_movement){
           actual_movement=autonomous_movement;
-          prec_movement=no_movement;
+          prev_movement=no_movement;
         }
         break;
 
@@ -55,14 +55,14 @@ void famMod(){
       case '3':
         Serial.println("3-SINISTRA");
         move=true;
-        if(actual_movement==no_movement){
+        if((actual_movement==no_movement || actual_movement==idle)){
           triskar.run(0.0,speed_trg/robot_radius);  
         }else if(actual_movement==autonomous_movement){
-          prec_movement=autonomous_movement;
+          prev_movement=autonomous_movement;
           actual_movement=no_movement;
           triskar.run(0.0,speed_trg/robot_radius);  
         }else if(actual_movement==follow){
-          prec_movement=follow;
+          prev_movement=follow;
           actual_movement=no_movement;
           triskar.run(0.0,speed_trg/robot_radius);  
         }
@@ -71,14 +71,14 @@ void famMod(){
       case '4':
         Serial.println("4-DESTRA");
         move=true;
-        if(actual_movement==no_movement){
+        if(actual_movement==no_movement || actual_movement==idle){
           triskar.run(0.0,-speed_trg/robot_radius);  
         }else if(actual_movement==autonomous_movement){
-          prec_movement=autonomous_movement;
+          prev_movement=autonomous_movement;
           actual_movement=no_movement;
           triskar.run(0.0,-speed_trg/robot_radius);  
         }else if(actual_movement==follow){
-          prec_movement=follow;
+          prev_movement=follow;
           actual_movement=no_movement;
           triskar.run(0.0,-speed_trg/robot_radius);  
         }
@@ -119,7 +119,7 @@ void famMod(){
             //last_obstacle=none;
             
           //CODICE PER ATTIVARE AUTONOMOUS MOVEMENT
-          if(actual_movement==no_movement || actual_movement==follow){
+          if((actual_movement==no_movement || actual_movement==idle) || actual_movement==follow){
             Serial.println("start Autonomous Movement");
             startMovement(autonomous_movement);
           }else{

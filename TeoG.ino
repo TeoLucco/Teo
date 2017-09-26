@@ -9,7 +9,24 @@
 #include <CapacitiveSensor.h>
 #include <DFRobotDFPlayerMini.h>
 
+
+#define WAIT_BT_CONN 60000
+boolean capacitive_commands=false;
+unsigned long int firstStartTime = 0;
 #define TIME_TO_SETUP 9000
+
+//BLUETOOTH
+//buttons
+boolean triangolo;
+boolean quadrato;
+boolean cerchio;
+boolean croce;
+boolean startbutton;
+boolean select;
+char b = ' ';
+//interpreter states
+enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, test_modality, discharge};
+btStates interpreterState = choose_modality;
 
 //HARDWARE TESTS
 enum testStates { tests_descr, choose_test, start_test, test_exe};
@@ -39,6 +56,7 @@ DFRobotDFPlayerMini myDFPlayer;
 #define BUSY_PIN 5
 
 //GAME VARIABLES
+#define N_GAMES 3
 enum gameStates {no_game, setting, make_question, wait_answer, right_answer, wrong_answer, end_game, mov};
 gameStates gameState = no_game;
 #define colorGame 1
@@ -65,12 +83,12 @@ int tries[questionsPerEx];
 #define N_BODY_SENSORS 3
 
 //BODY CAPACITIVES
-#define BODY_FRONT_S 43
-#define BODY_FRONT_R 45
-#define BODY_SX_S 39
-#define BODY_SX_R 41
-#define BODY_DX_S 35
-#define BODY_DX_R 37
+#define BODY_FRONT_S 45
+#define BODY_FRONT_R 43
+#define BODY_SX_S 53
+#define BODY_SX_R 51
+#define BODY_DX_S 49
+#define BODY_DX_R 47
 
 #define lowBodyThreshold 200
 //#define middleBodyThreshold 5000
@@ -150,20 +168,20 @@ unsigned long int movementFinishTime = TIME_TO_SETUP + 1000;
 
 //MOTORS AND ENCODERS PINS AND OBJECTS
 //-------SHIELD 1-------
-#define nD2m1 48
-#define nSFm1 52
+#define nD2m1 10
+#define nSFm1 11
 //--------Motor 1-----
-#define M1DIR 50
-#define M1PWM 4
-#define M1FB A7
+#define M1DIR 46
+#define M1PWM 12
+#define M1FB A6
 
 //-------SHIELD 2-------
-#define nD2m23 10
-#define nSFm23 11
+#define nD2m23 48
+#define nSFm23 52
 //--------Motor 2-----
-#define M2DIR 46
-#define M2PWM 12 //17
-#define M2FB A6
+#define M2DIR 50
+#define M2PWM 4 //17
+#define M2FB A7
 //--------Motor 3-----
 #define M3DIR 40
 #define M3PWM 13 //16
@@ -189,45 +207,47 @@ unsigned long lastMilliPrint = 0;
 
 // MOVEMENTS VARIABLES
 boolean move = false;
-#define no_movement   0
-#define follow        1
-#define autonomous_movement 2
-#define make_eight    3
-#define turn180r      4  //rotazione 180 gradi USANDO RUOTA DESTRA COME CENTRO DI ROTAZIONE
-#define turn180l      5  //rotazione 180 gradi USANDO RUOTA SINISTRA COME CENTRO DI ROTAZIONE
-#define turnAlphaR    6  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
-#define turnAlphaL    7
-#define makeOnemF     8
-#define makeOnemB     9
-#define make_circle   10
-#define scared_round  11
-#define dontwonna     12
-#define scared_behind 13
-#define make_happy0   14
-#define make_happy1   15
-#define make_happy2   16
-#define make_happy3   17
-#define make_sad0     18
-#define make_sad1     19
-#define scared_hit    20
-#define make_sad2     21
-#define angrymov      22
-#define make_sad2L    23
-#define make_sad2R    24
-#define scared_hitL   25
-#define scared_hitR   26
-#define turnAlphaR2   27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
-#define turnAlphaL2   28
+#define no_movement         0
+#define idle                1
+#define follow              2
+#define autonomous_movement 3
+#define make_eight          4
+#define turn180r            5  //rotazione 180 gradi USANDO RUOTA DESTRA COME CENTRO DI ROTAZIONE
+#define turn180l            6  //rotazione 180 gradi USANDO RUOTA SINISTRA COME CENTRO DI ROTAZIONE
+#define turnAlphaR          7  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
+#define turnAlphaL          8
+#define makeOnemF           9
+#define makeOnemB           10
+#define make_circle         11
+#define scared_round        12
+#define dontwonna           13
+#define scared_behind       14
+#define make_happy0         15  
+#define make_happy1         16
+#define make_happy2         17
+#define make_happy3         18
+#define make_sad0           19
+#define make_sad1           20
+#define scared_hit          21
+#define make_sad2           22
+#define angrymov            23
+#define make_sad2L          24
+#define make_sad2R          25
+#define scared_hitL         26
+#define scared_hitR         27
+#define turnAlphaR2         28  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
+#define turnAlphaL2         29
 
 
 double alpha = 0;
 byte next_movement = make_circle;
-byte actual_movement = no_movement;
-byte prec_movement = no_movement;
+byte actual_movement = idle;
+byte prev_movement = no_movement;
 boolean follow2 = false;
 boolean aut_mov = false;
 int movementI = 0;
 unsigned long int randomTurnTime = 15000 + rand() % (20000);
+unsigned long int randomIdleTurnTime = 3000 + rand() % (7000);
 unsigned long int lastObstacleTime = 0;
 int obstacleCount = 0;
 int dir = rand() % 2;
@@ -239,18 +259,6 @@ double startPosTh = 0;
 
 double speed_trg = 18.0f;
 
-//BLUETOOTH
-//buttons
-boolean triangolo;
-boolean quadrato;
-boolean cerchio;
-boolean croce;
-boolean startbutton;
-boolean select;
-char b = ' ';
-//interpreter states
-enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, test_modality, discharge};
-btStates interpreterState = choose_modality;
 
 //---------SONARS---------
 //-----constants-----
@@ -258,7 +266,7 @@ btStates interpreterState = choose_modality;
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
 #define PING_INTERVAL 66 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 #define FAR_DISTANCE 200.0f
-#define CLOSE_DISTANCE 70.0f
+#define CLOSE_DISTANCE 80.0f
 #define VERYCLOSE_DISTANCE 50.0f
 #define MEDIAN_NUMBER 7
 #define FILTERFREQUENCY 1.0f        //PB filter frequency
@@ -292,7 +300,7 @@ NewPing sonar[SONAR_NUM] = {      // Sensor object array.
   NewPing(30, 28, MAX_DISTANCE),  // front sonar
   NewPing(26, 24, MAX_DISTANCE),  //right sonar
   NewPing(34, 32, MAX_DISTANCE),  //left sonar
-  NewPing(36, 25, MAX_DISTANCE)   //back sonar
+  NewPing(38, 36, MAX_DISTANCE)   //back sonar
 };
 //-----booleans-----
 boolean front_obstacle = false;

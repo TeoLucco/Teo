@@ -16,10 +16,16 @@ void dfPlayerSetup(){
   myDFPlayer.volume(30);  //Set volume value. From 0 to 30
   
 }
+
+
 void FirstSound(){
   if(firstSound==false){
     playS(1);
     firstSound=true;
+    firstStartTime=millis();
+  }else if(millis()-firstStartTime>=WAIT_BT_CONN && !Serial3.available()){
+    capacitive_commands=true;
+    playS(17);
   }
 }
 void playS(int Index){

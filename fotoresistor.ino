@@ -18,10 +18,16 @@ void fotoresSetup(){
 
 void fotoresLoop(){
   fotores_value=analogRead(FOTORES_PIN);
-  if(fotores_value<averageLight-240-error || fotores_value<80)
-    fotoresistorState=covered; 
-  else if(fotores_value<averageLight-240+error && fotores_value>averageLight-240-error)
+  if((fotores_value<averageLight-240-error || fotores_value<80)&&fotoresistorState!=covered){
+    fotoresistorState=covered;
+    startMovement(autonomous_movement); 
+  }else if(fotores_value<averageLight-240+error && fotores_value>averageLight-240-error && fotoresistorState!=sheet){
     fotoresistorState=sheet;
-  else fotoresistorState=clean;
+    startMovement(follow);
+  }else if(fotoresistorState!=clean && (actual_movement==autonomous_movement || actual_movement==follow)){
+    fotoresistorState=clean;
+    stopMovement();
+  }
 }
+
 

@@ -82,7 +82,7 @@ void updateBodyState(int i) {
 }
 
 void reactions() {
-  if ( (actual_movement == no_movement)) {
+  if (actual_movement==no_movement || actual_movement==idle){
     // abbraccio se in stato soft touch sul sensore centale ed uno laterale per almeno tot secondi
     if (touchState == nothing) {
       resetLedTimer();

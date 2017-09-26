@@ -8,7 +8,7 @@ void microLoop() {
   int wave = analogRead(soundPin);//read the value of A0. range 0-1024
   int value = abs(wave - 512); //range 0-512
   microLowpassFilter.input(value);
-  if ( (millis() - movementFinishTime > 2000) && (actual_movement == no_movement) && (gameState == no_game) && (interpreterState == fam_modality) && digitalRead(BUSY_PIN) == HIGH && triskar.isStopped()) {
+  if ( (millis() - movementFinishTime > 2000) && ((actual_movement==no_movement || actual_movement==idle)) && (gameState == no_game) && (interpreterState == fam_modality) && digitalRead(BUSY_PIN) == HIGH && triskar.isStopped()) {
     if (microLowpassFilter.output() > microSoglia) { //if the value is greater than 384 on 512
       microI++;
       lastadd = millis();
