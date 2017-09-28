@@ -27,10 +27,15 @@ int FindMax(long ARRAY[], byte START, byte END)
 
   return LOCATION;
 }
-
-
+void checkBT() {
+  if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available()) {
+    capacitive_commands = true;
+    playS(17);
+  } else if (Serial3.available()) firstSoundTime = millis();
+}
 void headCapacitiveLoop() {
   boolean checkMax = false;
+  checkBT();
   if (gameState == wait_answer || capacitive_commands) {
     for (int i = 0; i < N_HEAD_SENSORS; i++) {                          //TODO cambiare 2 con N_SENSORS
       headSensorValue[i] = headSensor[i]->capacitiveSensor(5);
@@ -87,7 +92,7 @@ void chooseGameCap() {
       else gameNumber = 1;
       playS(19 + gameNumber);
       break;
-    
+
     case 1:
       if (gameNumber < N_GAMES) gameNumber++;
       else gameNumber = N_GAMES;
@@ -98,7 +103,7 @@ void chooseGameCap() {
       interpreterState = sg_waiting;
       playS(24 + gameNumber); //come posizionare patch
       break;
-  
+
     case 3:
       interpreterState = choose_modality;
       break;

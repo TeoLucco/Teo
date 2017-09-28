@@ -12,7 +12,7 @@
 
 #define WAIT_BT_CONN 60000
 boolean capacitive_commands=false;
-unsigned long int firstStartTime = 0;
+unsigned long int firstSoundTime = 0;
 #define TIME_TO_SETUP 9000
 
 //BLUETOOTH
@@ -83,17 +83,18 @@ int tries[questionsPerEx];
 #define N_BODY_SENSORS 3
 
 //BODY CAPACITIVES
-#define BODY_FRONT_S 45
-#define BODY_FRONT_R 43
-#define BODY_SX_S 53
-#define BODY_SX_R 51
-#define BODY_DX_S 49
-#define BODY_DX_R 47
+#define BODY_FRONT_S 33
+#define BODY_FRONT_R 31
+#define BODY_SX_S 29
+#define BODY_SX_R 27
+#define BODY_DX_S 25
+#define BODY_DX_R 23
 
 #define lowBodyThreshold 200
 //#define middleBodyThreshold 5000
 #define highBodyThreshold 1400
 
+#define  CAPACITIVE_LOOP_TIME 100
 #define  HUGTIME 4000
 #define  MIN_PAT_TIME 500
 #define  MAX_PAT_TIME 5000
@@ -113,6 +114,7 @@ touchTypes touchState = nothing;
 
 CapacitiveSensor* bodySensor[N_BODY_SENSORS];
 long bodySensorValue[N_BODY_SENSORS];
+unsigned long int lastCapacitiveLoopTime=0;
 enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
 bodyCapacitiveStates capacitiveState[N_BODY_SENSORS];
 bodyCapacitiveStates previousCapacitiveState[N_BODY_SENSORS];
@@ -121,17 +123,18 @@ unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int softStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 
+
 FastRunningMedian<unsigned int, 10, 0> body_median[3];
 
 //HEAD CAPACITIVES
-#define HEAD_BUTTON_0S 27
-#define HEAD_BUTTON_0R 29
-#define HEAD_BUTTON_1S 31
-#define HEAD_BUTTON_1R 33
-#define HEAD_BUTTON_2S 35
-#define HEAD_BUTTON_2R 37
-#define HEAD_BUTTON_3S 39
-#define HEAD_BUTTON_3R 41
+#define HEAD_BUTTON_0S 35
+#define HEAD_BUTTON_0R 37
+#define HEAD_BUTTON_1S 39
+#define HEAD_BUTTON_1R 41
+#define HEAD_BUTTON_2S 43
+#define HEAD_BUTTON_2R 45
+#define HEAD_BUTTON_3S 47
+#define HEAD_BUTTON_3R 49
 
 const int headThreshold = 1500;
 CapacitiveSensor* headSensor[N_HEAD_SENSORS];
@@ -264,7 +267,7 @@ double speed_trg = 18.0f;
 //-----constants-----
 #define SONAR_NUM     4 // Number or sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
-#define PING_INTERVAL 66 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+#define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 #define FAR_DISTANCE 200.0f
 #define CLOSE_DISTANCE 80.0f
 #define VERYCLOSE_DISTANCE 50.0f
@@ -325,19 +328,42 @@ void setup() {
   srand(millis());
   //bodyCapacitiveSetup();
   //headCapacitiveSetup();
-  //dfPlayerSetup();
-  //voltageCheckSetup();
-  //fotoresSetup();
+  dfPlayerSetup();
+  voltageCheckSetup();
+  fotoresSetup();
   sonarSetup();
-  //ledSetup();
-  //setHeadLedRainbow();
+  ledSetup();
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
   Serial3.println("Are YOU ready??");
-
-
 }
 
+void loop() {
+  FirstSound();
+  //sensori
+  btInterpreter();
+  //bodyCapacitiveLoop();
+  //headCapacitiveLoop();
+  voltageCheckloop();
+  sonarLoop();
+  fotoresLoop();
+  microLoop();
+  //attuatori
+  if (interpreterState != test_modality) {
+    pidLoop();
+    makeMovement();
+    headLedLoop();
+    gameModality();
+    //printMotorInfo();
+    print();
+  }
+}
+
+void pidLoop() {
+  if (move) {
+    triskar.PIDLoop();
+  }
+}
 
 void print()  {                                                      // display data
   if ((millis() - lastMilliPrint) >= 50)   {
@@ -492,33 +518,5 @@ void print()  {                                                      // display 
 }
 
 
-
-void pidLoop() {
-  if (move) {
-    triskar.PIDLoop();
-  }
-}
-
-void loop() {
-  //FirstSound();
-  //sensori
-  //btInterpreter();
-  //bodyCapacitiveLoop();
-  //headCapacitiveLoop();
-  //voltageCheckloop();
-  sonarLoop();
-  //fotoresLoop();
-  //microLoop();
-  //attuatori
-  /*if (interpreterState != test_modality) {
-    pidLoop();
-    makeMovement();
-    headLedLoop();
-    gameModality();
-    //printMotorInfo();
-    */
-    print();
-  //}
-}
 
 
