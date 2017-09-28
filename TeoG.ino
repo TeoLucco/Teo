@@ -83,12 +83,21 @@ int tries[questionsPerEx];
 #define N_BODY_SENSORS 3
 
 //BODY CAPACITIVES
+<<<<<<< HEAD
 #define BODY_FRONT_S 33
 #define BODY_FRONT_R 31
 #define BODY_SX_S 29
 #define BODY_SX_R 27
 #define BODY_DX_S 25
 #define BODY_DX_R 23
+=======
+#define BODY_FRONT_S 45
+#define BODY_FRONT_R 43
+#define BODY_SX_S 41
+#define BODY_SX_R 39
+#define BODY_DX_S 37
+#define BODY_DX_R 35
+>>>>>>> parent of 699a0ee... securitycommit
 
 #define lowBodyThreshold 200
 //#define middleBodyThreshold 5000
@@ -112,6 +121,7 @@ int hugsCount = 0;
 enum touchTypes {nothing, hug, pat0, pat1, pat2, hit0, hit1, hit2};
 touchTypes touchState = nothing;
 
+
 CapacitiveSensor* bodySensor[N_BODY_SENSORS];
 long bodySensorValue[N_BODY_SENSORS];
 unsigned long int lastCapacitiveLoopTime=0;
@@ -123,9 +133,12 @@ unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int softStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 
+<<<<<<< HEAD
 
 FastRunningMedian<unsigned int, 10, 0> body_median[3];
 
+=======
+>>>>>>> parent of 699a0ee... securitycommit
 //HEAD CAPACITIVES
 #define HEAD_BUTTON_0S 35
 #define HEAD_BUTTON_0R 37
@@ -159,10 +172,10 @@ const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
 #define soundPin  A11 //sound sensor attach to A11
-#define microISequence 250
-#define microISequenceShortMin 20
-#define microISequenceShortMax 100
-#define microSoglia 250.00f
+#define microISequence 200
+#define microISequenceShortMin 10
+#define microISequenceShortMax 40
+#define microSoglia 120.00f
 int microI = 0;
 float microFilterFrequency = 1.0;
 FilterOnePole microLowpassFilter( LOWPASS, microFilterFrequency );
@@ -210,6 +223,7 @@ unsigned long lastMilliPrint = 0;
 
 // MOVEMENTS VARIABLES
 boolean move = false;
+<<<<<<< HEAD
 #define no_movement         0
 #define idle                1
 #define follow              2
@@ -240,7 +254,37 @@ boolean move = false;
 #define scared_hitR         27
 #define turnAlphaR2         28  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
 #define turnAlphaL2         29
-
+=======
+#define no_movement   0
+#define follow        1
+#define autonomous_movement 2
+#define make_eight    3
+#define turn180r      4  //rotazione 180 gradi USANDO RUOTA DESTRA COME CENTRO DI ROTAZIONE
+#define turn180l      5  //rotazione 180 gradi USANDO RUOTA SINISTRA COME CENTRO DI ROTAZIONE
+#define turnAlphaR    6  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
+#define turnAlphaL    7
+#define makeOnemF     8
+#define makeOnemB     9
+#define make_circle   10
+#define scared_round  11
+#define dontwonna     12
+#define scared_behind 13
+#define make_happy0   14
+#define make_happy1   15
+#define make_happy2   16
+#define make_happy3   17
+#define make_sad0     18
+#define make_sad1     19
+#define make_sad2     20
+#define angrymov      21
+#define scared_hit    22
+#define make_sad2L    23
+#define make_sad2R    24
+#define scared_hitL   25
+#define scared_hitR   26
+#define turnAlphaR2   27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
+#define turnAlphaL2   28
+>>>>>>> parent of 699a0ee... securitycommit
 
 double alpha = 0;
 byte next_movement = make_circle;
@@ -260,7 +304,7 @@ double startPosX = 0;
 double startPosY = 0;
 double startPosTh = 0;
 
-double speed_trg = 18.0f;
+double speed_trg = 0;
 
 
 //---------SONARS---------
@@ -326,13 +370,17 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Arduino is ready");
   srand(millis());
-  //bodyCapacitiveSetup();
+  bodyCapacitiveSetup();
   //headCapacitiveSetup();
   dfPlayerSetup();
   voltageCheckSetup();
   fotoresSetup();
   sonarSetup();
   ledSetup();
+<<<<<<< HEAD
+=======
+  setHeadLedRainbow();
+>>>>>>> parent of 699a0ee... securitycommit
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
   Serial3.println("Are YOU ready??");
@@ -387,7 +435,7 @@ void print()  {                                                      // display 
       else if (targetPos<0) Serial.println("LEFT");
       else if (targetPos>0) Serial.println("RIGHT");
     */
-    
+/*
     Serial.print("RIGHT: ");
     Serial.print(f_right);
     Serial.print("  CENTER: ");
@@ -439,7 +487,7 @@ void print()  {                                                      // display 
       Serial.print("triskar.isStopped()  "); Serial.println(triskar.isStopped());*/
     /*    Serial.print("micro val: "); Serial.println(microLowpassFilter.output());
         Serial.print("microI: "); Serial.println(microI);
-    
+    */
 
     /*  Serial.print("actual_movement:  "); Serial.println(actual_movement);
       Serial.print("myDFPlayer.available():  "); Serial.println(myDFPlayer.available());
@@ -475,12 +523,12 @@ void print()  {                                                      // display 
    /* Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
     Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]); Serial3.print("    ");
     Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.println("    ");
-/* Serial3.print("PosX:  "); Serial3.print(triskar.getPosX());
-   Serial3.print(" PosY:  "); Serial3.print(triskar.getPosY());
-   Serial3.print(" PosTh:  "); Serial3.print(triskar.getPosTh());
-   Serial3.print(" SpeedX:  "); Serial3.print(triskar.getSpeedX());
-   Serial3.print(" SpeedY:  "); Serial3.print(triskar.getSpeedY());
-   Serial3.print(" SpeedTh:  "); Serial3.println(triskar.getSpeedTh());  
+*/ Serial.print("PosX:  "); Serial.print(triskar.getPosX());
+   Serial.print(" PosY:  "); Serial.print(triskar.getPosY());
+   Serial.print(" PosTh:  "); Serial.print(triskar.getPosTh());
+   Serial.print(" SpeedX:  "); Serial.print(triskar.getSpeedX());
+   Serial.print(" SpeedY:  "); Serial.print(triskar.getSpeedY());
+   Serial.print(" SpeedTh:  "); Serial.println(triskar.getSpeedTh());  
 
     /*
       Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
@@ -519,4 +567,34 @@ void print()  {                                                      // display 
 
 
 
+<<<<<<< HEAD
+=======
+void pidLoop() {
+  if (move) {
+    triskar.PIDLoop();
+  }
+}
+
+void loop() {
+  //FirstSound();
+  //sensori
+  btInterpreter();
+  //bodyCapacitiveLoop();
+  //headCapacitiveLoop();
+  voltageCheckloop();
+  sonarLoop();
+  fotoresLoop();
+  microLoop();
+  //attuatori
+  if (interpreterState != test_modality) {
+    pidLoop();
+    makeMovement();
+    headLedLoop();
+    gameModality();
+    //printMotorInfo();
+    print();
+  }
+}
+
+>>>>>>> parent of 699a0ee... securitycommit
 

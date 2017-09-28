@@ -24,7 +24,7 @@ void updateCapacitiveFlags() {
   hits = 0;
   // catturo i valori di output di ogni sensore capacitivo
   for (int i = 0; i < N_BODY_SENSORS; i++) {
-    bodySensorValue[i] = bodySensor[i]->capacitiveSensor(10);
+    bodySensorValue[i] = bodySensor[i]->capacitiveSensor(1);
     //    if (bodySensorValue[i] >= SCALIBRATION_VALUE && !overTheLimitBody) {
     //      startTimeBody[i] = millis();
     //      overTheLimitBody[i] = true;
