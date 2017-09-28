@@ -52,6 +52,7 @@ void headLedLoop(){
 void ledSetup(){
   head_strip.begin();
   head_strip.show(); 
+  setHeadLedRainbow();
 }
 
 //funzioni "private" che gestiscono i vari stati

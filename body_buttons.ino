@@ -9,9 +9,10 @@ void bodyCapacitiveSetup() {
 }
 
 void bodyCapacitiveLoop() {
-  if (interpreterState == fam_modality && triskar.isStopped()) {
+  if (interpreterState == fam_modality && millis() - lastCapacitiveLoopTime > CAPACITIVE_LOOP_TIME) {
     updateCapacitiveFlags();
     reactions();
+    lastCapacitiveLoopTime = millis();
   }
 }
 
@@ -19,8 +20,8 @@ unsigned long int startTimeBody[N_BODY_SENSORS] = {0, 0, 0};
 boolean overTheLimitBody[N_BODY_SENSORS] = {false, false, false};
 
 void updateCapacitiveFlags() {
-  pats=0;
-  hits=0;
+  pats = 0;
+  hits = 0;
   // catturo i valori di output di ogni sensore capacitivo
   for (int i = 0; i < N_BODY_SENSORS; i++) {
     bodySensorValue[i] = bodySensor[i]->capacitiveSensor(10);
@@ -38,8 +39,8 @@ void updateCapacitiveFlags() {
     updateBodyState(i);
   }
   for (int i = 0; i < N_BODY_SENSORS; i++) {
-    pats+=pat[i];
-    hits+=hit[i];
+    pats += pat[i];
+    hits += hit[i];
   }
 }
 
@@ -82,47 +83,50 @@ void updateBodyState(int i) {
 }
 
 void reactions() {
-  if (actual_movement==no_movement || actual_movement==idle){
-    // abbraccio se in stato soft touch sul sensore centale ed uno laterale per almeno tot secondi
-    if (touchState == nothing) {
-      resetLedTimer();
-      resetHitCountTimer();
-      resetPatCountTimer();
-      hugsCount = 0;
-      if ((bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] < lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold) ||
-          (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] <= lowBodyThreshold) ||
-          (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold)) {
-        touchState = hug;
-      }
-      else if (capacitiveState[0] == soft_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
-        touchState = pat0;
-      }
-      else if (capacitiveState[0] == no_touch && capacitiveState[1] == soft_touch && capacitiveState[2] == no_touch) {
-        touchState = pat1;
-      }
-      else if (capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == soft_touch) {
-        touchState = pat2;
-      }
-      else if (capacitiveState[0] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
-        touchState = hit0;
-      }
-      else if (capacitiveState[1] == strong_touch && capacitiveState[0] == no_touch && capacitiveState[2] == no_touch) {
-        touchState = hit1;
-      }
-      else if (capacitiveState[2] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch) {
-        touchState = hit2;
-      }
-    } else switch (touchState) {
-        case hug:  checkHug(); break;
-        case pat0: checkPat0(); break;
-        case pat1: checkPat1(); break;
-        case pat2: checkPat2(); break;
-        case hit0: checkHit0(); break;
-        case hit1: checkHit1(); break;
-        case hit2: checkHit2(); break;
-      }
+  if (actual_movement == no_movement || actual_movement == idle) {
+    switch (touchState) {
+      case nothing: waitTouch(); break;
+      case hug:     checkHug(); break;
+      case pat0:    checkPat0(); break;
+      case pat1:    checkPat1(); break;
+      case pat2:    checkPat2(); break;
+      case hit0:    checkHit0(); break;
+      case hit1:    checkHit1(); break;
+      case hit2:    checkHit2(); break;
+    }
   }
 }
+
+void waitTouch() {
+  resetLedTimer();
+  resetHitCountTimer();
+  resetPatCountTimer();
+  hugsCount = 0;
+  if ((bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] < lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold) ||
+      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] <= lowBodyThreshold) ||
+      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold)) {
+    touchState = hug;
+  }
+  else if (capacitiveState[0] == soft_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
+    touchState = pat0;
+  }
+  else if (capacitiveState[0] == no_touch && capacitiveState[1] == soft_touch && capacitiveState[2] == no_touch) {
+    touchState = pat1;
+  }
+  else if (capacitiveState[0] == no_touch && capacitiveState[1] == no_touch && capacitiveState[2] == soft_touch) {
+    touchState = pat2;
+  }
+  else if (capacitiveState[0] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
+    touchState = hit0;
+  }
+  else if (capacitiveState[1] == strong_touch && capacitiveState[0] == no_touch && capacitiveState[2] == no_touch) {
+    touchState = hit1;
+  }
+  else if (capacitiveState[2] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch) {
+    touchState = hit2;
+  }
+}
+
 void resetPatCountTimer() {
   for (int i = 0; i < N_BODY_SENSORS; i++) {
     if (millis() - stateStartTime[i] > RESET_PAT_TIME && capacitiveState[i] == no_touch) {
@@ -157,7 +161,7 @@ void checkHug() {
       hit[j] = 0;
       stateStartTime[j] = millis();
     }
-    
+
     hugsCount++;
     //abbraccio = true;
     if (hugsCount == 1)
@@ -288,7 +292,7 @@ void checkHit2() {
     }
   } else
     patHitStatusExitCond();
-  
+
 }
 
 void patHitStatusExitCond() {
