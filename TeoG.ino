@@ -18,6 +18,7 @@ unsigned long int firstSoundTime = 0;
 // MULTITHREADING
 #define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
+
 //BLUETOOTH
 //buttons
 boolean triangolo;
@@ -99,6 +100,7 @@ int tries[questionsPerEx];
 #define highBodyThreshold 2500
 
 
+#define  CAPACITIVE_LOOP_TIME 100
 #define  HUGTIME 4000
 #define  MIN_PAT_TIME 500
 #define  MAX_PAT_TIME 5000
@@ -118,6 +120,7 @@ touchTypes touchState = nothing;
 
 CapacitiveSensor* bodySensor[N_BODY_SENSORS];
 long bodySensorValue[N_BODY_SENSORS];
+unsigned long int lastCapacitiveLoopTime=0;
 enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
 bodyCapacitiveStates capacitiveState[N_BODY_SENSORS];
 bodyCapacitiveStates previousCapacitiveState[N_BODY_SENSORS];
@@ -125,6 +128,7 @@ bodyCapacitiveStates previousDynamicCapacitiveState[N_BODY_SENSORS];
 unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int softStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
+
 
 FastRunningMedian<unsigned int, 10, 0> body_median[3];
 
@@ -356,8 +360,7 @@ void loop() {
     pidLoop();
     makeMovement();
     gameModality();
-    //printMotorInfo();
-    
+    //printMotorInfo(); 
   }
 }
 

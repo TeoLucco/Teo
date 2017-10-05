@@ -12,6 +12,7 @@ void bodyCapacitiveLoop() {
   if (interpreterState == fam_modality || (testState == test_exe && testType==body_capacitives_t)) {
     updateCapacitiveFlags();
     reactions();
+    lastCapacitiveLoopTime = millis();
   }
 }
 
@@ -82,7 +83,7 @@ void updateBodyState(int i) {
 }
 
 void reactions() {
-  if (actual_movement == no_movement) {
+  if (actual_movement == no_movement || actual_movement == idle) {
     switch (touchState) {
       case nothing: waitTouch(); break;
       case hug:     checkHug(); break;

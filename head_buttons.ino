@@ -34,33 +34,34 @@ void checkBT() {
     playS(17);
   } else if (Serial3.available()) firstSoundTime = millis();
 }
+
 void headCapacitiveLoop() {
   boolean checkMax = false;
   checkBT();
-  if (gameState == wait_answer || capacitive_commands || (testState == test_exe && testType==head_capacitives_t)) {
+  if (gameState == wait_answer || capacitive_commands || (testState == test_exe && testType == head_capacitives_t)) {
 
-  for (int i = 0; i < N_HEAD_SENSORS; i++) {
-    headSensorValue[i] = headSensor[i]->capacitiveSensor(2);
-    if (headSensorValue[i] > headThreshold && checkMax == false)
-      checkMax = true;
-    //      if (headSensorValue[i] >= SCALIBRATION_VALUE && !overTheLimit) {
-    //        startTime = millis();
-    //        overTheLimit = true;
-    //      }
-    //      if (headSensorValue[i] < SCALIBRATION_VALUE && overTheLimit)
-    //        overTheLimit = false;
-    //      if (overTheLimit && millis() - startTime > SCALIBRATION_TIMER) {
-    //        Serial.println("AUTOCALIBRAZIONE");
-    //        headSensor[i]->reset_CS_AutoCal();
-    //        overTheLimit = false;
-    //      }
+    for (int i = 0; i < N_HEAD_SENSORS; i++) {
+      headSensorValue[i] = headSensor[i]->capacitiveSensor(2);
+      if (headSensorValue[i] > headThreshold && checkMax == false)
+        checkMax = true;
+      //      if (headSensorValue[i] >= SCALIBRATION_VALUE && !overTheLimit) {
+      //        startTime = millis();
+      //        overTheLimit = true;
+      //      }
+      //      if (headSensorValue[i] < SCALIBRATION_VALUE && overTheLimit)
+      //        overTheLimit = false;
+      //      if (overTheLimit && millis() - startTime > SCALIBRATION_TIMER) {
+      //        Serial.println("AUTOCALIBRAZIONE");
+      //        headSensor[i]->reset_CS_AutoCal();
+      //        overTheLimit = false;
+      //      }
+
+    }
+    if (checkMax) pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS);
+    else pressedButton = -1;
+    checkMax = false;
+    headCapacitiveInterpreter();
   }
-  if (checkMax) pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS);
-  else pressedButton = -1;
-  checkMax = false;
-  headCapacitiveInterpreter();
-   }
-
 }
 
 void headCapacitiveInterpreter() {
