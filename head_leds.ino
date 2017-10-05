@@ -8,30 +8,35 @@ uint16_t ledZ=0;
 void setHeadLedPulse(uint32_t color){
    led_state=color_pulse;
    resetCounters();
+   head_strip.setBrightness(255);
    headLedSetColor(color);
 }
 //funzione che usa i colori prefissati per i vari dei movimenti
 void setHeadLedPulse(){
    led_state=color_pulse;
    resetCounters();
+   head_strip.setBrightness(255);
    headLedSetColor();
 }
 
 void setHeadLedWipe(uint32_t color){
    led_state=color_wipe;
    resetCounters();
+   head_strip.setBrightness(255);
    headLedSetColor(color);
 }
 
 void setHeadLedWipe(){
    led_state=color_wipe;
    resetCounters();
+   head_strip.setBrightness(255);
    headLedSetColor();
 }
 
 void setHeadLedRainbow(){
    led_state=rainbow_cycle;
    resetCounters();
+   head_strip.setBrightness(255);
 }
 
 void setHeadLedOff(){
@@ -49,9 +54,10 @@ void headLedLoop(){
   }  
 }
 
-void ledSetup(){
+void headLedSetup(){
   head_strip.begin();
   head_strip.show(); 
+  setHeadLedRainbow();
 }
 
 //funzioni "private" che gestiscono i vari stati
@@ -72,7 +78,8 @@ void colorWipe(uint32_t c, uint8_t wait) {
     }
   }
 }
- boolean verse=true;
+ 
+boolean verse=true;
 void colorPulse(uint32_t c, uint8_t wait) {
   if(color_pulse){
     if((millis()-lastMilliLed) >= wait)   {

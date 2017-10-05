@@ -12,8 +12,11 @@
 
 #define WAIT_BT_CONN 60000
 boolean capacitive_commands=false;
-unsigned long int firstStartTime = 0;
-#define TIME_TO_SETUP 9000
+unsigned long int firstSoundTime = 0;
+#define TIME_TO_SETUP 5000
+
+// MULTITHREADING
+#define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 //BLUETOOTH
 //buttons
@@ -27,6 +30,7 @@ char b = ' ';
 //interpreter states
 enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, test_modality, discharge};
 btStates interpreterState = choose_modality;
+boolean btMov=false;
 
 //HARDWARE TESTS
 enum testStates { tests_descr, choose_test, start_test, test_exe};
@@ -37,7 +41,7 @@ testTypes testType = no_one;
 
 
 //FOTORESISTOR
-#define FOTORES_PIN A3
+#define FOTORES_PIN A2
 int fotores_value;
 
 //VOLTAGE CHECKER
@@ -83,16 +87,17 @@ int tries[questionsPerEx];
 #define N_BODY_SENSORS 3
 
 //BODY CAPACITIVES
-#define BODY_FRONT_S 45
-#define BODY_FRONT_R 43
-#define BODY_SX_S 53
-#define BODY_SX_R 51
-#define BODY_DX_S 49
-#define BODY_DX_R 47
+#define BODY_FRONT_S 33
+#define BODY_FRONT_R 31
+#define BODY_SX_S 25
+#define BODY_SX_R 23
+#define BODY_DX_S 29
+#define BODY_DX_R 27
 
-#define lowBodyThreshold 200
+#define lowBodyThreshold 600
 //#define middleBodyThreshold 5000
-#define highBodyThreshold 1400
+#define highBodyThreshold 2500
+
 
 #define  HUGTIME 4000
 #define  MIN_PAT_TIME 500
@@ -124,16 +129,16 @@ unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 FastRunningMedian<unsigned int, 10, 0> body_median[3];
 
 //HEAD CAPACITIVES
-#define HEAD_BUTTON_0S 27
-#define HEAD_BUTTON_0R 29
-#define HEAD_BUTTON_1S 31
-#define HEAD_BUTTON_1R 33
-#define HEAD_BUTTON_2S 35
-#define HEAD_BUTTON_2R 37
-#define HEAD_BUTTON_3S 39
-#define HEAD_BUTTON_3R 41
+#define HEAD_BUTTON_0S 37
+#define HEAD_BUTTON_0R 35
+#define HEAD_BUTTON_1S 41
+#define HEAD_BUTTON_1R 39
+#define HEAD_BUTTON_2S 45
+#define HEAD_BUTTON_2R 43
+#define HEAD_BUTTON_3S 49
+#define HEAD_BUTTON_3R 47
 
-const int headThreshold = 1500;
+const int headThreshold = 5500;
 CapacitiveSensor* headSensor[N_HEAD_SENSORS];
 long headSensorValue[N_HEAD_SENSORS];
 int pressedButton = -1;
@@ -188,11 +193,11 @@ unsigned long int movementFinishTime = TIME_TO_SETUP + 1000;
 #define M3FB A5
 
 //-------ENCODER 1-------
-#define EncA1 2
-#define EncB1 3
+#define EncA1 3
+#define EncB1 2
 //-------ENCODER 2-------
-#define EncA2 18
-#define EncB2 19
+#define EncA2 19
+#define EncB2 18
 //-------ENCODER 3-------
 #define EncA3 21
 #define EncB3 20
@@ -230,21 +235,21 @@ boolean move = false;
 #define make_sad1           20
 #define scared_hit          21
 #define make_sad2           22
-#define angrymov            23
-#define make_sad2L          24
-#define make_sad2R          25
-#define scared_hitL         26
-#define scared_hitR         27
-#define turnAlphaR2         28  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
-#define turnAlphaL2         29
-
+#define make_sad2L          23
+#define make_sad2R          24
+#define scared_hitL         25
+#define scared_hitR         26
+#define turnAlphaR2         27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
+#define turnAlphaL2         28
+#define angrymov            29
 
 double alpha = 0;
 byte next_movement = make_circle;
-byte actual_movement = idle;
+byte actual_movement = no_movement;
 byte prev_movement = no_movement;
 boolean follow2 = false;
 boolean aut_mov = false;
+boolean idle_mov=false;
 int movementI = 0;
 unsigned long int randomTurnTime = 15000 + rand() % (20000);
 unsigned long int randomIdleTurnTime = 3000 + rand() % (7000);
@@ -264,7 +269,6 @@ double speed_trg = 18.0f;
 //-----constants-----
 #define SONAR_NUM     4 // Number or sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
-#define PING_INTERVAL 66 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 #define FAR_DISTANCE 200.0f
 #define CLOSE_DISTANCE 80.0f
 #define VERYCLOSE_DISTANCE 50.0f
@@ -297,9 +301,9 @@ FilterOnePole right_sonar_f( LOWPASS, FILTERFREQUENCY );
 FilterOnePole back_sonar_f( LOWPASS, FILTERFREQUENCY );
 //-----objects-----
 NewPing sonar[SONAR_NUM] = {      // Sensor object array.
-  NewPing(30, 28, MAX_DISTANCE),  // front sonar
-  NewPing(26, 24, MAX_DISTANCE),  //right sonar
-  NewPing(34, 32, MAX_DISTANCE),  //left sonar
+  NewPing(24, 26, MAX_DISTANCE),  // front sonar
+  NewPing(28, 30, MAX_DISTANCE),  //right sonar
+  NewPing(32, 34, MAX_DISTANCE),  //left sonar
   NewPing(38, 36, MAX_DISTANCE)   //back sonar
 };
 //-----booleans-----
@@ -323,23 +327,48 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Arduino is ready");
   srand(millis());
-  //bodyCapacitiveSetup();
-  //headCapacitiveSetup();
-  //dfPlayerSetup();
-  //voltageCheckSetup();
-  //fotoresSetup();
-  sonarSetup();
-  //ledSetup();
-  //setHeadLedRainbow();
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
   Serial3.println("Are YOU ready??");
-
-
+  dfPlayerSetup();
+  fotoresSetup();
+  bodyCapacitiveSetup();
+  headCapacitiveSetup();
+  voltageCheckSetup();
+  sonarSetup();
+  headLedSetup();
 }
 
+void loop() {
+  //FirstSound();
+  //sensori
+  btInterpreter();
+  bodyCapacitiveLoop();
+  headCapacitiveLoop();
+  voltageCheckloop();
+  sonarLoop();
+  fotoresLoop();
+  //microLoop();
+  headLedLoop();
+  print();
+  //attuatori
+  if (interpreterState != test_modality && interpreterState != choose_modality) {
+    pidLoop();
+    makeMovement();
+    gameModality();
+    //printMotorInfo();
+    
+  }
+}
 
-void print()  {                                                      // display data
+void pidLoop() {
+  if (move) {
+    triskar.PIDLoop();
+  }
+}
+#define switchToIdleTime 7000
+void print()  {   
+  
   if ((millis() - lastMilliPrint) >= 50)   {
     lastMilliPrint = millis();
 
@@ -362,16 +391,6 @@ void print()  {                                                      // display 
       else if (targetPos>0) Serial.println("RIGHT");
     */
     
-    Serial.print("RIGHT: ");
-    Serial.print(f_right);
-    Serial.print("  CENTER: ");
-    Serial.print(f_front);
-    Serial.print("  LEFT: ");
-    Serial.print(f_left);
-    Serial.print("  BACK: ");
-    Serial.println(f_back);
-
-    /*
       //    Serial.print("  TargetPos:  ");
       //    Serial.print(targetPos);
       //    Serial.print("  Actual Obstacle:  ");
@@ -446,9 +465,24 @@ void print()  {                                                      // display 
       Serial3.print(bodySensorValue[1]); Serial3.print("    ");Serial3.print(capacitiveState[1]); Serial3.print("    ");
       Serial3.print(previousDynamicCapacitiveState[1]); Serial3.print("    "); Serial3.print(previousCapacitiveState[1]); Serial3.print("    ");
       Serial3.print("    ");*/
-   /* Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]); Serial3.print("    ");
-    Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]); Serial3.print("    ");
-    Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]); Serial3.println("    ");
+
+      Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
+    Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.println(pressedButton);
+/*
+    Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
+    Serial3.print(headSensorValue[2]); Serial3.print("    "); Serial3.print(headSensorValue[3]); Serial3.print("    "); Serial3.println(pressedButton);
+//    Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
+//    Serial3.print(bodySensorValue[2]); Serial3.print("    ");
+//
+//    Serial3.print(f_right);
+//    Serial3.print(" ");
+//    Serial3.print(f_front);
+//    Serial3.print(" ");
+//    Serial3.print(f_left);
+//    Serial3.print(" ");
+//    Serial3.println(f_back);
+
+    
 /* Serial3.print("PosX:  "); Serial3.print(triskar.getPosX());
    Serial3.print(" PosY:  "); Serial3.print(triskar.getPosY());
    Serial3.print(" PosTh:  "); Serial3.print(triskar.getPosTh());
@@ -492,33 +526,5 @@ void print()  {                                                      // display 
 }
 
 
-
-void pidLoop() {
-  if (move) {
-    triskar.PIDLoop();
-  }
-}
-
-void loop() {
-  //FirstSound();
-  //sensori
-  //btInterpreter();
-  //bodyCapacitiveLoop();
-  //headCapacitiveLoop();
-  //voltageCheckloop();
-  sonarLoop();
-  //fotoresLoop();
-  //microLoop();
-  //attuatori
-  /*if (interpreterState != test_modality) {
-    pidLoop();
-    makeMovement();
-    headLedLoop();
-    gameModality();
-    //printMotorInfo();
-    */
-    print();
-  //}
-}
 
 

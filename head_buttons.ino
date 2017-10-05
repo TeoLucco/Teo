@@ -27,32 +27,39 @@ int FindMax(long ARRAY[], byte START, byte END)
 
   return LOCATION;
 }
-
-
+void checkBT() {
+  if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
+    capacitive_commands = true;
+    Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
+    playS(17);
+  } else if (Serial3.available()) firstSoundTime = millis();
+}
 void headCapacitiveLoop() {
   boolean checkMax = false;
-  if (gameState == wait_answer || capacitive_commands) {
-    for (int i = 0; i < N_HEAD_SENSORS; i++) {                          //TODO cambiare 2 con N_SENSORS
-      headSensorValue[i] = headSensor[i]->capacitiveSensor(5);
-      if (headSensorValue[i] > headThreshold && checkMax == false)
-        checkMax = true;
-      if (headSensorValue[i] >= SCALIBRATION_VALUE && !overTheLimit) {
-        startTime = millis();
-        overTheLimit = true;
-      }
-      if (headSensorValue[i] < SCALIBRATION_VALUE && overTheLimit)
-        overTheLimit = false;
-      if (overTheLimit && millis() - startTime > SCALIBRATION_TIMER) {
-        Serial.println("AUTOCALIBRAZIONE");
-        headSensor[i]->reset_CS_AutoCal();
-        overTheLimit = false;
-      }
-    }
-    if (checkMax) pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS);
-    else pressedButton = -1;
-    checkMax = false;
-    headCapacitiveInterpreter();
+  checkBT();
+  if (gameState == wait_answer || capacitive_commands || (testState == test_exe && testType==head_capacitives_t)) {
+
+  for (int i = 0; i < N_HEAD_SENSORS; i++) {
+    headSensorValue[i] = headSensor[i]->capacitiveSensor(2);
+    if (headSensorValue[i] > headThreshold && checkMax == false)
+      checkMax = true;
+    //      if (headSensorValue[i] >= SCALIBRATION_VALUE && !overTheLimit) {
+    //        startTime = millis();
+    //        overTheLimit = true;
+    //      }
+    //      if (headSensorValue[i] < SCALIBRATION_VALUE && overTheLimit)
+    //        overTheLimit = false;
+    //      if (overTheLimit && millis() - startTime > SCALIBRATION_TIMER) {
+    //        Serial.println("AUTOCALIBRAZIONE");
+    //        headSensor[i]->reset_CS_AutoCal();
+    //        overTheLimit = false;
+    //      }
   }
+  if (checkMax) pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS);
+  else pressedButton = -1;
+  checkMax = false;
+  headCapacitiveInterpreter();
+   }
 
 }
 
@@ -87,7 +94,7 @@ void chooseGameCap() {
       else gameNumber = 1;
       playS(19 + gameNumber);
       break;
-    
+
     case 1:
       if (gameNumber < N_GAMES) gameNumber++;
       else gameNumber = N_GAMES;
@@ -98,7 +105,7 @@ void chooseGameCap() {
       interpreterState = sg_waiting;
       playS(24 + gameNumber); //come posizionare patch
       break;
-  
+
     case 3:
       interpreterState = choose_modality;
       break;

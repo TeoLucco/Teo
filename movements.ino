@@ -14,6 +14,7 @@ unsigned long int lastround = 0;
 void iMfollowingU() {
   follow2 = true;
   aut_mov = false;
+  idle_mov=false;
   if (no_obstacle) {
     if (last_obstacle == none) {
       timedPlayS(9, 10000);
@@ -67,6 +68,7 @@ void iMfollowingU() {
 void autonomousMovement() {
   aut_mov = true;
   follow2 = false;
+  idle_mov=false;
   if (millis() - movStartTime >= randomTurnTime) {//Turn randomly left/right 90 degrees at random time
     alpha = PI / 2;
     stopMovement();
@@ -113,6 +115,9 @@ void autonomousMovement() {
 
 
 void idleMovement() {
+  idle_mov=true;
+   aut_mov = false;
+  follow2 = false;
   if (millis() - movStartTime >= randomIdleTurnTime) {//Turn randomly left/right 90 degrees at random time
     alpha = PI / 6 + (rand() % (6));
     stopMovement();
@@ -125,6 +130,7 @@ void idleMovement() {
     obstacleCount = 0;
   } else {
     if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
+      headLedUpdate(rainbow_cycle);
       triskar.run(20.0f, 0.0f);
       if (millis() - lastObstacleTime > 1000)
         obstacleCount = 0;
@@ -152,6 +158,61 @@ void idleMovement() {
           startMovement(turnAlphaR, rainbow_cycle, 14);
           obstacleCount++;
         }
+      }
+    }
+  }
+}
+
+void idleMovement2() {
+  idle_mov=true;
+   aut_mov = false;
+  follow2 = false;
+  if (no_obstacle) {
+    if (last_obstacle == none) {
+      timedPlayS(9, 10000);
+      triskar.run(0.0, 0.0);
+    }
+    if (last_obstacle == right) {
+      triskar.run(0.0, -(2.0f * (float)PI) / 6.0f);
+    }
+    if (last_obstacle == left) {
+      triskar.run(0.0, (2.0f * (float)PI) / 6.0f);
+    }
+    if (last_obstacle == front) {
+      timedPlayS(10, 10000);
+      triskar.run(25.0, 0.0);
+    }
+  } else {
+    if (lost > 5000) {
+      startMovement(make_sad0, yellow, color_wipe, 11);
+      lost = 0;
+    }
+    else if (veryclose_front_obstacle && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
+    if (veryclose_back_obstacle && millis() - lastround > 10000 && backI >= 100 && triskar.isStopped()) {
+      lastround = millis();
+      lost=0;
+      stopMovement();
+      backI = 0;
+      last_obstacle = none;
+      alpha = PI;
+      if (dir == 1)
+        startMovement(turnAlphaL, green, color_wipe, 12);
+      else
+        startMovement(turnAlphaR, green, color_wipe, 12);
+      dir = rand() % 2;
+    } else {
+      if (actual_obstacle == right) {
+        if (!close_front_obstacle && !close_right_obstacle) {
+          triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
+        } else triskar.run(0.0, 0.0);
+      } else if (actual_obstacle == left) {
+        if (!close_front_obstacle && !close_left_obstacle)
+          triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
+        else triskar.run(0.0, 0.0);
+      } else if (actual_obstacle == front) {
+        if (close_front_obstacle || close_right_obstacle || close_left_obstacle)
+          triskar.run(0.0, 0.0);
+        else triskar.run(20.0, 0.0);
       }
     }
   }
@@ -263,16 +324,13 @@ void stopMovement() {
   triskar.setPosTh(0);
   triskar.setPosX(0);
   triskar.setPosY(0);
-  if (prev_movement != idle) {
-    prev_movement = actual_movement;
-    actual_movement = no_movement;
-  } else
-    actual_movement = idle;
-
+  prev_movement = actual_movement;
+  actual_movement = no_movement;
+  
   move = false;
-  head_strip.setBrightness(255);
-  if (!aut_mov && !follow2) setHeadLedRainbow();
-  //stopS();
+  
+  headLedUpdate(rainbow_cycle);
+  stopS();
   movementFinishTime = millis();
   if (gameState == mov) gameState = make_question;
 }
@@ -280,13 +338,14 @@ void stopMovement() {
 void stopAutFollow() {
   aut_mov = false;
   follow2 = false;
+  idle_mov=false;
   stopMovement();
   prev_movement = no_movement;
   last_obstacle = none;
 }
 
 void obstacle_stop_movement() {
-  if (actual_movement != no_movement && actual_movement != dontwonna && actual_movement != follow && actual_movement != autonomous_movement) {
+  if (actual_movement != no_movement && actual_movement != dontwonna && actual_movement != idle && actual_movement != follow && actual_movement != autonomous_movement) {
     if ( ( (triskar.getDirection() == 1) && (veryclose_front_obstacle || veryclose_left_obstacle || veryclose_right_obstacle) )
          || (triskar.getDirection() == 2 && veryclose_back_obstacle) ) {
       actual_movement = no_movement;
@@ -327,6 +386,10 @@ void turn_alpha_left() {
       actual_obstacle = none;
       last_obstacle = none;
     }
+    if(idle_mov){
+      idle_mov=false;
+      startMovement(idle,rainbow_cycle);
+    }
   }
 }
 
@@ -358,6 +421,10 @@ void turn_alpha_right() {
       startMovement(follow);
       actual_obstacle = none;
       last_obstacle = none;
+    }
+    if(idle_mov){
+      idle_mov=false;
+      startMovement(idle,rainbow_cycle);
     }
   }
 }
@@ -858,7 +925,7 @@ void makeSad2R() {
 
 void makeScaredRound() {
   if (dir == 1) {
-    if ((triskar.getPosTh() < startPosTh + 2 * PI || !veryclose_front_obstacle) && movementI == 0)
+    if ((triskar.getPosTh() < startPosTh + 2 * PI && !veryclose_front_obstacle) && movementI == 0)
       triskar.run(0.0f, -SCARED_ANGULAR_SP);
     else if (movementI == 0) movementI = 1;
 
@@ -878,10 +945,12 @@ void makeScaredRound() {
     if (triskar.getPosTh() > startPosTh && movementI == 4)
       triskar.run(0.0f, SCARED_ANGULAR_SP);
     else if (movementI == 4) movementI = 5;
-    if (movementI == 5)
+    if (movementI == 5){
       stopMovement();
+      dir = rand() % 2;
+    }     
   } else {
-    if ((triskar.getPosTh() > startPosTh - 2 * PI || !veryclose_front_obstacle) && movementI == 0)
+    if ((triskar.getPosTh() > startPosTh - 2 * PI && !veryclose_front_obstacle) && movementI == 0)
       triskar.run(0.0f, SCARED_ANGULAR_SP);
     else if (movementI == 0) movementI = 1;
     if (movementI == 1) {
@@ -897,10 +966,11 @@ void makeScaredRound() {
     if (triskar.getPosTh() < startPosTh && movementI == 4)
       triskar.run(0.0f, -SCARED_ANGULAR_SP);
     else if (movementI == 4) movementI = 5;
-    if (movementI == 5)
+    if (movementI == 5){
+      dir = rand() % 2;
       stopMovement();
+    }
   }
-  dir = rand() % 2;
 }
 
 
@@ -970,19 +1040,17 @@ void makeBeAngry() {
     stopMovement();
   }
 }
-#define switchToIdleTime 5000
+
 
 void switchToIdle() {
-  if (millis() - movementFinishTime > switchToIdleTime) {
-    actual_movement = idle;
-    prev_movement = no_movement;
+  if (millis() - movementFinishTime > switchToIdleTime && interpreterState==fam_modality) {
+    startMovement(idle,rainbow_cycle);
   }
 }
 
 void makeMovement() {
   if (move) {
     switch (actual_movement) {
-      case no_movement:         switchToIdle(); break;
       case idle:                idleMovement(); break;
       case follow:              iMfollowingU(); break;
       case make_eight:          break;
@@ -1015,5 +1083,5 @@ void makeMovement() {
       case make_sad2R:          makeSad2R(); break;
     }
     obstacle_stop_movement();
-  }
+  }else switchToIdle();
 }

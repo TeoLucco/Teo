@@ -24,7 +24,7 @@ void famMod(){
       case '0':
         //Serial.println("0");
         resetButtons();
-        if(actual_movement==no_movement && actual_movement!=dontwonna && prev_movement!=follow && prev_movement!=autonomous_movement){
+        if(actual_movement==no_movement && actual_movement!=idle && actual_movement!=dontwonna &&prev_movement!=idle && prev_movement!=follow && prev_movement!=autonomous_movement){
           triskar.stop2();
           move=false;
         }else if(actual_movement==no_movement && prev_movement==follow){
@@ -34,6 +34,9 @@ void famMod(){
         else if(actual_movement==no_movement && prev_movement==autonomous_movement){
           actual_movement=autonomous_movement;
           prev_movement=no_movement;
+        }
+        else if(actual_movement==no_movement && prev_movement==idle){
+          startMovement(idle,rainbow_cycle);
         }
         break;
 
@@ -55,7 +58,7 @@ void famMod(){
       case '3':
         Serial.println("3-SINISTRA");
         move=true;
-        if((actual_movement==no_movement || actual_movement==idle)){
+        if(actual_movement==no_movement){
           triskar.run(0.0,speed_trg/robot_radius);  
         }else if(actual_movement==autonomous_movement){
           prev_movement=autonomous_movement;
@@ -65,13 +68,18 @@ void famMod(){
           prev_movement=follow;
           actual_movement=no_movement;
           triskar.run(0.0,speed_trg/robot_radius);  
+        }else if(actual_movement==idle){
+          prev_movement=idle;
+          actual_movement=no_movement;
+          triskar.run(0.0,speed_trg/robot_radius);  
         }
+        
         break;
 
       case '4':
         Serial.println("4-DESTRA");
         move=true;
-        if(actual_movement==no_movement || actual_movement==idle){
+        if(actual_movement==no_movement){
           triskar.run(0.0,-speed_trg/robot_radius);  
         }else if(actual_movement==autonomous_movement){
           prev_movement=autonomous_movement;
@@ -79,6 +87,10 @@ void famMod(){
           triskar.run(0.0,-speed_trg/robot_radius);  
         }else if(actual_movement==follow){
           prev_movement=follow;
+          actual_movement=no_movement;
+          triskar.run(0.0,-speed_trg/robot_radius);  
+        }else if(actual_movement==idle){
+          prev_movement=idle;
           actual_movement=no_movement;
           triskar.run(0.0,-speed_trg/robot_radius);  
         }
@@ -119,9 +131,11 @@ void famMod(){
             //last_obstacle=none;
             
           //CODICE PER ATTIVARE AUTONOMOUS MOVEMENT
-          if((actual_movement==no_movement || actual_movement==idle) || actual_movement==follow){
+          btMov=true; //mi segno che il comando è stato dato da bluetooth, quindi la fotoresistenza non deve intervenire.
+          if(actual_movement==no_movement || actual_movement==follow || actual_movement==idle){
             Serial.println("start Autonomous Movement");
             startMovement(autonomous_movement);
+            
           }else{
             Serial.println("start Following");
             stopMovement();
@@ -137,7 +151,7 @@ void famMod(){
         if(!quadrato){
           quadrato=true;
           startMovement(next_movement);
-          if(next_movement<angrymov)
+          if(next_movement<make_sad2)
             next_movement++;
           else next_movement=make_circle;
         }
@@ -158,6 +172,7 @@ void famMod(){
           cerchio=true;
           //startMovement(make_happy[3]);
           //CODICE PER DISATTIVARE FOLLOWING E AUTONOMOUS MOVEMENT
+          btMov=false;
           stopAutFollow();
           
           //CODICE PER DISATTIVARE AUTONOMOUS MOVEMENT
@@ -195,6 +210,7 @@ void chooseModality(){
         if(!quadrato){
           quadrato=true;
           interpreterState=fam_modality;
+          movementFinishTime=millis();
         }
         break;
       case 'A':

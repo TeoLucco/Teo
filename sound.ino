@@ -22,11 +22,8 @@ void FirstSound(){
   if(firstSound==false){
     playS(1);
     firstSound=true;
-    firstStartTime=millis();
-  }else if(millis()-firstStartTime>=WAIT_BT_CONN && !Serial3.available()){
-    capacitive_commands=true;
-    playS(17);
-  }
+    firstSoundTime=millis();
+   }
 }
 void playS(int Index){
     myDFPlayer.play(Index);
@@ -62,7 +59,7 @@ void updateSong(){
       case make_happy1:         break;
       case make_happy2:         break;
       case make_happy3:         break;
-//      case make_happy4:         /*playS(16);*/break;
+//      case make_happy4:         /*playS(16);break;
       case make_sad0:           break;
       case make_sad1:           break;
       case make_sad2:           break;
