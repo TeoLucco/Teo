@@ -16,7 +16,7 @@ unsigned long int firstSoundTime = 0;
 #define TIME_TO_SETUP 5000
 
 // MULTITHREADING
-#define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+#define PING_INTERVAL 71 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 
 //BLUETOOTH
@@ -27,6 +27,7 @@ boolean cerchio;
 boolean croce;
 boolean startbutton;
 boolean select;
+boolean noneB=true;
 char b = ' ';
 //interpreter states
 enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, test_modality, discharge};
@@ -88,21 +89,29 @@ int tries[questionsPerEx];
 #define N_BODY_SENSORS 3
 
 //BODY CAPACITIVES
-#define BODY_FRONT_S 33
-#define BODY_FRONT_R 31
-#define BODY_SX_S 25
-#define BODY_SX_R 23
+#define BODY_FRONT_S 25
+#define BODY_FRONT_R 23
+#define BODY_SX_S 33
+#define BODY_SX_R 31
 #define BODY_DX_S 29
 #define BODY_DX_R 27
 
-#define lowBodyThreshold 600
-//#define middleBodyThreshold 5000
-#define highBodyThreshold 2500
+FilterOnePole left_body_f( LOWPASS, 1.0 );
+FilterOnePole right_body_f( LOWPASS, 1.0 );
+FilterOnePole front_body_f( LOWPASS, 1.0 );
+
+//VALORI CON HEAD E BODY ATTIVI CONTEMPORANEAMENTE
+//int lowBodyThreshold[3]={7540,6900,5075};
+//int highBodyThreshold[3]={8040,7400,5575};
+
+//VALORI CON SONAR E BODY ATTIVI - HEAD DISATTIVO
+int lowBodyThreshold[3]={6800,6400,4550};
+int highBodyThreshold[3]={7250,6850,5000};
 
 
-#define  CAPACITIVE_LOOP_TIME 100
+#define  CAPACITIVE_LOOP_TIME 0
 #define  HUGTIME 4000
-#define  MIN_PAT_TIME 500
+#define  MIN_PAT_TIME 250
 #define  MAX_PAT_TIME 5000
 #define  RESET_PAT_TIME 5000
 #define  MIN_HIT_TIME 10
@@ -120,6 +129,7 @@ touchTypes touchState = nothing;
 
 CapacitiveSensor* bodySensor[N_BODY_SENSORS];
 long bodySensorValue[N_BODY_SENSORS];
+long bodySensorValue_nf[N_BODY_SENSORS];
 unsigned long int lastCapacitiveLoopTime=0;
 enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
 bodyCapacitiveStates capacitiveState[N_BODY_SENSORS];
@@ -142,7 +152,7 @@ FastRunningMedian<unsigned int, 10, 0> body_median[3];
 #define HEAD_BUTTON_3S 49
 #define HEAD_BUTTON_3R 47
 
-const int headThreshold = 5500;
+const int headThreshold = 1300;
 CapacitiveSensor* headSensor[N_HEAD_SENSORS];
 long headSensorValue[N_HEAD_SENSORS];
 int pressedButton = -1;
@@ -164,7 +174,7 @@ const uint32_t yellow = head_strip.Color(255, 170, 0);
 const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
-#define soundPin  A11 //sound sensor attach to A11
+#define soundPin  A3 //sound sensor attach to A11
 #define microISequence 250
 #define microISequenceShortMin 20
 #define microISequenceShortMax 100
@@ -197,14 +207,14 @@ unsigned long int movementFinishTime = TIME_TO_SETUP + 1000;
 #define M3FB A5
 
 //-------ENCODER 1-------
-#define EncA1 3
-#define EncB1 2
+#define EncA1 2
+#define EncB1 3
 //-------ENCODER 2-------
-#define EncA2 19
-#define EncB2 18
+#define EncA2 18
+#define EncB2 19
 //-------ENCODER 3-------
-#define EncA3 21
-#define EncB3 20
+#define EncA3 20
+#define EncB3 21
 
 Encoder posReader1(EncA1, EncB1), posReader2(EncA2, EncB2), posReader3(EncA3, EncB3);
 DualMC33926MotorShield m1(M1DIR, M1PWM, nD2m1, nSFm1);
@@ -346,13 +356,13 @@ void setup() {
 void loop() {
   //FirstSound();
   //sensori
-  btInterpreter();
-  bodyCapacitiveLoop();
   headCapacitiveLoop();
+  //bodyCapacitiveLoop();
+  btInterpreter();
   voltageCheckloop();
-  sonarLoop();
+  //sonarLoop();
   fotoresLoop();
-  //microLoop();
+  microLoop();
   headLedLoop();
   print();
   //attuatori
@@ -360,7 +370,6 @@ void loop() {
     pidLoop();
     makeMovement();
     gameModality();
-    //printMotorInfo(); 
   }
 }
 
@@ -369,7 +378,7 @@ void pidLoop() {
     triskar.PIDLoop();
   }
 }
-#define switchToIdleTime 7000
+#define switchToIdleTime 15000
 void print()  {   
   
   if ((millis() - lastMilliPrint) >= 50)   {
@@ -468,22 +477,25 @@ void print()  {
       Serial3.print(bodySensorValue[1]); Serial3.print("    ");Serial3.print(capacitiveState[1]); Serial3.print("    ");
       Serial3.print(previousDynamicCapacitiveState[1]); Serial3.print("    "); Serial3.print(previousCapacitiveState[1]); Serial3.print("    ");
       Serial3.print("    ");*/
-
+/*
       Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
     Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.println(pressedButton);
-/*
-    Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
+
+*/    Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
     Serial3.print(headSensorValue[2]); Serial3.print("    "); Serial3.print(headSensorValue[3]); Serial3.print("    "); Serial3.println(pressedButton);
-//    Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
-//    Serial3.print(bodySensorValue[2]); Serial3.print("    ");
-//
-//    Serial3.print(f_right);
-//    Serial3.print(" ");
-//    Serial3.print(f_front);
-//    Serial3.print(" ");
-//    Serial3.print(f_left);
-//    Serial3.print(" ");
-//    Serial3.println(f_back);
+/*
+   Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]);Serial3.print("    ");
+   Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]);Serial3.print("    ");
+   Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]);Serial3.print("    ");
+   Serial3.println(touchState);
+
+/*  Serial3.print(f_right);
+    Serial3.print(" ");
+    Serial3.print(f_front);
+    Serial3.print(" ");
+    Serial3.print(f_left);
+    Serial3.print(" ");
+    Serial3.println(f_back);
 
     
 /* Serial3.print("PosX:  "); Serial3.print(triskar.getPosX());

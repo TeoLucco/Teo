@@ -9,10 +9,11 @@ void bodyCapacitiveSetup() {
 }
 
 void bodyCapacitiveLoop() {
-  if (interpreterState == fam_modality || (testState == test_exe && testType==body_capacitives_t)) {
-    updateCapacitiveFlags();
-    reactions();
-    lastCapacitiveLoopTime = millis();
+  if ((interpreterState == fam_modality || (testState == test_exe && testType==body_capacitives_t))) { //&& millis()-lastCapacitiveLoopTime>CAPACITIVE_LOOP_TIME
+  updateCapacitiveFlags();
+  if(!(testState == test_exe && testType==body_capacitives_t))
+  reactions();
+  lastCapacitiveLoopTime = millis();
   }
 }
 
@@ -24,29 +25,31 @@ void updateCapacitiveFlags() {
   hits = 0;
   // catturo i valori di output di ogni sensore capacitivo
   for (int i = 0; i < N_BODY_SENSORS; i++) {
-    bodySensorValue[i] = bodySensor[i]->capacitiveSensor(3);
-    //    if (bodySensorValue[i] >= SCALIBRATION_VALUE && !overTheLimitBody) {
-    //      startTimeBody[i] = millis();
-    //      overTheLimitBody[i] = true;
-    //    }
-    //    if (bodySensorValue[i] < SCALIBRATION_VALUE && overTheLimitBody[i])
-    //      overTheLimitBody[i] = false;
-    //    if (overTheLimitBody[i] && millis() - startTimeBody[i] > SCALIBRATION_TIMER) {
-    //      Serial.println("AUTOCALIBRAZIONE");
-    //      bodySensor[i]->reset_CS_AutoCal();
-    //      overTheLimitBody[i] = false;
-    //    }
-    updateBodyState(i);
+    bodySensorValue_nf[i] = bodySensor[i]->capacitiveSensorRaw(10);
   }
+  left_body_f.input(bodySensorValue_nf[0]);
+  right_body_f.input(bodySensorValue_nf[1]);
+  front_body_f.input(bodySensorValue_nf[2]);
+  bodySensorValue[0]=left_body_f.output();
+  bodySensorValue[1]=right_body_f.output();
+  bodySensorValue[2]=front_body_f.output();
+  updateBodyState(0);
+  updateBodyState(1);
+  updateBodyState(2);
   for (int i = 0; i < N_BODY_SENSORS; i++) {
     pats += pat[i];
     hits += hit[i];
   }
 }
+void resetCapacitive() {
+  for (int i = 0; i < N_BODY_SENSORS; i++) {
+    bodySensor[i]->reset_CS_AutoCal();
+  }
+}
 
 void updateBodyState(int i) {
   previousDynamicCapacitiveState[i] = capacitiveState[i];
-  if (bodySensorValue[i] < lowBodyThreshold) {
+  if (bodySensorValue[i] < lowBodyThreshold[i]) {
     if (capacitiveState[i] != no_touch) {
       previousCapacitiveState[i] = capacitiveState[i];
       capacitiveState[i] = no_touch;
@@ -54,7 +57,7 @@ void updateBodyState(int i) {
       stateStartTime[i] = millis();
     }
   }
-  else if (bodySensorValue[i] >= lowBodyThreshold && bodySensorValue[i] < highBodyThreshold) {
+  else if (bodySensorValue[i] >= lowBodyThreshold[i] && bodySensorValue[i] < highBodyThreshold[i]) {
     if (capacitiveState[i] != soft_touch) {
       previousCapacitiveState[i] = capacitiveState[i];
       capacitiveState[i] = soft_touch;
@@ -71,7 +74,7 @@ void updateBodyState(int i) {
   //      stateStartTime[i] = millis();
   //    }
   //  }
-  else if (bodySensorValue[i] >= highBodyThreshold) {
+  else if (bodySensorValue[i] >= highBodyThreshold[i]) {
     if (capacitiveState[i] != strong_touch) {
       previousCapacitiveState[i] = capacitiveState[i];
       capacitiveState[i] = strong_touch;
@@ -102,9 +105,9 @@ void waitTouch() {
   resetHitCountTimer();
   resetPatCountTimer();
   hugsCount = 0;
-  if ((bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] < lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold) ||
-      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] <= lowBodyThreshold) ||
-      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold)) {
+  if ((bodySensorValue[2] >= lowBodyThreshold[2] && bodySensorValue[1] < lowBodyThreshold[1] && bodySensorValue[0] >= lowBodyThreshold[0]) ||
+      (bodySensorValue[2] >= lowBodyThreshold[2] && bodySensorValue[1] >= lowBodyThreshold[1] && bodySensorValue[0] <= lowBodyThreshold[0]) ||
+      (bodySensorValue[2] >= lowBodyThreshold[2] && bodySensorValue[1] >= lowBodyThreshold[1] && bodySensorValue[0] >= lowBodyThreshold[0])) {
     touchState = hug;
   }
   else if (capacitiveState[0] == soft_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
@@ -151,11 +154,11 @@ void resetLedTimer() {
   }
 }
 void checkHug() {
-  if ((millis() - stateStartTime[2] >= HUGTIME && bodySensorValue[2] >= lowBodyThreshold) &&
-      ((millis() - stateStartTime[0] >= HUGTIME && bodySensorValue[0] >= lowBodyThreshold) ||
-       (millis() - stateStartTime[1] >= HUGTIME && bodySensorValue[1] >= lowBodyThreshold) )) {
+  if ((millis() - stateStartTime[2] >= HUGTIME && bodySensorValue[2] >= lowBodyThreshold[2]) &&
+      ((millis() - stateStartTime[0] >= HUGTIME && bodySensorValue[0] >= lowBodyThreshold[0]) ||
+       (millis() - stateStartTime[1] >= HUGTIME && bodySensorValue[1] >= lowBodyThreshold[1]) )) {
     playS(23);
-    headLedUpdate(green,color_pulse);
+    headLedUpdate(green, color_pulse);
     for (int j = 0; j < N_BODY_SENSORS; j++) {
       pat[j] = 0;
       hit[j] = 0;
@@ -164,9 +167,10 @@ void checkHug() {
 
     hugsCount++;
     //abbraccio = true;
-    if (hugsCount == 1)
+    if (hugsCount == 1) {
       Serial3.println("ABBRACCIO!");
-    else {
+
+    } else {
       Serial3.print("ABBRACCIO durata "); Serial3.println(hugsCount);
     }
   }
@@ -182,13 +186,15 @@ void checkPat0() {
     if (pat[0] == N_PATS) {
       for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
       playS(23);
-      headLedUpdate(green,color_wipe);
+      headLedUpdate(green, color_wipe);
       Serial3.println("N CAREZZE!");
+      resetCapacitive();
     } else {
       pat[0]++;
       playS(23);
-      headLedUpdate(green,color_pulse);
+      headLedUpdate(green, color_pulse);
       Serial3.println("UNA CAREZZA!");
+      resetCapacitive();
     }
   }
   else if (capacitiveState[0] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[2] == no_touch) {
@@ -204,13 +210,15 @@ void checkPat1() {
     if (pat[1] == N_PATS) {
       for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
       playS(23);
-      headLedUpdate(green,color_wipe);
+      headLedUpdate(green, color_wipe);
       Serial3.println("N CAREZZE!");
+      resetCapacitive();
     } else {
       pat[1]++;
       playS(23);
-      headLedUpdate(green,color_pulse);
+      headLedUpdate(green, color_pulse);
       Serial3.println("UNA CAREZZA!");
+      resetCapacitive();
     }
   }
   else if (capacitiveState[1] == strong_touch && capacitiveState[0] == no_touch && capacitiveState[2] == no_touch) {
@@ -226,13 +234,15 @@ void checkPat2() {
     if (pat[2] == N_PATS) {
       for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
       playS(23);
-      headLedUpdate(green,color_wipe);
+      headLedUpdate(green, color_wipe);
       Serial3.println("N CAREZZE!");
+      resetCapacitive();
     } else {
       pat[2]++;
       playS(23);
-      headLedUpdate(green,color_pulse);
+      headLedUpdate(green, color_pulse);
       Serial3.println("UNA CAREZZA!");
+      resetCapacitive();
     }
   }
   else if (capacitiveState[2] == strong_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch) {
@@ -250,10 +260,12 @@ void checkHit0() {
       for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
       startMovement(make_sad2L, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("N COLPI A SX!");
+      resetCapacitive();
     } else {
       hit[0]++;
       startMovement(scared_hitL, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("UN COLPO A SX!");
+      resetCapacitive();
     }
   } else patHitStatusExitCond();
 }
@@ -268,10 +280,12 @@ void checkHit1() {
       for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
       startMovement(make_sad2R, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("N COLPI A DX!");
+      resetCapacitive();
     } else {
       hit[1]++;
       startMovement(scared_hitR, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("UN COLPO A DX!");
+      resetCapacitive();
     }
   } else patHitStatusExitCond();
 }
@@ -285,10 +299,12 @@ void checkHit2() {
       for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
       startMovement(make_sad2, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("N COLPI AL CENTRO!");
+      resetCapacitive();
     } else {
       hit[2]++;
       startMovement(scared_hit, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("UN COLPO AL CENTRO!");
+      resetCapacitive();
     }
   } else
     patHitStatusExitCond();
@@ -296,9 +312,9 @@ void checkHit2() {
 }
 
 void patHitStatusExitCond() {
-  if ((bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] < lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold) ||
-      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] <= lowBodyThreshold) ||
-      (bodySensorValue[2] >= lowBodyThreshold && bodySensorValue[1] >= lowBodyThreshold && bodySensorValue[0] >= lowBodyThreshold)) {
+  if ((bodySensorValue[2] >= lowBodyThreshold[2] && bodySensorValue[1] < lowBodyThreshold[1] && bodySensorValue[0] >= lowBodyThreshold[0]) ||
+      (bodySensorValue[2] >= lowBodyThreshold[2] && bodySensorValue[1] >= lowBodyThreshold[1] && bodySensorValue[0] <= lowBodyThreshold[0]) ||
+      (bodySensorValue[2] >= lowBodyThreshold[2] && bodySensorValue[1] >= lowBodyThreshold[1] && bodySensorValue[0] >= lowBodyThreshold[0])) {
     touchState = hug;
   } else if (capacitiveState[2] == no_touch && capacitiveState[1] == no_touch && capacitiveState[0] == no_touch)
     touchState = nothing;

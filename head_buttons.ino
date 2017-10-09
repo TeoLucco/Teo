@@ -30,38 +30,27 @@ int FindMax(long ARRAY[], byte START, byte END)
 void checkBT() {
   if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
     capacitive_commands = true;
-    Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
+    //Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
     playS(17);
   } else if (Serial3.available()) firstSoundTime = millis();
 }
+unsigned long int lastPressedButtonTime=0;
 
 void headCapacitiveLoop() {
   boolean checkMax = false;
   checkBT();
-  if (gameState == wait_answer || capacitive_commands || (testState == test_exe && testType == head_capacitives_t)) {
+  if (/*(gameState == wait_answer || capacitive_commands || (testState == test_exe && testType == head_capacitives_t))&&*/ millis()-lastPressedButtonTime>4000) {
 
     for (int i = 0; i < N_HEAD_SENSORS; i++) {
-      headSensorValue[i] = headSensor[i]->capacitiveSensor(2);
+      headSensorValue[i] = headSensor[i]->capacitiveSensor(4);
       if (headSensorValue[i] > headThreshold && checkMax == false)
         checkMax = true;
-      //      if (headSensorValue[i] >= SCALIBRATION_VALUE && !overTheLimit) {
-      //        startTime = millis();
-      //        overTheLimit = true;
-      //      }
-      //      if (headSensorValue[i] < SCALIBRATION_VALUE && overTheLimit)
-      //        overTheLimit = false;
-      //      if (overTheLimit && millis() - startTime > SCALIBRATION_TIMER) {
-      //        Serial.println("AUTOCALIBRAZIONE");
-      //        headSensor[i]->reset_CS_AutoCal();
-      //        overTheLimit = false;
-      //      }
-
     }
-    if (checkMax) pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS);
+    if (checkMax){ pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS); lastPressedButtonTime=millis();}
     else pressedButton = -1;
     checkMax = false;
-    headCapacitiveInterpreter();
-  }
+    if(capacitive_commands)headCapacitiveInterpreter();
+  }else pressedButton = -1;
 }
 
 void headCapacitiveInterpreter() {

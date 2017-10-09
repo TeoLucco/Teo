@@ -345,7 +345,7 @@ void stopAutFollow() {
 }
 
 void obstacle_stop_movement() {
-  if (actual_movement != no_movement && actual_movement != dontwonna && actual_movement != idle && actual_movement != follow && actual_movement != autonomous_movement) {
+  if (actual_movement != dontwonna && actual_movement != idle && actual_movement != follow && actual_movement != autonomous_movement) {
     if ( ( (triskar.getDirection() == 1) && (veryclose_front_obstacle || veryclose_left_obstacle || veryclose_right_obstacle) )
          || (triskar.getDirection() == 2 && veryclose_back_obstacle) ) {
       actual_movement = no_movement;
@@ -698,7 +698,6 @@ void makeHappy1() {
     triskar.run(HAPPY_FORWARD_SP, -SAD_ANGULAR_SP);
   }
   else {
-    Serial.println("LOOP5");
     stopMovement();
   }
 
@@ -1083,5 +1082,5 @@ void makeMovement() {
       case make_sad2R:          makeSad2R(); break;
     }
     obstacle_stop_movement();
-  }else switchToIdle();
+  }//else switchToIdle();
 }

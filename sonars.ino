@@ -20,6 +20,12 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
   leftMedian.addValue(cm[2]);
   backMedian.addValue(cm[3]);
 
+//  f_front = frontMedian.getMedian();
+//  f_right = rightMedian.getMedian();
+//  f_left  =  leftMedian.getMedian();
+//  f_back = backMedian.getMedian();
+  
+
   float mf_front = frontMedian.getMedian();
   float mf_right = rightMedian.getMedian();
   float mf_left  =  leftMedian.getMedian();
@@ -37,90 +43,7 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
 
   previous_distance = actual_distance;
 
-  /*
-    if(abs(f_front-prec_f_front)>150.00)
-       f_front=(frontMedian.getMedian() + prec_f_front + prec_f_front2) / 3;
-    else f_front=frontMedian.getMedian();
-
-    if(abs(f_right-prec_f_right)>150.00)
-    f_right=(rightMedian.getMedian() + prec_f_right + prec_f_right2) / 3;
-    else f_right=rightMedian.getMedian();
-
-    if(abs(f_left-prec_f_left)>150.00)
-    f_left =( leftMedian.getMedian() + prec_f_left  + prec_f_left2 ) / 3;
-    else f_left = leftMedian.getMedian();
-  */
-
-
-  /*
-    right_sonar_f.input(right_distance);
-    left_sonar_f.input(left_distance);
-    front_sonar_f.input(front_distance);
-
-    f_front=front_sonar_f.output();
-    f_right=right_sonar_f.output();
-    f_left = left_sonar_f.output();
-
-
-
-    if(abs(front_sonar_f.output()-prec_f_front)>150.00)
-     f_front=(front_sonar_f.output() + prec_f_front + prec_f_front2) / 3;
-    else f_front=front_sonar_f.output();
-
-    if(abs(right_sonar_f.output()-prec_f_right)>150.00)
-     f_right=(right_sonar_f.output() + prec_f_right + prec_f_right2) / 3;
-    else f_right=right_sonar_f.output();
-
-    if(abs(left_sonar_f.output()-prec_f_left)>150.00)
-     f_left =( left_sonar_f.output() + prec_f_left  + prec_f_left2 ) / 3;
-    else f_left = left_sonar_f.output();
-  */
-
-
-  /*
-    f_front e tutti gli altri devono essere inizializzati al nuovo valore sparato fuori dal filtro che,
-    f_front aggiunto ai precedenti N e diviso per N+1 mi da un valore smooth
-     if(abs(front_sonar_f.output()-prec_f_front)>150.00){
-        for(int i=0;i<sizeof(prec_front)/sizeof(*prec_front);i++)
-          f_front+=prec_front[i];
-        f_front=f_front/(sizeof(prec_front)/sizeof(*prec_front)+1);
-     }
-
-     if(abs(right_sonar_f.output()-prec_f_right)>150.00){
-        for(int i=0;i<sizeof(prec_right)/sizeof(*prec_right);i++)
-          f_right+=prec_right[i];
-        f_right=f_right/(sizeof(prec_right)/sizeof(*prec_right)+1);
-     }
-
-     if(abs(left_sonar_f.output()-prec_f_left)>150.00){
-        for(int i=0;i<sizeof(prec_left)/sizeof(*prec_left);i++)
-          f_left+=prec_left[i];
-        f_left=f_left/(sizeof(prec_left)/sizeof(*prec_left)+1);
-     }
-
-     for(int i=sizeof(prec_front)/sizeof(*prec_front)-1; i>0 ; i++){
-       prec_front[i] = prec_front[i-1];
-       prec_right[i] = prec_right[i-1];
-       prec_left[i]  = prec_left[i-1];
-     }
-
-     prec_front[0] = f_front;
-     prec_right[0] = f_right;
-     prec_left[0] = f_left;
-
-
-
-
-    prec_f_front2 = prec_f_front;
-    prec_f_right2 = prec_f_right;
-    prec_f_left2  = prec_f_left;
-
-    prec_f_front = f_front;
-    prec_f_right = f_right;
-    prec_f_left  = f_left;
-
-  */
-
+ 
   if (f_front > FAR_DISTANCE && f_right > FAR_DISTANCE && f_left > FAR_DISTANCE) {
     //serial.println("NO obstacle");
     right_obstacle = false;
