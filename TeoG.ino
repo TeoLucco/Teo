@@ -11,13 +11,14 @@
 
 
 #define WAIT_BT_CONN 60000
-boolean capacitive_commands=false;
 unsigned long int firstSoundTime = 0;
 #define TIME_TO_SETUP 5000
 
 // MULTITHREADING
 #define PING_INTERVAL 71 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
-
+boolean headButtons=false;
+boolean bodyButtons=false;
+boolean sonars=false;
 
 //BLUETOOTH
 //buttons
@@ -105,9 +106,11 @@ FilterOnePole front_body_f( LOWPASS, 1.0 );
 //int highBodyThreshold[3]={8040,7400,5575};
 
 //VALORI CON SONAR E BODY ATTIVI - HEAD DISATTIVO
-int lowBodyThreshold[3]={6800,6400,4550};
-int highBodyThreshold[3]={7250,6850,5000};
+//int lowBodyThreshold[3]={6800,6400,4550};
+//int highBodyThreshold[3]={7250,6850,5000};
 
+int lowBodyThreshold[3];
+int highBodyThreshold[3];
 
 #define  CAPACITIVE_LOOP_TIME 0
 #define  HUGTIME 4000
@@ -130,11 +133,14 @@ touchTypes touchState = nothing;
 CapacitiveSensor* bodySensor[N_BODY_SENSORS];
 long bodySensorValue[N_BODY_SENSORS];
 long bodySensorValue_nf[N_BODY_SENSORS];
+long bodySensorAverage[N_BODY_SENSORS]; 
+long bodySensorValueSum[N_BODY_SENSORS];
 unsigned long int lastCapacitiveLoopTime=0;
 enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
 bodyCapacitiveStates capacitiveState[N_BODY_SENSORS];
 bodyCapacitiveStates previousCapacitiveState[N_BODY_SENSORS];
 bodyCapacitiveStates previousDynamicCapacitiveState[N_BODY_SENSORS];
+int consecutiveSoft[N_BODY_SENSORS]={0,0,0};
 unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int softStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
@@ -286,7 +292,7 @@ double speed_trg = 18.0f;
 #define FAR_DISTANCE 200.0f
 #define CLOSE_DISTANCE 80.0f
 #define VERYCLOSE_DISTANCE 50.0f
-#define MEDIAN_NUMBER 7
+#define MEDIAN_NUMBER 9
 #define FILTERFREQUENCY 1.0f        //PB filter frequency
 #define COUNTER 50                  //when targetPos reach COUNTER(right) or -COUNTER(left) the robot is sure about where obstacle is(that's for avoid sonars false readings)
 #define MAX_COUNTER 2*COUNTER             //maximum COUNTER value
@@ -351,18 +357,20 @@ void setup() {
   voltageCheckSetup();
   sonarSetup();
   headLedSetup();
+  bodyCapacitiveCalibration();
 }
 
 void loop() {
-  //FirstSound();
+  FirstSound();
   //sensori
   headCapacitiveLoop();
-  //bodyCapacitiveLoop();
+  bodyCapacitiveLoop();
   btInterpreter();
+  headCapacitiveInterpreter();
   voltageCheckloop();
-  //sonarLoop();
+  sonarLoop();
   fotoresLoop();
-  microLoop();
+  //microLoop();
   headLedLoop();
   print();
   //attuatori
@@ -481,7 +489,7 @@ void print()  {
       Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
     Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.println(pressedButton);
 
-*/    Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
+    Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
     Serial3.print(headSensorValue[2]); Serial3.print("    "); Serial3.print(headSensorValue[3]); Serial3.print("    "); Serial3.println(pressedButton);
 /*
    Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]);Serial3.print("    ");

@@ -7,9 +7,6 @@ void headCapacitiveSetup() {
     headSensor[i]->set_CS_AutocaL_Millis(SCALIBRATION_TIMER);
 }
 
-unsigned long int startTime = 0;
-boolean overTheLimit = false;
-
 int FindMax(long ARRAY[], byte START, byte END)
 {
   int MAXIMUM, LOCATION;
@@ -29,32 +26,34 @@ int FindMax(long ARRAY[], byte START, byte END)
 }
 void checkBT() {
   if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
-    capacitive_commands = true;
+    headButtons = true;
     //Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
     playS(17);
   } else if (Serial3.available()) firstSoundTime = millis();
 }
-unsigned long int lastPressedButtonTime=0;
+unsigned long int lastPressedButtonTime = 0;
 
 void headCapacitiveLoop() {
   boolean checkMax = false;
   checkBT();
-  if (/*(gameState == wait_answer || capacitive_commands || (testState == test_exe && testType == head_capacitives_t))&&*/ millis()-lastPressedButtonTime>4000) {
+  if (headButtons==true && millis() - lastPressedButtonTime > 4000) {
 
     for (int i = 0; i < N_HEAD_SENSORS; i++) {
       headSensorValue[i] = headSensor[i]->capacitiveSensor(4);
       if (headSensorValue[i] > headThreshold && checkMax == false)
         checkMax = true;
     }
-    if (checkMax){ pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS); lastPressedButtonTime=millis();}
+    if (checkMax) {
+      pressedButton = FindMax(headSensorValue, 0, N_HEAD_SENSORS);
+      lastPressedButtonTime = millis();
+    }
     else pressedButton = -1;
     checkMax = false;
-    if(capacitive_commands)headCapacitiveInterpreter();
-  }else pressedButton = -1;
+  } else pressedButton = -1;
 }
 
 void headCapacitiveInterpreter() {
-  if (capacitive_commands && gameState != wait_answer) {
+  if (headButtons && gameState != wait_answer) {
     switch (interpreterState) {
       case choose_modality: chooseModCap(); break;
       case choose_game:     chooseGameCap(); break;
@@ -70,9 +69,9 @@ void headCapacitiveInterpreter() {
 void chooseModCap() {
   switch (pressedButton) {
     case -1: break;
-    case 0: interpreterState = choose_game; break;
-    case 1: interpreterState = fam_modality; break;
-    case 2: interpreterState = test_modality; break;
+    case 0: interpreterState = choose_game;sonars=false;bodyButtons=false; break;
+    case 1: interpreterState = fam_modality;headButtons=false; break;
+    case 2: interpreterState = test_modality; sonars=false; bodyButtons=false; headButtons=false; break;
     case 3: break;
   }
 }

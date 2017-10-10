@@ -28,12 +28,15 @@ void chooseTest() {
     switch (b) {
       case '1':
         testType = sonar_t;
+        sonars=true;
+        bodyButtons=true;
         Serial3.println("Viene visualizzata la distanza captata dal Sonar Frontale. Muovere una mano o un oggetto davanti al sonar per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
         testState = start_test;
         break;
 
       case '2':
+        headButtons=true;
         testType = head_capacitives_t;
         Serial3.println("Viene visualizzato il numero[0-3] del capacitivo toccato. Toccare uno alla volta i capacitivi posti sulla testa del robot per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
@@ -41,6 +44,8 @@ void chooseTest() {
         break;
 
       case '3':
+        sonars=true;
+        bodyButtons=true;
         testType = body_capacitives_t;
         Serial3.println("Vengono visualizzati il valore e lo stato captato dal capacitivo posto nella parte posteriore sinistra(del robot). Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
@@ -140,6 +145,8 @@ void sonarTest() {
         Serial3.println("Premere START per iniziare, END per terminare il test");
       }
       else {
+        sonars=false;
+        bodyButtons=false;
         numSonarTest = 0;
         testState = tests_descr;
         testType = no_one;
@@ -154,6 +161,7 @@ void headCapacitiveTest() {
   if (Serial3.available()) {
     b = Serial3.read();
     if (b == '1') {
+      headButtons=false;
       testState = tests_descr;
       testType = no_one;
       Serial3.println("Test dei Capacitivi Testa terminato.");
@@ -180,6 +188,8 @@ void bodyCapacitiveTest() {
         Serial3.println("Premere START per iniziare, END per terminare il test");
       }
       else {
+        sonars=false;
+        bodyButtons=false;
         numBodyTest = 0;
         testState = tests_descr;
         testType = no_one;

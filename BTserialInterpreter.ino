@@ -233,6 +233,9 @@ void chooseModality() {
         if (!quadrato) {
           quadrato = true;
           interpreterState = fam_modality;
+          sonars=true;
+          bodyButtons=true;
+          headButtons=false;
           movementFinishTime = millis();
         }
         break;
@@ -240,6 +243,9 @@ void chooseModality() {
         Serial.println("A-CERCHIO");
         if (!cerchio) {
           cerchio = true;
+          sonars=false;
+          bodyButtons=false;
+          headButtons=false;
           interpreterState = test_modality;
         }
         break;
@@ -315,6 +321,7 @@ void sgWaiting() {
           croce = true;
           interpreterState = game_modality;
           gameState = setting;
+          headButtons=true;
         }
         break;
 

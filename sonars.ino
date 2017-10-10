@@ -1,18 +1,18 @@
 void sonarLoop() {
-
-  for (uint8_t i = 0; i < SONAR_NUM; i++) { // Loop through all the sensors.
-    if (millis() >= pingTimer[i]) {         // Is it this sensor's time to ping?
-      pingTimer[i] += PING_INTERVAL * SONAR_NUM;  // Set next time this sensor will be pinged.
-      if (i == 0 && currentSensor == SONAR_NUM - 1)  // Sensor ping cycle complete, do something with the results.
-        sonar[currentSensor].timer_stop();          // Make sure previous timer is canceled before starting a new ping (insurance).
-      currentSensor = i;                          // Sensor being accessed.
-      cm[currentSensor] = MAX_DISTANCE;                      // Make distance zero in case there's no ping echo for this sensor.
-      sonar[currentSensor].ping_timer(echoCheck); // Do the ping (processing continues, interrupt will call echoCheck to look for echo).
+  if (sonars) {
+    for (uint8_t i = 0; i < SONAR_NUM; i++) { // Loop through all the sensors.
+      if (millis() >= pingTimer[i]) {         // Is it this sensor's time to ping?
+        pingTimer[i] += PING_INTERVAL * SONAR_NUM;  // Set next time this sensor will be pinged.
+        if (i == 0 && currentSensor == SONAR_NUM - 1)  // Sensor ping cycle complete, do something with the results.
+          sonar[currentSensor].timer_stop();          // Make sure previous timer is canceled before starting a new ping (insurance).
+        currentSensor = i;                          // Sensor being accessed.
+        cm[currentSensor] = MAX_DISTANCE;                      // Make distance zero in case there's no ping echo for this sensor.
+        sonar[currentSensor].ping_timer(echoCheck); // Do the ping (processing continues, interrupt will call echoCheck to look for echo).
+      }
     }
+    check_obstacle();
   }
-  check_obstacle();
 }
-
 void check_obstacle() { // Sensor ping cycle complete, do something with the results.
 
   frontMedian.addValue(cm[0]);
@@ -20,11 +20,11 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
   leftMedian.addValue(cm[2]);
   backMedian.addValue(cm[3]);
 
-//  f_front = frontMedian.getMedian();
-//  f_right = rightMedian.getMedian();
-//  f_left  =  leftMedian.getMedian();
-//  f_back = backMedian.getMedian();
-  
+  //  f_front = frontMedian.getMedian();
+  //  f_right = rightMedian.getMedian();
+  //  f_left  =  leftMedian.getMedian();
+  //  f_back = backMedian.getMedian();
+
 
   float mf_front = frontMedian.getMedian();
   float mf_right = rightMedian.getMedian();
@@ -43,7 +43,7 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
 
   previous_distance = actual_distance;
 
- 
+
   if (f_front > FAR_DISTANCE && f_right > FAR_DISTANCE && f_left > FAR_DISTANCE) {
     //serial.println("NO obstacle");
     right_obstacle = false;

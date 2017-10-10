@@ -8,12 +8,29 @@ void bodyCapacitiveSetup() {
   }
 }
 
+void bodyCapacitiveCalibration() {
+  sonars=true;
+  for (int i = 0; i < 300; i++) {
+    sonarLoop();
+    for (int i = 0; i < N_BODY_SENSORS; i++) {
+      bodySensorValueSum[i] += bodySensor[i]->capacitiveSensorRaw(10);
+    }
+  }
+  for (int i = 0; i < N_BODY_SENSORS; i++) {
+    bodySensorAverage[i] = bodySensorValueSum[i] / 300;
+    lowBodyThreshold[i]= bodySensorAverage[i] + 250;
+    highBodyThreshold[i]=lowBodyThreshold[i] + 650;
+    Serial3.print(bodySensorAverage[i]); Serial3.print("   ");
+  }
+  Serial3.println();
+  sonars=false;
+}
+
 void bodyCapacitiveLoop() {
-  if ((interpreterState == fam_modality || (testState == test_exe && testType==body_capacitives_t))) { //&& millis()-lastCapacitiveLoopTime>CAPACITIVE_LOOP_TIME
-  updateCapacitiveFlags();
-  if(!(testState == test_exe && testType==body_capacitives_t))
-  reactions();
-  lastCapacitiveLoopTime = millis();
+  if (bodyButtons) {
+    updateCapacitiveFlags();
+    if (!(testState == test_exe && testType == sonar_t))
+      reactions();
   }
 }
 
@@ -30,13 +47,11 @@ void updateCapacitiveFlags() {
   left_body_f.input(bodySensorValue_nf[0]);
   right_body_f.input(bodySensorValue_nf[1]);
   front_body_f.input(bodySensorValue_nf[2]);
-  bodySensorValue[0]=left_body_f.output();
-  bodySensorValue[1]=right_body_f.output();
-  bodySensorValue[2]=front_body_f.output();
-  updateBodyState(0);
-  updateBodyState(1);
-  updateBodyState(2);
+  bodySensorValue[0] = left_body_f.output();
+  bodySensorValue[1] = right_body_f.output();
+  bodySensorValue[2] = front_body_f.output();
   for (int i = 0; i < N_BODY_SENSORS; i++) {
+    updateBodyState(i);
     pats += pat[i];
     hits += hit[i];
   }
@@ -58,9 +73,16 @@ void updateBodyState(int i) {
     }
   }
   else if (bodySensorValue[i] >= lowBodyThreshold[i] && bodySensorValue[i] < highBodyThreshold[i]) {
+//    consecutiveSoft[i]++;
+//    if(consecutiveSoft[i]>=50){
+//      lowBodyThreshold[i]= bodySensorValue[i] + 250;
+//      highBodyThreshold[i]=bodySensorValue[i] + 700;
+//      Serial3.print("Nuovo threshold sensore "); Serial3.print(i); Serial3.print(": ");Serial3.println(lowBodyThreshold[i]);
+//    }
     if (capacitiveState[i] != soft_touch) {
       previousCapacitiveState[i] = capacitiveState[i];
       capacitiveState[i] = soft_touch;
+      consecutiveSoft[i]=0;
       previousStateStartTime[i] = stateStartTime[i];
       stateStartTime[i] = millis();
     }
@@ -258,12 +280,12 @@ void checkHit0() {
     for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
     if (hit[0] == N_HITS) {
       for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
-      startMovement(make_sad2L, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      if (!(testState == test_exe && testType == body_capacitives_t)) startMovement(make_sad2L, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("N COLPI A SX!");
       resetCapacitive();
     } else {
       hit[0]++;
-      startMovement(scared_hitL, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+       if (!(testState == test_exe && testType == body_capacitives_t)) startMovement(scared_hitL, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("UN COLPO A SX!");
       resetCapacitive();
     }
@@ -278,12 +300,12 @@ void checkHit1() {
     for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
     if (hit[1] == N_HITS) {
       for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
-      startMovement(make_sad2R, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+       if (!(testState == test_exe && testType == body_capacitives_t)) startMovement(make_sad2R, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("N COLPI A DX!");
       resetCapacitive();
     } else {
       hit[1]++;
-      startMovement(scared_hitR, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+       if (!(testState == test_exe && testType == body_capacitives_t)) startMovement(scared_hitR, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("UN COLPO A DX!");
       resetCapacitive();
     }
@@ -297,12 +319,12 @@ void checkHit2() {
     for (int j = 0; j < N_BODY_SENSORS; j++) pat[j] = 0;
     if (hit[2] == N_HITS) {
       for (int j = 0; j < N_BODY_SENSORS; j++) hit[j] = 0;
-      startMovement(make_sad2, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+       if (!(testState == test_exe && testType == body_capacitives_t)) startMovement(make_sad2, red, color_pulse, 33); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("N COLPI AL CENTRO!");
       resetCapacitive();
     } else {
       hit[2]++;
-      startMovement(scared_hit, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
+      if (!(testState == test_exe && testType == body_capacitives_t)) startMovement(scared_hit, red, color_pulse, 34); //13 è l'esempio di audio che deve eseguire TODO VA CAMBIATO
       Serial3.println("UN COLPO AL CENTRO!");
       resetCapacitive();
     }

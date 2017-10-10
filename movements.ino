@@ -232,6 +232,8 @@ void startMovement(byte movement, uint32_t color, ledStates ledState, byte audio
   headLedUpdate(color, ledState);
   playS(audio);
   movementI = 0;
+  sonars=true;
+  bodyButtons=true;
   move = true;
 }
 
@@ -249,6 +251,8 @@ void startMovement(byte movement, ledStates ledState, byte audio) {
   headLedUpdate(ledState);
   playS(audio);
   movementI = 0;
+  sonars=true;
+  bodyButtons=true;
   move = true;
 }
 
@@ -266,6 +270,8 @@ void startMovement(byte movement, uint32_t color, ledStates ledState) {
   headLedUpdate(color, ledState);
   updateSong();
   movementI = 0;
+  sonars=true;
+  bodyButtons=true;
   move = true;
 }
 void startMovement(byte movement, uint32_t color) {
@@ -282,6 +288,8 @@ void startMovement(byte movement, uint32_t color) {
   headLedSetColor(color);
   updateSong();
   movementI = 0;
+  sonars=true;
+  bodyButtons=true;
   move = true;
 }
 
@@ -299,6 +307,8 @@ void startMovement(byte movement, ledStates ledState) {
   headLedUpdate(ledState);
   updateSong();
   movementI = 0;
+  sonars=true;
+  bodyButtons=true;
   move = true;
 }
 
@@ -317,6 +327,8 @@ void startMovement(byte movement) {
   updateSong();
   movementI = 0;
   move = true;
+  sonars=true;
+  bodyButtons=true;
 }
 
 void stopMovement() {
@@ -332,7 +344,11 @@ void stopMovement() {
   headLedUpdate(rainbow_cycle);
   stopS();
   movementFinishTime = millis();
-  if (gameState == mov) gameState = make_question;
+  if (gameState == mov){ 
+    gameState = make_question;
+    sonars=false;
+    bodyButtons=false;
+  }
 }
 
 void stopAutFollow() {
