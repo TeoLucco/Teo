@@ -135,14 +135,12 @@ long bodySensorValue[N_BODY_SENSORS];
 long bodySensorValue_nf[N_BODY_SENSORS];
 long bodySensorAverage[N_BODY_SENSORS]; 
 long bodySensorValueSum[N_BODY_SENSORS];
-unsigned long int lastCapacitiveLoopTime=0;
 enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
 bodyCapacitiveStates capacitiveState[N_BODY_SENSORS];
 bodyCapacitiveStates previousCapacitiveState[N_BODY_SENSORS];
 bodyCapacitiveStates previousDynamicCapacitiveState[N_BODY_SENSORS];
 int consecutiveSoft[N_BODY_SENSORS]={0,0,0};
 unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
-unsigned long int softStartTime[N_BODY_SENSORS] = {0, 0, 0};
 unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
 
 
