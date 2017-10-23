@@ -201,6 +201,8 @@ uint32_t Wheel(byte WheelPos) {
 //FUNZIONI DI CAMBIO STATO(funzioni "pubbliche") E COLORE
 void headLedUpdate(uint32_t color,ledStates ledState){
   if(head_color!=color || led_state!=ledState){ 
+    setBodyLedOff();
+    bodyI=0;
     switch(ledState){
       case color_pulse:   setHeadLedPulse(color); break;
       case color_wipe:    setHeadLedWipe(color); break;
@@ -212,6 +214,8 @@ void headLedUpdate(uint32_t color,ledStates ledState){
 
 void headLedUpdate(ledStates ledState){
   if(led_state!=ledState){
+    setBodyLedOff();
+    bodyI=0;
     switch(ledState){
         case color_pulse:   setHeadLedPulse(); break;
         case color_wipe:    setHeadLedWipe(); break;

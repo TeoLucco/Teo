@@ -8,13 +8,9 @@ void resetButtons() {
 }
 
 void FromRobotToApp() {
-  if (Serial.available()) {
-    b =  Serial.read();
-    // mirror the commands back to the serial monitor
-    // makes it easy to follow the commands
-    Serial.write(b);
-    Serial3.write(b);
-  }
+ 
+    //Serial3.write();
+  
 }
 
 void famMod() {
@@ -22,11 +18,11 @@ void famMod() {
     b = Serial3.read();
     switch (b) {
       case '0':
-        //Serial.println("0");
-        if (noneB) {
-          noneB = false;
+        //Serial3.println("0");
+//        if (noneB) {
+//          noneB = false;
           resetButtons();
-          if (actual_movement == no_movement && actual_movement != idle && actual_movement != dontwonna && prev_movement != idle && prev_movement != follow && prev_movement != autonomous_movement) {
+          if (actual_movement == no_movement && prev_movement != idle && prev_movement != follow && prev_movement != autonomous_movement) {
             triskar.stop2();
             move = false;
           } else if (actual_movement == no_movement && prev_movement == follow) {
@@ -38,24 +34,34 @@ void famMod() {
             prev_movement = no_movement;
           }
           else if (actual_movement == no_movement && prev_movement == idle) {
-            startMovement(idle, rainbow_cycle);
+            //startMovement(idle, rainbow_cycle);
+            actual_movement = idle;
+            prev_movement = no_movement;
           }
-        }
+   //}     
         break;
 
       case '1':
-        Serial.println("1-SU");
-        noneB = true;
+        Serial3.println("1-SU");
+        //noneB = true;
         if (!veryclose_front_obstacle && actual_movement != dontwonna) {
+          if (actual_movement == idle) {
+            prev_movement = idle;
+            actual_movement = no_movement;
+          }
           move = true;
           movementFinishTime = millis();
           triskar.run(speed_trg, 0.0);
         } else if (veryclose_front_obstacle && actual_movement != dontwonna)  startMovement(dontwonna);
         break;
       case '2':
-        Serial.println("2-GIU'");
-        noneB = true;
+        Serial3.println("2-GIU'");
+        //noneB = true;
         if (!veryclose_back_obstacle && actual_movement != dontwonna) {
+          if (actual_movement == idle) {
+            prev_movement = idle;
+            actual_movement = no_movement;
+          }
           move = true;
           triskar.run(-speed_trg, 0.0);
           movementFinishTime = millis();
@@ -63,8 +69,8 @@ void famMod() {
         break;
 
       case '3':
-        Serial.println("3-SINISTRA");
-        noneB = true;
+        Serial3.println("3-SINISTRA");
+        //noneB = true;
         move = true;
         if (actual_movement == no_movement) {
           triskar.run(0.0, speed_trg / robot_radius);
@@ -89,8 +95,8 @@ void famMod() {
         break;
 
       case '4':
-        Serial.println("4-DESTRA");
-        noneB = true;
+        Serial3.println("4-DESTRA");
+        //noneB = true;
         move = true;
         if (actual_movement == no_movement) {
           triskar.run(0.0, -speed_trg / robot_radius);
@@ -115,33 +121,33 @@ void famMod() {
       //Code when RIGHT key is pressed
 
       case '5':
-        Serial.println("5-SELECT");
+        Serial3.println("5-SELECT");
         if (!select) {
-          noneB = true;
+          //noneB = true;
           select = true;
           speed_trg -= 3;
           if (speed_trg < 0)     speed_trg = 0;
-          Serial.print("Speed trg:  ");
-          Serial.println(speed_trg);
+          Serial3.print("Speed trg:  ");
+          Serial3.println(speed_trg);
         }
         break;
 
       case '6':
-        Serial.println("6-START");
+        Serial3.println("6-START");
         if (!startbutton) {
-          noneB = true;
+          //noneB = true;
           startbutton = true;
           speed_trg += 3;
           if (speed_trg > 35)   speed_trg = 35;
-          Serial.print("Speed trg:  ");
-          Serial.println(speed_trg);
+          Serial3.print("Speed trg:  ");
+          Serial3.println(speed_trg);
         }
         break;
 
       case '7':
-        Serial.println("7-TRIANGOLO");
+        Serial3.println("7-TRIANGOLO");
         if (!triangolo) {
-          noneB = true;
+          //noneB = true;
           triangolo = true;
           //startMovement(make_happy[2]);
 
@@ -153,11 +159,11 @@ void famMod() {
           //CODICE PER ATTIVARE AUTONOMOUS MOVEMENT
           btMov = true; //mi segno che il comando è stato dato da bluetooth, quindi la fotoresistenza non deve intervenire.
           if (actual_movement == no_movement || actual_movement == follow || actual_movement == idle) {
-            Serial.println("start Autonomous Movement");
+            Serial3.println("start Autonomous Movement");
             startMovement(autonomous_movement);
 
           } else {
-            Serial.println("start Following");
+            Serial3.println("start Following");
             stopMovement();
             startMovement(follow);
             actual_obstacle = none;
@@ -167,9 +173,9 @@ void famMod() {
         }
         break;
       case '8':
-        Serial.println("8-QUADRATO");
+        Serial3.println("8-QUADRATO");
         if (!quadrato) {
-          noneB = true;
+          //noneB = true;
           quadrato = true;
           startMovement(next_movement);
           if (next_movement < make_sad2)
@@ -179,9 +185,9 @@ void famMod() {
         break;
 
       case '9':
-        Serial.println("9-X");
+        Serial3.println("9-X");
         if (!croce) {
-          noneB = true;
+          //noneB = true;
           croce = true;
           startMovement(make_happy2);
           //startMovement(makeCircle);
@@ -189,10 +195,10 @@ void famMod() {
         }
         break;
       case 'A':
-        Serial.println("A-CERCHIO");
+        Serial3.println("A-CERCHIO");
         if (!cerchio) {
           cerchio = true;
-          noneB = true;
+          //noneB = true;
           //startMovement(make_happy[3]);
           //CODICE PER DISATTIVARE FOLLOWING E AUTONOMOUS MOVEMENT
           btMov = false;
@@ -221,7 +227,7 @@ void chooseModality() {
         break;
 
       case '7':
-        Serial.println("7-TRIANGOLO");
+        Serial3.println("7-TRIANGOLO");
         if (!triangolo) {
           triangolo = true;
           interpreterState = choose_game;
@@ -229,23 +235,21 @@ void chooseModality() {
         }
         break;
       case '8':
-        Serial.println("8-QUADRATO");
+        Serial3.println("8-QUADRATO");
         if (!quadrato) {
           quadrato = true;
           interpreterState = fam_modality;
-          sonars=true;
-          bodyButtons=true;
-          headButtons=false;
+          previousWorkingCapacitives=workingCapacitives;
+          workingCapacitives=body;
           movementFinishTime = millis();
         }
         break;
       case 'A':
-        Serial.println("A-CERCHIO");
+        Serial3.println("A-CERCHIO");
         if (!cerchio) {
           cerchio = true;
-          sonars=false;
-          bodyButtons=false;
-          headButtons=false;
+          previousWorkingCapacitives=workingCapacitives;
+          workingCapacitives=noOne;
           interpreterState = test_modality;
         }
         break;
@@ -266,7 +270,7 @@ void chooseGame() {
         break;
 
       case '7':
-        Serial.println("7-TRIANGOLO");
+        Serial3.println("7-TRIANGOLO");
         if (!triangolo) {
           triangolo = true;
           interpreterState = sg_waiting;
@@ -275,7 +279,7 @@ void chooseGame() {
         }
         break;
       case '8':
-        Serial.println("8-QUADRATO");
+        Serial3.println("8-QUADRATO");
         if (!quadrato) {
           quadrato = true;
           interpreterState = sg_waiting;
@@ -285,14 +289,14 @@ void chooseGame() {
         break;
 
       case '9':
-        Serial.println("9-X");
+        Serial3.println("9-X");
         if (!croce) {
           croce = true;
           interpreterState = sg_waiting;
         }
         break;
       case 'A':
-        Serial.println("A-CERCHIO");
+        Serial3.println("A-CERCHIO");
         if (!cerchio) {
           cerchio = true;
           interpreterState = sg_waiting;
@@ -316,12 +320,13 @@ void sgWaiting() {
         break;
 
       case '9':
-        Serial.println("9-X");
+        Serial3.println("9-X");
         if (!croce) {
           croce = true;
           interpreterState = game_modality;
           gameState = setting;
-          headButtons=true;
+          previousWorkingCapacitives=workingCapacitives;
+          workingCapacitives=head;
         }
         break;
 
