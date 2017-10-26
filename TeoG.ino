@@ -1,5 +1,6 @@
 //LIBRARIES
 #include <DualMC33926MotorShield.h>
+#include <MC33926.h>
 #include <Triskar.h>
 #include <Encoder.h>
 #include <NewPing.h>
@@ -15,10 +16,7 @@ unsigned long int firstSoundTime = 0;
 #define TIME_TO_SETUP 5000
 
 // MULTITHREADING
-#define PING_INTERVAL 71 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
-boolean headButtons=false;
-boolean bodyButtons=false;
-boolean sonars=false;
+#define PING_INTERVAL 33 //71 con capacitivi // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 //BLUETOOTH
 //buttons
@@ -28,11 +26,11 @@ boolean cerchio;
 boolean croce;
 boolean startbutton;
 boolean select;
-boolean noneB=true;
+//boolean noneB=true;
 char b = ' ';
 //interpreter states
-enum btStates {choose_modality, choose_game, sg_waiting, game_modality, fam_modality, test_modality, discharge};
-btStates interpreterState = choose_modality;
+enum btStates {choose_modality, fam_modality, choose_game, sg_waiting, game_modality, test_modality, discharge};
+btStates interpreterState = fam_modality;
 boolean btMov=false;
 
 //HARDWARE TESTS
@@ -57,6 +55,7 @@ unsigned long int lastWarning = 0; //last time warning advice
 
 //SOUND VARIABLES
 boolean firstSound = false;
+boolean speakers=true;
 unsigned long int startPlayTime = 0;
 int lastPlayed=0;
 DFRobotDFPlayerMini myDFPlayer;
@@ -82,84 +81,30 @@ boolean questionResult[questionsPerEx];
 float questionTime[questionsPerEx];
 int tries[questionsPerEx];
 
-
 //CAPACITIVES
-#define SCALIBRATION_VALUE 300
-#define SCALIBRATION_TIMER 10000
 #define N_HEAD_SENSORS 4
 #define N_BODY_SENSORS 3
-
-//BODY CAPACITIVES
-#define BODY_FRONT_S 25
-#define BODY_FRONT_R 23
-#define BODY_SX_S 33
-#define BODY_SX_R 31
-#define BODY_DX_S 29
-#define BODY_DX_R 27
-
-FilterOnePole left_body_f( LOWPASS, 1.0 );
-FilterOnePole right_body_f( LOWPASS, 1.0 );
-FilterOnePole front_body_f( LOWPASS, 1.0 );
-
-//VALORI CON HEAD E BODY ATTIVI CONTEMPORANEAMENTE
-//int lowBodyThreshold[3]={7540,6900,5075};
-//int highBodyThreshold[3]={8040,7400,5575};
-
-//VALORI CON SONAR E BODY ATTIVI - HEAD DISATTIVO
-//int lowBodyThreshold[3]={6800,6400,4550};
-//int highBodyThreshold[3]={7250,6850,5000};
-
-int lowBodyThreshold[3];
-int highBodyThreshold[3];
-
-#define  CAPACITIVE_LOOP_TIME 0
-#define  HUGTIME 4000
-#define  MIN_PAT_TIME 250
-#define  MAX_PAT_TIME 5000
-#define  RESET_PAT_TIME 5000
-#define  MIN_HIT_TIME 10
-#define  MAX_HIT_TIME 500
-#define  RESET_HIT_TIME 20000
-#define  N_PATS 3
-#define  N_HITS 3
+#define RESET_PAT_TIME 5000
+#define RESET_HIT_TIME 20000
+#define N_PATS 3
+#define N_HITS 3
+enum warKingsCapacitives {noOne, head, body, both, body_t};
+warKingsCapacitives workingCapacitives =body;
+warKingsCapacitives previousWorkingCapacitives =noOne;
+enum touched_parts {noWhere,leftT,rightT,frontT};
+touched_parts touched=noWhere;
+enum touch_types {nothing, hugT, patT, hitT};
+touch_types touch_type=nothing;
+int pressedButton = -1;
+boolean headInterpreter=false;
 int pat[N_BODY_SENSORS] = {0, 0, 0};
 int hit[N_BODY_SENSORS] = {0, 0, 0};
-int pats;
-int hits;
+int pats=0;
+int hits=0;
 int hugsCount = 0;
-enum touchTypes {nothing, hug, pat0, pat1, pat2, hit0, hit1, hit2};
-touchTypes touchState = nothing;
+unsigned long int lastPatTime[N_BODY_SENSORS];
+unsigned long int lastHitTime[N_BODY_SENSORS];
 
-CapacitiveSensor* bodySensor[N_BODY_SENSORS];
-long bodySensorValue[N_BODY_SENSORS];
-long bodySensorValue_nf[N_BODY_SENSORS];
-long bodySensorAverage[N_BODY_SENSORS]; 
-long bodySensorValueSum[N_BODY_SENSORS];
-enum bodyCapacitiveStates {no_touch, soft_touch, strong_touch};
-bodyCapacitiveStates capacitiveState[N_BODY_SENSORS];
-bodyCapacitiveStates previousCapacitiveState[N_BODY_SENSORS];
-bodyCapacitiveStates previousDynamicCapacitiveState[N_BODY_SENSORS];
-int consecutiveSoft[N_BODY_SENSORS]={0,0,0};
-unsigned long int stateStartTime[N_BODY_SENSORS] = {0, 0, 0};
-unsigned long int previousStateStartTime[N_BODY_SENSORS] = {0, 0, 0};
-
-
-FastRunningMedian<unsigned int, 10, 0> body_median[3];
-
-//HEAD CAPACITIVES
-#define HEAD_BUTTON_0S 37
-#define HEAD_BUTTON_0R 35
-#define HEAD_BUTTON_1S 41
-#define HEAD_BUTTON_1R 39
-#define HEAD_BUTTON_2S 45
-#define HEAD_BUTTON_2R 43
-#define HEAD_BUTTON_3S 49
-#define HEAD_BUTTON_3R 47
-
-const int headThreshold = 1300;
-CapacitiveSensor* headSensor[N_HEAD_SENSORS];
-long headSensorValue[N_HEAD_SENSORS];
-int pressedButton = -1;
 
 //FRONT LEDS PINS, CONSTANT AND VARIABLES
 #define FRONT_LEDPIN 9
@@ -178,6 +123,7 @@ const uint32_t yellow = head_strip.Color(255, 170, 0);
 const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
+boolean micro=true;
 #define soundPin  A3 //sound sensor attach to A11
 #define microISequence 250
 #define microISequenceShortMin 20
@@ -196,8 +142,7 @@ unsigned long int movementFinishTime = TIME_TO_SETUP + 1000;
 //--------Motor 1-----
 #define M1DIR 46
 #define M1PWM 12
-#define M1FB A6
-
+#define M1FB  A6
 //-------SHIELD 2-------
 #define nD2m23 48
 #define nSFm23 52
@@ -280,7 +225,7 @@ double startPosX = 0;
 double startPosY = 0;
 double startPosTh = 0;
 
-double speed_trg = 18.0f;
+int speed_trg = 18;
 
 
 //---------SONARS---------
@@ -342,39 +287,36 @@ boolean no_obstacle = true;
 
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Arduino is ready");
+  Serial.begin(38400);
   srand(millis());
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
   Serial3.println("Are YOU ready??");
   dfPlayerSetup();
+  bodyLedSetup();
   fotoresSetup();
-  bodyCapacitiveSetup();
-  headCapacitiveSetup();
   voltageCheckSetup();
   sonarSetup();
   headLedSetup();
-  bodyCapacitiveCalibration();
 }
 
 void loop() {
   FirstSound();
   //sensori
-  headCapacitiveLoop();
-  bodyCapacitiveLoop();
   btInterpreter();
+  capacitiveSerialLoop();
   headCapacitiveInterpreter();
   voltageCheckloop();
+  bodyLedLoop();
   sonarLoop();
   fotoresLoop();
   //microLoop();
   headLedLoop();
-  print();
+  //print();
   //attuatori
   if (interpreterState != test_modality && interpreterState != choose_modality) {
-    pidLoop();
-    makeMovement();
+    //pidLoop();
+    //makeMovement();
     gameModality();
   }
 }

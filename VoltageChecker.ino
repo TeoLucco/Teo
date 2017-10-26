@@ -14,7 +14,13 @@
  
   Author:       W.A. Smith, https://startingelectronics.org/articles/arduino/measuring-voltage-with-arduino/
 --------------------------------------------------------------*/
-
+int battery_indicator=0;
+#define MIN_INDICATOR_VOLTAGE 11.0f
+#define MAX_INDICATOR_VOLTAGE 12.5f
+#define MIN_INDICATOR_VALUE 0.0f
+#define MAX_INDICATOR_VALUE 5.0f
+#define BATTERY_UPDATE_TIME 20000
+unsigned long int lastBatteryUpdate=0;
 void voltageCheckSetup()
 {
     // take a number of analog samples and add them up
@@ -26,6 +32,9 @@ void voltageCheckSetup()
     // use 5.0 for a 5.0V ADC reference voltage
     // 5.015V is the calibrated reference voltage
     voltage = (((float)sum / (float)NUM_SAMPLES * 5.005) / 1024.0)*4.013;
+    battery_indicator=constrain(mapfloat(voltage,MIN_INDICATOR_VOLTAGE,MAX_INDICATOR_VOLTAGE,MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE),MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE);
+    Serial3.print("*B" + String(battery_indicator) + "*");
+    lastBatteryUpdate=millis();
     // send voltage for display on Serial Monitor
     // voltage multiplied by 11 when using voltage divider that
     // divides by 11. 11.132 is the calibrated voltage divide
@@ -40,7 +49,10 @@ void voltageCheckSetup()
     }
 }
 
-
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
+ return (float)(x - in_min) * (out_max - out_min) / (float)(in_max - in_min) + out_min;
+}
 
 
 void voltageCheckloop()
@@ -60,6 +72,11 @@ void voltageCheckloop()
     // value
     sample_count = 0;
     sum = 0;
+    if(millis()-lastBatteryUpdate>BATTERY_UPDATE_TIME){
+       battery_indicator=constrain(mapfloat(voltage,MIN_INDICATOR_VOLTAGE,MAX_INDICATOR_VOLTAGE,MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE),MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE);
+       Serial3.print("*B" + String(battery_indicator) + "*");
+       lastBatteryUpdate=millis();
+    }
     if(voltage<=11.5 && millis()-lastWarning>15000){
       playS(2);
       lastWarning=millis();
