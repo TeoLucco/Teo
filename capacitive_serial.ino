@@ -35,7 +35,6 @@ void reciveSerial() {
                 if (pat[i] == N_PATS) {
                   resetPats();
                   //playS(23); if(led_state!=led_off) headLedUpdate(green, color_wipe);
-
                 } else {
                   pat[i]++;
                   pats++;

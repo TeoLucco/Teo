@@ -6,6 +6,7 @@ void resetButtons() {
   startbutton = false;
   select = false;
 }
+
 #define SENDSTATETIME 1000
 unsigned long int lastSendState=0;
 void sendState() {
@@ -13,7 +14,6 @@ void sendState() {
     Serial3.print("*A" + String(interpreterState) + "*");
     lastSendState=millis();
   }
-
 }
 
 void famMod() {
@@ -200,6 +200,7 @@ void startMovementBT() {
     case 'I': break;//START DI MOSCACIECA
   }
 }
+
 
 void playAudio() {
   switch (b) {

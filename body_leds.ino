@@ -50,7 +50,7 @@ void wipeLoop(uint32_t color) {
     if (r < 255) r++;
     if (bl < 255) bl++;
   } else if (color == head_strip.Color(255, 170, 0)) {
-    if (r < 250) r=r+2;
+    if (r < 250) r = r + 2;
     if (g < 125) g++;
   } else if (color == head_strip.Color(255, 100, 0)) {
     if (r < 255) r++;
@@ -96,11 +96,11 @@ void pulseLoop(uint32_t color) {
     }
   } else if (color == head_strip.Color(255, 170, 0)) {
     if (bodyI == 0) {
-      if (r <= 248) r=r+2;
+      if (r <= 248) r = r + 2;
       if (g < 125) g++;
       if (r == 250) bodyI = 1;
     } else if (bodyI == 1) {
-      if (r > 0) r=r-2;
+      if (r > 0) r = r - 2;
       if (g > 0) g--;
       if (r == 0) bodyI = 0;
     }
