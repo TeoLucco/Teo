@@ -9,6 +9,24 @@ void checkBT() {
   } 
 }
 unsigned long int lastPressedButtonTime = 0;
+boolean colorByButton=false;
+#define WIPE_DURATION 2000
+void headCapacitiveLoop(){
+  if(pressedButton!=-1){
+    lastPressedButtonTime=millis();
+    colorByButton=true;
+    switch(pressedButton){
+      case 0: if(led_state!=led_off)headLedUpdate(red,color_wipe);break;
+      case 1: if(led_state!=led_off)headLedUpdate(green,color_wipe);break;
+      case 2: if(led_state!=led_off)headLedUpdate(blue,color_wipe);break;
+      case 3: if(led_state!=led_off)headLedUpdate(yellow,color_wipe);break;
+    }
+  }
+  else if(colorByButton && millis()-lastPressedButtonTime>WIPE_DURATION){
+    colorByButton=false;
+    if(led_state!=led_off)headLedUpdate(rainbow_cycle);
+  }
+}
 
 void headCapacitiveInterpreter() {
   if (headInterpreter && gameState != wait_answer) {

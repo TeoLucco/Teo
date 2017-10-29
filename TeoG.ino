@@ -9,6 +9,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <CapacitiveSensor.h>
 #include <DFRobotDFPlayerMini.h>
+#include <ArduinoSort.h>
 
 
 #define WAIT_BT_CONN 60000
@@ -30,8 +31,8 @@ boolean select;
 char b = ' ';
 //interpreter states
 enum btStates {choose_modality, fam_modality, choose_game, sg_waiting, game_modality, test_modality, discharge};
-btStates interpreterState = fam_modality;
-boolean btMov=false;
+btStates interpreterState = choose_modality;
+boolean btMov = false;
 
 //HARDWARE TESTS
 enum testStates { tests_descr, choose_test, start_test, test_exe};
@@ -46,6 +47,13 @@ testTypes testType = no_one;
 int fotores_value;
 
 //VOLTAGE CHECKER
+int battery_indicator=0;
+#define MIN_INDICATOR_VOLTAGE 11.0f
+#define MAX_INDICATOR_VOLTAGE 12.5f
+#define MIN_INDICATOR_VALUE 0.0f
+#define MAX_INDICATOR_VALUE 5.0f
+#define BATTERY_UPDATE_TIME 20000
+unsigned long int lastBatteryUpdate=0;
 #define NUM_SAMPLES 10
 #define VOLT_CHECKER_PIN A4
 int sum = 0;                    // sum of samples taken
@@ -55,9 +63,9 @@ unsigned long int lastWarning = 0; //last time warning advice
 
 //SOUND VARIABLES
 boolean firstSound = false;
-boolean speakers=true;
+boolean speakers = true;
 unsigned long int startPlayTime = 0;
-int lastPlayed=0;
+int lastPlayed = 0;
 DFRobotDFPlayerMini myDFPlayer;
 #define BUSY_PIN 5
 
@@ -68,18 +76,58 @@ gameStates gameState = no_game;
 #define colorGame 1
 #define animalGame 2
 int gameNumber = 0;
+int scenarioNumber=0;
 #define timePerAnsw 50000
-#define questionsPerEx 10
+#define maxQuestionsPerEx 10
+#define maxAnswersPerEx 4
+#define maxScenariosPerEx 4
+#define GamesNumber 4
 int playI = 0;
 int questionI = 0;
+int currentGameI=0;
+int currentScenarioI=0;
 #define max_q_repeat 5
 int repeatQuestionCounter = 0;
-int gameAnswers[][questionsPerEx] = {{}, {0, 2, 3, 0, 1, 3, 2, 2, 1, 0}, {0, 2, 1, 2, 2, 3, 1, 0, 2, 3}};
+int gameAnswers[GamesNumber][maxScenariosPerEx][maxQuestionsPerEx][maxAnswersPerEx] ={
+                                                                                      {//GIOCO 0
+                                                                                        {//scenario 0
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        },
+                                                                                        {//scenario 1
+                                                                                           {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        }
+                                                                                      },
+                                                                                      {//GIOCO 1
+                                                                                        {//Scenario 0
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        },
+                                                                                        {//scenario 1
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        }
+                                                                                      },
+                                                                                      {//GIOCO 2
+                                                                                        {//Scenario 0
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        },
+                                                                                        {//scenario 1
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        }
+                                                                                      },
+                                                                                      {//GIOCO 3
+                                                                                        {//Scenario 0
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        },
+                                                                                        {//scenario 1
+                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
+                                                                                        }
+                                                                                      },
+                                                                                      
+                                                                                     };
 //0-blu 1-giallo 2-verde 3-rosso
 unsigned long int startWaitingTime = 0;
-boolean questionResult[questionsPerEx];
-float questionTime[questionsPerEx];
-int tries[questionsPerEx];
+boolean questionResult[maxQuestionsPerEx];
+float questionTime[maxQuestionsPerEx];
+int tries[maxQuestionsPerEx];
 
 //CAPACITIVES
 #define N_HEAD_SENSORS 4
@@ -89,18 +137,18 @@ int tries[questionsPerEx];
 #define N_PATS 3
 #define N_HITS 3
 enum warKingsCapacitives {noOne, head, body, both, body_t};
-warKingsCapacitives workingCapacitives =body;
-warKingsCapacitives previousWorkingCapacitives =noOne;
-enum touched_parts {noWhere,leftT,rightT,frontT};
-touched_parts touched=noWhere;
+warKingsCapacitives workingCapacitives = body;
+warKingsCapacitives previousWorkingCapacitives = noOne;
+enum touched_parts {noWhere, leftT, rightT, frontT};
+touched_parts touched = noWhere;
 enum touch_types {nothing, hugT, patT, hitT};
-touch_types touch_type=nothing;
+touch_types touch_type = nothing;
 int pressedButton = -1;
-boolean headInterpreter=false;
+boolean headInterpreter = false;
 int pat[N_BODY_SENSORS] = {0, 0, 0};
 int hit[N_BODY_SENSORS] = {0, 0, 0};
-int pats=0;
-int hits=0;
+int pats = 0;
+int hits = 0;
 int hugsCount = 0;
 unsigned long int lastPatTime[N_BODY_SENSORS];
 unsigned long int lastHitTime[N_BODY_SENSORS];
@@ -111,8 +159,12 @@ unsigned long int lastHitTime[N_BODY_SENSORS];
 #define FRONT_LED_NUMBER 9
 Adafruit_NeoPixel head_strip = Adafruit_NeoPixel(FRONT_LED_NUMBER, FRONT_LEDPIN, NEO_GRB + NEO_KHZ800);
 //states
+enum colors {redC, blueC, greenC, yellowC};
+colors body_color = greenC;
 enum ledStates {led_off, rainbow_cycle, color_wipe, color_pulse};
+boolean body_leds=true;
 ledStates led_state = rainbow_cycle;
+ledStates body_led_state = led_off;
 uint32_t head_color;
 const uint32_t blue = head_strip.Color(0, 0, 255);
 const uint32_t red = head_strip.Color(255, 0, 0);
@@ -123,7 +175,7 @@ const uint32_t yellow = head_strip.Color(255, 170, 0);
 const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
-boolean micro=true;
+boolean micro = true;
 #define soundPin  A3 //sound sensor attach to A11
 #define microISequence 250
 #define microISequenceShortMin 20
@@ -131,6 +183,7 @@ boolean micro=true;
 #define microSoglia 250.00f
 int microI = 0;
 float microFilterFrequency = 1.0;
+float micro_f=0.0;
 FilterOnePole microLowpassFilter( LOWPASS, microFilterFrequency );
 unsigned long int lastadd = 0;
 unsigned long int movementFinishTime = TIME_TO_SETUP + 1000;
@@ -190,7 +243,7 @@ boolean move = false;
 #define scared_round        12
 #define dontwonna           13
 #define scared_behind       14
-#define make_happy0         15  
+#define make_happy0         15
 #define make_happy1         16
 #define make_happy2         17
 #define make_happy3         18
@@ -205,6 +258,9 @@ boolean move = false;
 #define turnAlphaR2         27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
 #define turnAlphaL2         28
 #define angrymov            29
+#define dance               30
+#define brokeIce            31
+#define autonomous_capa     32
 
 double alpha = 0;
 byte next_movement = make_circle;
@@ -212,7 +268,7 @@ byte actual_movement = no_movement;
 byte prev_movement = no_movement;
 boolean follow2 = false;
 boolean aut_mov = false;
-boolean idle_mov=false;
+boolean idle_mov = false;
 int movementI = 0;
 unsigned long int randomTurnTime = 15000 + rand() % (20000);
 unsigned long int randomIdleTurnTime = 3000 + rand() % (7000);
@@ -306,6 +362,7 @@ void loop() {
   btInterpreter();
   capacitiveSerialLoop();
   headCapacitiveInterpreter();
+  headCapacitiveLoop();
   voltageCheckloop();
   bodyLedLoop();
   sonarLoop();
@@ -327,8 +384,8 @@ void pidLoop() {
   }
 }
 #define switchToIdleTime 15000
-void print()  {   
-  
+void print()  {
+
   if ((millis() - lastMilliPrint) >= 50)   {
     lastMilliPrint = millis();
 
@@ -350,26 +407,26 @@ void print()  {
       else if (targetPos<0) Serial.println("LEFT");
       else if (targetPos>0) Serial.println("RIGHT");
     */
-    
-      //    Serial.print("  TargetPos:  ");
-      //    Serial.print(targetPos);
-      //    Serial.print("  Actual Obstacle:  ");
-      //    switch(actual_obstacle){
-      //      case 0: Serial.print("left");break;
-      //      case 1: Serial.print("right");break;
-      //      case 2: Serial.print("front");break;
-      //      case 3: Serial.print("none");break;
-      //    }
-      //    Serial.print("  Last Obstacle:  ");
-      //    switch(last_obstacle){
-      //      case 0: Serial.println("left");break;
-      //      case 1: Serial.println("right");break;
-      //      case 2: Serial.println("front");break;
-      //      case 3: Serial.println("none");break;
-      //    }
+
+    //    Serial.print("  TargetPos:  ");
+    //    Serial.print(targetPos);
+    //    Serial.print("  Actual Obstacle:  ");
+    //    switch(actual_obstacle){
+    //      case 0: Serial.print("left");break;
+    //      case 1: Serial.print("right");break;
+    //      case 2: Serial.print("front");break;
+    //      case 3: Serial.print("none");break;
+    //    }
+    //    Serial.print("  Last Obstacle:  ");
+    //    switch(last_obstacle){
+    //      case 0: Serial.println("left");break;
+    //      case 1: Serial.println("right");break;
+    //      case 2: Serial.println("front");break;
+    //      case 3: Serial.println("none");break;
+    //    }
 
 
-      /*    Serial.print("  BACK: ");
+    /*    Serial.print("  BACK: ");
       Serial.println(cm[3]);
     */
     /*  Serial.print("triskar PosX  "); Serial.println(triskar.getPosX());
@@ -392,9 +449,9 @@ void print()  {
       Serial.print("triskar.isStopped()  "); Serial.println(triskar.isStopped());*/
     /*    Serial.print("micro val: "); Serial.println(microLowpassFilter.output());
         Serial.print("microI: "); Serial.println(microI);
-    
 
-    /*  Serial.print("actual_movement:  "); Serial.println(actual_movement);
+
+      /*  Serial.print("actual_movement:  "); Serial.println(actual_movement);
       Serial.print("myDFPlayer.available():  "); Serial.println(myDFPlayer.available());
       /* Serial.print("gameState:  "); Serial.println(gameState);
 
@@ -425,42 +482,42 @@ void print()  {
       Serial3.print(bodySensorValue[1]); Serial3.print("    ");Serial3.print(capacitiveState[1]); Serial3.print("    ");
       Serial3.print(previousDynamicCapacitiveState[1]); Serial3.print("    "); Serial3.print(previousCapacitiveState[1]); Serial3.print("    ");
       Serial3.print("    ");*/
-/*
-      Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
-    Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.println(pressedButton);
-
-    Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
-    Serial3.print(headSensorValue[2]); Serial3.print("    "); Serial3.print(headSensorValue[3]); Serial3.print("    "); Serial3.println(pressedButton);
-/*
-   Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]);Serial3.print("    ");
-   Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]);Serial3.print("    ");
-   Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]);Serial3.print("    ");
-   Serial3.println(touchState);
-
-/*  Serial3.print(f_right);
-    Serial3.print(" ");
-    Serial3.print(f_front);
-    Serial3.print(" ");
-    Serial3.print(f_left);
-    Serial3.print(" ");
-    Serial3.println(f_back);
-
-    
-/* Serial3.print("PosX:  "); Serial3.print(triskar.getPosX());
-   Serial3.print(" PosY:  "); Serial3.print(triskar.getPosY());
-   Serial3.print(" PosTh:  "); Serial3.print(triskar.getPosTh());
-   Serial3.print(" SpeedX:  "); Serial3.print(triskar.getSpeedX());
-   Serial3.print(" SpeedY:  "); Serial3.print(triskar.getSpeedY());
-   Serial3.print(" SpeedTh:  "); Serial3.println(triskar.getSpeedTh());  
-
     /*
-      Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
-      Serial3.print(millis() - stateStartTime[1]); Serial3.print("    ");
-      Serial3.print(millis() - stateStartTime[2]);Serial3.print("    ");
-      Serial3.println(bodySensorValue[2]);
+          Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(bodySensorValue[1]); Serial3.print("    ");
+        Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.println(pressedButton);
 
+        Serial3.print(headSensorValue[0]); Serial3.print("    "); Serial3.print(headSensorValue[1]); Serial3.print("    ");
+        Serial3.print(headSensorValue[2]); Serial3.print("    "); Serial3.print(headSensorValue[3]); Serial3.print("    "); Serial3.println(pressedButton);
       /*
-        Serial.print("Actual_movement:   "); Serial.print(actual_movement); Serial.print("  prec_movement:   "); Serial.println(prec_movement);
+       Serial3.print(bodySensorValue[0]); Serial3.print("    "); Serial3.print(capacitiveState[0]);Serial3.print("    ");
+       Serial3.print(bodySensorValue[1]); Serial3.print("    "); Serial3.print(capacitiveState[1]);Serial3.print("    ");
+       Serial3.print(bodySensorValue[2]); Serial3.print("    "); Serial3.print(capacitiveState[2]);Serial3.print("    ");
+       Serial3.println(touchState);
+
+      /*  Serial3.print(f_right);
+        Serial3.print(" ");
+        Serial3.print(f_front);
+        Serial3.print(" ");
+        Serial3.print(f_left);
+        Serial3.print(" ");
+        Serial3.println(f_back);
+
+
+      /* Serial3.print("PosX:  "); Serial3.print(triskar.getPosX());
+       Serial3.print(" PosY:  "); Serial3.print(triskar.getPosY());
+       Serial3.print(" PosTh:  "); Serial3.print(triskar.getPosTh());
+       Serial3.print(" SpeedX:  "); Serial3.print(triskar.getSpeedX());
+       Serial3.print(" SpeedY:  "); Serial3.print(triskar.getSpeedY());
+       Serial3.print(" SpeedTh:  "); Serial3.println(triskar.getSpeedTh());
+
+        /*
+          Serial3.print(millis() - stateStartTime[0]); Serial3.print("    ");
+          Serial3.print(millis() - stateStartTime[1]); Serial3.print("    ");
+          Serial3.print(millis() - stateStartTime[2]);Serial3.print("    ");
+          Serial3.println(bodySensorValue[2]);
+
+          /*
+            Serial.print("Actual_movement:   "); Serial.print(actual_movement); Serial.print("  prec_movement:   "); Serial.println(prec_movement);
     */
 
 

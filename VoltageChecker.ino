@@ -14,13 +14,7 @@
  
   Author:       W.A. Smith, https://startingelectronics.org/articles/arduino/measuring-voltage-with-arduino/
 --------------------------------------------------------------*/
-int battery_indicator=0;
-#define MIN_INDICATOR_VOLTAGE 11.0f
-#define MAX_INDICATOR_VOLTAGE 12.5f
-#define MIN_INDICATOR_VALUE 0.0f
-#define MAX_INDICATOR_VALUE 5.0f
-#define BATTERY_UPDATE_TIME 20000
-unsigned long int lastBatteryUpdate=0;
+
 void voltageCheckSetup()
 {
     // take a number of analog samples and add them up
@@ -72,11 +66,6 @@ void voltageCheckloop()
     // value
     sample_count = 0;
     sum = 0;
-    if(millis()-lastBatteryUpdate>BATTERY_UPDATE_TIME){
-       battery_indicator=constrain(mapfloat(voltage,MIN_INDICATOR_VOLTAGE,MAX_INDICATOR_VOLTAGE,MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE),MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE);
-       Serial3.print("*B" + String(battery_indicator) + "*");
-       lastBatteryUpdate=millis();
-    }
     if(voltage<=11.5 && millis()-lastWarning>15000){
       playS(2);
       lastWarning=millis();

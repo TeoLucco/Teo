@@ -32,7 +32,7 @@ void iMfollowingU() {
     }
   } else {
     if (lost > 5000) {
-      startMovement(make_sad0, yellow, color_wipe, 11);
+      startMovement(make_sad0, yellowC, color_wipe, 11);
       lost = 0;
     }
     else if (veryclose_front_obstacle && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
@@ -43,9 +43,9 @@ void iMfollowingU() {
       last_obstacle = none;
       alpha = PI;
       if (dir == 1)
-        startMovement(turnAlphaL, green, color_wipe, 12);
+        startMovement(turnAlphaL, greenC, color_wipe, 12);
       else
-        startMovement(turnAlphaR, green, color_wipe, 12);
+        startMovement(turnAlphaR, greenC, color_wipe, 12);
       dir = rand() % 2;
     } else {
       if (actual_obstacle == right) {
@@ -73,9 +73,9 @@ void autonomousMovement() {
     alpha = PI / 2;
     stopMovement();
     if (dir == 1)
-      startMovement(turnAlphaL, green, color_wipe, 13);
+      startMovement(turnAlphaL, greenC, color_wipe, 13);
     else
-      startMovement(turnAlphaR, green, color_wipe, 13);
+      startMovement(turnAlphaR, greenC, color_wipe, 13);
     dir = rand() % 2;
     randomTurnTime = 15000 + rand() % (20000);
     obstacleCount = 0;
@@ -94,7 +94,7 @@ void autonomousMovement() {
           if (obstacleCount >= 4)  alpha = PI + PI / 6;
           else                  alpha = PI / 3;
           stopMovement();
-          startMovement(turnAlphaL, green, color_wipe, 14);
+          startMovement(turnAlphaL, greenC, color_wipe, 14);
           obstacleCount++;
         }
       }
@@ -105,7 +105,7 @@ void autonomousMovement() {
           if (obstacleCount >= 4)  alpha = PI + PI / 6;
           else                  alpha = PI / 3;
           stopMovement();
-          startMovement(turnAlphaR, green, color_wipe, 14);
+          startMovement(turnAlphaR, greenC, color_wipe, 14);
           obstacleCount++;
         }
       }
@@ -130,7 +130,7 @@ void idleMovement() {
     obstacleCount = 0;
   } else {
     if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
-      if(led_state!=led_off) headLedUpdate(rainbow_cycle);
+      if (body_led_state != led_off) resetLeds();
       triskar.run(20.0f, 0.0f);
       if (millis() - lastObstacleTime > 1000)
         obstacleCount = 0;
@@ -163,83 +163,53 @@ void idleMovement() {
   }
 }
 
-void idleMovement_follow() {
-  idle_mov = true;
-  aut_mov = false;
-  follow2 = false;
+void broke_ice() {
   if (no_obstacle) {
-    if (last_obstacle == none) {
-      timedPlayS(9, 10000);
-      triskar.run(0.0, 0.0);
-    }
-    if (last_obstacle == right) {
-      triskar.run(0.0, -(2.0f * (float)PI) / 6.0f);
-    }
-    if (last_obstacle == left) {
-      triskar.run(0.0, (2.0f * (float)PI) / 6.0f);
-    }
-    if (last_obstacle == front) {
-      timedPlayS(10, 10000);
-      triskar.run(25.0, 0.0);
-    }
+    timedPlayS(9, 10000); //AVVICINATI!
+    triskar.run(0.0, 0.0);
   } else {
-    if (lost > 5000) {
-      startMovement(make_sad0, yellow, color_wipe, 11);
-      lost = 0;
-    }
-    else if (veryclose_front_obstacle && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
-    if (veryclose_back_obstacle && millis() - lastround > 10000 && backI >= 100 && triskar.isStopped()) {
-      lastround = millis();
-      lost = 0;
-      stopMovement();
-      backI = 0;
-      last_obstacle = none;
-      alpha = PI;
-      if (dir == 1)
-        startMovement(turnAlphaL, green, color_wipe, 12);
-      else
-        startMovement(turnAlphaR, green, color_wipe, 12);
-      dir = rand() % 2;
-    } else {
-      if (actual_obstacle == right) {
-        if (!close_front_obstacle && !close_right_obstacle) {
-          triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
-        } else triskar.run(0.0, 0.0);
-      } else if (actual_obstacle == left) {
-        if (!close_front_obstacle && !close_left_obstacle)
-          triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
-        else triskar.run(0.0, 0.0);
-      } else if (actual_obstacle == front) {
-        startMovement(make_circle);
-      }
+    if (actual_obstacle == right) {
+      if (!close_front_obstacle && !close_right_obstacle)
+        triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
+      else triskar.run(0.0, 0.0);
+    } else if (actual_obstacle == left) {
+      if (!close_front_obstacle && !close_left_obstacle)
+        triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
+      else triskar.run(0.0, 0.0);
+    } else if (actual_obstacle == front) {
+      if (!close_front_obstacle)
+        triskar.run(20.0, 0.0);
+      else startMovement(dance, blueC, color_wipe, 18);//inizia ballo e canta
     }
   }
 }
 
-void autonomousMovementWithCapacitors() {
+void autonomousMovementWithCapacitors() { 
   aut_mov = true;
   follow2 = false;
   idle_mov = false;
   if (touch_type == patT || touch_type == hitT) { //Turn randomly left/right 90 degrees at random time
     stopMovement();
     switch (touched) {
-      case left: alpha = (2 * PI) / 3; startMovement(turnAlphaL, green, color_wipe, 13); break;
-      case right: alpha = (2 * PI) / 3; startMovement(turnAlphaR, green, color_wipe, 13); break;
-      case front: alpha = PI / 2;
-        if (dir == 1)
-          startMovement(turnAlphaL, green, color_wipe, 13);
-        else
-          startMovement(turnAlphaR, green, color_wipe, 13);
-        dir = rand() % 2; break;
+      case left: alpha = (2 * PI) / 3; startMovement(turnAlphaL, greenC, color_wipe, 13); break;
+      case right: alpha = (2 * PI) / 3; startMovement(turnAlphaR, greenC, color_wipe, 13); break;
+      case front: 
+//        alpha = PI / 2;
+//        if (dir == 1)
+//          startMovement(turnAlphaL, greenC, color_wipe, 13);
+//        else
+//          startMovement(turnAlphaR, greenC, color_wipe, 13);
+//        dir = rand() % 2; 
+        break;
     }
     randomTurnTime = 20000 + rand() % (20000);
   } else if (millis() - movStartTime >= randomTurnTime) { //Turn randomly left/right 90 degrees at random time
     alpha = PI / 2;
     stopMovement();
     if (dir == 1)
-      startMovement(turnAlphaL, green, color_wipe, 13);
+      startMovement(turnAlphaL, greenC, color_wipe, 13);
     else
-      startMovement(turnAlphaR, green, color_wipe, 13);
+      startMovement(turnAlphaR, greenC, color_wipe, 13);
     dir = rand() % 2;
     randomTurnTime = 15000 + rand() % (20000);
     obstacleCount = 0;
@@ -258,7 +228,7 @@ void autonomousMovementWithCapacitors() {
           if (obstacleCount >= 4)  alpha = PI + PI / 6;
           else                  alpha = PI / 3;
           stopMovement();
-          startMovement(turnAlphaL, green, color_wipe, 14);
+          startMovement(turnAlphaL, greenC, color_wipe, 14);
           obstacleCount++;
         }
       }
@@ -269,7 +239,7 @@ void autonomousMovementWithCapacitors() {
           if (obstacleCount >= 4)  alpha = PI + PI / 6;
           else                  alpha = PI / 3;
           stopMovement();
-          startMovement(turnAlphaR, green, color_wipe, 14);
+          startMovement(turnAlphaR, greenC, color_wipe, 14);
           obstacleCount++;
         }
       }
@@ -278,7 +248,7 @@ void autonomousMovementWithCapacitors() {
 }
 
 
-void startMovement(byte movement, uint32_t color, ledStates ledState, byte audio) {
+void startMovement(byte movement, colors color, ledStates ledState, byte audio) {
   triskar.resetIterm();
   movStartTime = millis();
   triskar.setPosTh(0);
@@ -289,7 +259,7 @@ void startMovement(byte movement, uint32_t color, ledStates ledState, byte audio
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if(led_state!=led_off) headLedUpdate(color, ledState);
+  if (body_leds) bodyLedUpdate(ledState, color);
   playS(audio);
   movementI = 0;
   move = true;
@@ -306,13 +276,13 @@ void startMovement(byte movement, ledStates ledState, byte audio) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if(led_state!=led_off) headLedUpdate(ledState);
+  if (body_leds) bodyLedUpdate(ledState);
   playS(audio);
   movementI = 0;
   move = true;
 }
 
-void startMovement(byte movement, uint32_t color, ledStates ledState) {
+void startMovement(byte movement, colors color, ledStates ledState) {
   triskar.resetIterm();
   movStartTime = millis();
   triskar.setPosTh(0);
@@ -323,12 +293,12 @@ void startMovement(byte movement, uint32_t color, ledStates ledState) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if(led_state!=led_off) headLedUpdate(color, ledState);
+  if (body_leds) bodyLedUpdate(ledState, color);
   updateSong();
   movementI = 0;
   move = true;
 }
-void startMovement(byte movement, uint32_t color) {
+void startMovement(byte movement, colors color) {
   triskar.resetIterm();
   movStartTime = millis();
   triskar.setPosTh(0);
@@ -339,7 +309,7 @@ void startMovement(byte movement, uint32_t color) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if(led_state!=led_off) headLedSetColor(color);
+  if (body_leds) bodyLedUpdate(color);
   updateSong();
   movementI = 0;
   move = true;
@@ -356,7 +326,7 @@ void startMovement(byte movement, ledStates ledState) {
   startPosY = triskar.getPosY();
   actual_movement = movement;
   prev_movement = actual_movement;
-  if(led_state!=led_off) headLedUpdate(ledState);
+  if (body_leds) bodyLedUpdate(ledState);
   updateSong();
   movementI = 0;
   move = true;
@@ -373,7 +343,7 @@ void startMovement(byte movement) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if(led_state!=led_off) headLedUpdate(color_pulse);
+  if (body_leds) bodyLedUpdate(color_pulse);
   updateSong();
   movementI = 0;
   move = true;
@@ -388,11 +358,13 @@ void stopMovement() {
   actual_movement = no_movement;
 
   move = false;
-  if(led_state!=led_off) headLedUpdate(rainbow_cycle);
+  resetLeds();
   stopS();
   movementFinishTime = millis();
   if (gameState == mov) {
-    gameState = make_question;
+    gameState = wait_answer;
+    previousWorkingCapacitives = workingCapacitives;
+    workingCapacitives = head;
   }
 }
 
@@ -410,7 +382,6 @@ void obstacle_stop_movement() {
     if ( ( (triskar.getDirection() == 1) && (veryclose_front_obstacle || veryclose_left_obstacle || veryclose_right_obstacle) )
          || (triskar.getDirection() == 2 && veryclose_back_obstacle) ) {
       actual_movement = no_movement;
-      startMovement(dontwonna, red, color_pulse, 15);
     }
   }
 }
@@ -468,7 +439,9 @@ void turn_alpha_left2() {
   if (triskar.getPosTh() > startPosTh - alpha && movementI == 0)
     triskar.run(0.0, ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
-  traslateRobot(-100.0, 0.0f, -SAD_FORWARD_SP, 0.0f, 1);
+  if (triskar.getPosX() > startPosX - 100.0 && movementI == 1)
+    triskar.run(-SAD_FORWARD_SP, 0.0);
+  else if (movementI == 1) movementI = 2;
 
   if (movementI == 2)
     stopMovement();
@@ -510,7 +483,10 @@ void turn_alpha_right2() {
   if (triskar.getPosTh() < startPosTh + alpha && movementI == 0)
     triskar.run(0.0, -ANGULAR_SP);
   else if (movementI == 0) movementI = 1;
-  traslateRobot(-100.0, 0.0f, -SAD_FORWARD_SP, 0.0f, 1);
+  
+  if (triskar.getPosX() > startPosX - 100.0 && movementI == 1)
+    triskar.run(-SAD_FORWARD_SP, 0.0);
+  else if (movementI == 1) movementI = 2;
 
   if (movementI == 2)
     stopMovement();
@@ -625,8 +601,11 @@ void makeRunScaredHit() { //at the end of the scared movement the robot will go 
     triskar.stop3();
     movementI = 6;
   }
-  traslateRobot(0.0, 0.0f, SAD_FORWARD_SP, 0.0f, 6);
-
+  
+  if (triskar.getPosX() < startPosX && movementI == 6)
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  else if (movementI == 6) movementI = 7;
+  
   if (movementI == 7)
     stopMovement();
 }
@@ -666,7 +645,10 @@ void makeRunScaredHitL() { //at the end of the scared movement the robot will go
     triskar.stop3();
     movementI = 8;
   }
-  traslateRobot(0.0, 0.0f, SAD_FORWARD_SP, 0.0f, 8);
+   if (triskar.getPosX() < startPosX && movementI == 8)
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  else if (movementI == 8) movementI = 9;
+
 
   if (movementI == 9)
     stopMovement();
@@ -706,7 +688,9 @@ void makeRunScaredHitR() { //at the end of the scared movement the robot will go
     triskar.stop3();
     movementI = 8;
   }
-  traslateRobot(0.0, 0.0f, SAD_FORWARD_SP, 0.0f, 8);
+  if (triskar.getPosX() < startPosX && movementI == 8)
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  else if (movementI == 8) movementI = 9;
 
   if (movementI == 9)
     stopMovement();
@@ -816,7 +800,10 @@ void makeSad0() {
     triskar.stop();
     movementI = 2;
   }
-  traslateRobot(100.f, 0.0f, SAD_FORWARD_SP, 0.0f, 2);
+
+  if (triskar.getPosX() < startPosX + 100.0f && movementI == 2) {
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  } else if (movementI == 2) movementI = 3;
 
   if (movementI == 3) {
     stopMovement();
@@ -853,106 +840,135 @@ void makeSad1() {
 
 
 void makeSad2() {
-  traslateRobot(-100.f, 0.0f, -SCARED_FORWARD_SP, 0.0f, 0);
-  rotateRobot( PI / 20.0, 0.0f, SAD_ANGULAR_SP, 0.0f, 1);
-  rotateRobot(- PI / 20.0, 0.0f, -SAD_ANGULAR_SP, 0.0f, 2);
-  rotateRobot( PI / 20.0, 0.0f, SAD_ANGULAR_SP, 0.0f, 3);
-  rotateRobot(- PI / 20.0, 0.0f, -SAD_ANGULAR_SP, 0.0f, 4);
-  rotateRobot( PI / 20.0, 0.0f, SAD_ANGULAR_SP, 0.0f, 5);
+
+  if (triskar.getPosX() > startPosX - 100.0f && movementI == 0) {
+    triskar.run(-SCARED_FORWARD_SP, 0.0f);
+  } else if (movementI == 0) movementI = 1;
+
+  if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 1)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 1) movementI = 2;
+
+  if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 2)
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
+  else if (movementI == 2) movementI = 3;
+
+  if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 3)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 3) movementI = 4;
+
+  if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 4)
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
+  else if (movementI == 4) movementI = 5;
+
+  if ((triskar.getPosTh() < startPosTh + PI) && movementI == 5)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 5) movementI = 6;
 
   if (movementI == 6) {
     triskar.stop();
     movementI = 7;
   }
-  traslateRobot(100.0, 0.0f, SAD_FORWARD_SP, 0.0f, 7);
+
+  if (triskar.getPosX() < startPosX + 100.0f && movementI == 7) {
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  } else if (movementI == 7) movementI = 8;
 
   if (movementI == 8)
     stopMovement();
 }
 
 void makeSad2L() {
-  rotateRobot( -alpha, 0.0f, -SCARED_ANGULAR_SP, 0.0f, 0);
+
+  if (triskar.getPosTh() > startPosTh - alpha && movementI == 0)
+    triskar.run(0.0, SCARED_ANGULAR_SP);
+  else if (movementI == 0) movementI = 1;
 
   if (movementI == 1) {
     triskar.stop();
     movementI = 2;
   }
-  traslateRobot(-100.f, 0.0f, -SCARED_FORWARD_SP, 0.0f, 2);
-  rotateRobot( PI / 20.0, 0.0f, SAD_ANGULAR_SP, 0.0f, 3);
-  rotateRobot(- PI / 20.0, 0.0f, -SAD_ANGULAR_SP, 0.0f, 4);
-  rotateRobot( PI / 20.0, 0.0f, SAD_ANGULAR_SP, 0.0f, 5);
-  rotateRobot(- PI / 20.0, 0.0f, -SAD_ANGULAR_SP, 0.0f, 6);
-  rotateRobot(PI, 0.0f, SAD_ANGULAR_SP, 0.0f, 7);
+  if (triskar.getPosX() > startPosX - 100.0f && movementI == 2) {
+    triskar.run(-SCARED_FORWARD_SP, 0.0f);
+  } else if (movementI == 2) movementI = 3;
+
+  if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 3)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 3) movementI = 4;
+
+  if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 4)
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
+  else if (movementI == 4) movementI = 5;
+
+  if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 5)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 5) movementI = 6;
+
+  if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 6)
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
+  else if (movementI == 6) movementI = 7;
+
+  if ((triskar.getPosTh() < startPosTh + PI) && movementI == 7)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 7) movementI = 8;
 
   if (movementI == 8) {
     triskar.stop();
     movementI = 9;
   }
 
-  traslateRobot(100.0, 0.0f, SAD_FORWARD_SP, 0.0f, 9);
+  if (triskar.getPosX() < startPosX + 100.0f && movementI == 9) {
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  } else if (movementI == 9) movementI = 10;
 
   if (movementI == 10)
     stopMovement();
 }
 
 void makeSad2R() {
-  rotateRobot(alpha, 0.0f, SCARED_ANGULAR_SP, 0.0f, 0);
+
+  if (triskar.getPosTh() < startPosTh + alpha && movementI == 0)
+    triskar.run(0.0, -SCARED_ANGULAR_SP);
+  else if (movementI == 0) movementI = 1;
 
   if (movementI == 1) {
     triskar.stop();
     movementI = 2;
   }
-  traslateRobot(-100.f, 0.0f, -SCARED_FORWARD_SP, 0.0f, 2);
-  rotateRobot(PI / 20.0f, 0.0f, SAD_ANGULAR_SP, 0.0f, 3);
-  rotateRobot(-PI / 20.0f, 0.0f, -SAD_ANGULAR_SP, 0.0f, 4);
-  rotateRobot(PI / 20.0f, 0.0f, SAD_ANGULAR_SP, 0.0f, 5);
-  rotateRobot(-PI / 20.0f, 0.0f, -SAD_ANGULAR_SP, 0.0f, 6);
-  rotateRobot(PI, 0.0f, SAD_ANGULAR_SP, 0.0f, 7);
+  if (triskar.getPosX() > startPosX - 100.0f && movementI == 2) {
+    triskar.run(-SCARED_FORWARD_SP, 0.0f);
+  } else if (movementI == 2) movementI = 3;
+
+  if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 3)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 3) movementI = 4;
+
+  if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 4)
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
+  else if (movementI == 4) movementI = 5;
+
+  if ((triskar.getPosTh() < startPosTh + PI / 20.0) && movementI == 5)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 5) movementI = 6;
+
+  if ((triskar.getPosTh() > startPosTh - PI / 20.0) && movementI == 6)
+    triskar.run(0.0f, +SAD_ANGULAR_SP);
+  else if (movementI == 6) movementI = 7;
+
+  if ((triskar.getPosTh() < startPosTh + PI) && movementI == 7)
+    triskar.run(0.0f, -SAD_ANGULAR_SP);
+  else if (movementI == 7) movementI = 8;
 
   if (movementI == 8) {
     triskar.stop();
     movementI = 9;
   }
-  traslateRobot(100.f, 0.0f, SAD_FORWARD_SP, 0.0f, 9);
+
+  if (triskar.getPosX() < startPosX + 100.0f && movementI == 9) {
+    triskar.run(SAD_FORWARD_SP, 0.0f);
+  } else if (movementI == 9) movementI = 10;
 
   if (movementI == 10)
-    stopMovement();
-}
-
-void traslateRobot(float dX, float dTh, float speedX, float speedTh, int I) {
-  if (dX > 0) {
-    if (triskar.getPosX() < startPosX + dX && movementI == I) {
-      triskar.run(speedX, speedTh);
-    } else if (movementI == I) movementI = I + 1;
-  } else if (dX < 0) {
-    if (triskar.getPosX() > startPosX + dX && movementI == I) {
-      triskar.run(speedX, speedTh);
-    } else if (movementI == I) movementI = I + 1;
-  }
-}
-
-void rotateRobot(float dTh, float dX, float speedTh, float speedX, int I) {
-  if (dTh > 0) {
-    if ((triskar.getPosTh() < startPosTh + dTh) && movementI == I)
-      triskar.run(speedX, -speedTh);
-    else if (movementI == I) movementI = I + 1;
-
-  } else if (dTh < 0) {
-    if ((triskar.getPosTh() > startPosTh + dTh) && movementI == I)
-      triskar.run(speedX, -speedTh);
-    else if (movementI == I) movementI = I + 1;
-  }
-}
-
-void stopRobot(int i) {
-  if (movementI == i) {
-    triskar.stop();
-    movementI = i + 1;
-  }
-}
-
-void stopMovement(int i) {
-  if (movementI == i)
     stopMovement();
 }
 
@@ -980,10 +996,10 @@ void makeScaredRound() {
     if (triskar.getPosTh() > startPosTh && movementI == 4)
       triskar.run(0.0f, SCARED_ANGULAR_SP);
     else if (movementI == 4) movementI = 5;
-    if (movementI == 5) {
+    if (movementI == 5){
       stopMovement();
       dir = rand() % 2;
-    }
+    }     
   } else {
     if ((triskar.getPosTh() > startPosTh - 2 * PI && !veryclose_front_obstacle) && movementI == 0)
       triskar.run(0.0f, SCARED_ANGULAR_SP);
@@ -1001,7 +1017,7 @@ void makeScaredRound() {
     if (triskar.getPosTh() < startPosTh && movementI == 4)
       triskar.run(0.0f, -SCARED_ANGULAR_SP);
     else if (movementI == 4) movementI = 5;
-    if (movementI == 5) {
+    if (movementI == 5){
       dir = rand() % 2;
       stopMovement();
     }
@@ -1078,8 +1094,8 @@ void makeBeAngry() {
 
 
 void switchToIdle() {
-  if (millis() - movementFinishTime > switchToIdleTime && interpreterState == fam_modality) {
-    startMovement(idle, rainbow_cycle);
+  if (millis() - movementFinishTime > switchToIdleTime && interpreterState==fam_modality) {
+    startMovement(idle,rainbow_cycle);
   }
 }
 

@@ -12,7 +12,7 @@ void bodyLedSetup() {
   pinMode(REDPIN, OUTPUT);
   pinMode(GREENPIN, OUTPUT);
   pinMode(BLUEPIN, OUTPUT);
-  setBodyLedRainbow();
+  //setBodyLedRainbow();
 }
 
 int r, g, bl;
@@ -26,75 +26,128 @@ void simpleproof() {
 
 void bodyLedLoop() {
   if (millis() - lastBodyLedLoop > FADESPEED) {
-    switch (led_state) {
+    switch (body_led_state) {
       case led_off: break;
       case rainbow_cycle: idleLoop(); break;
-      case color_wipe: wipeLoop(head_color); break;
-      case color_pulse: pulseLoop(head_color); break;
+      case color_wipe: wipeLoop(body_color); break;
+      case color_pulse: pulseLoop(body_color); break;
     }
     bodyShow();
   }
 }
 
-void wipeLoop(uint32_t color) {
-  if (color == head_strip.Color(0, 0, 255)) {
-    if (bl < 255) bl++;
-  } else if (color == head_strip.Color(255, 0, 0)) {
-    if (r < 255) r++;
-  } else if (color == head_strip.Color(0, 255, 0)) {
-    if (g < 255) g++;
-  } else if (color == head_strip.Color(0, 255, 255)) {
-    if (g < 255) g++;
-    if (bl < 255) bl++;
-  } else if (color == head_strip.Color(255, 0, 255)) {
-    if (r < 255) r++;
-    if (bl < 255) bl++;
-  } else if (color == head_strip.Color(255, 170, 0)) {
-    if (r < 250) r = r + 2;
-    if (g < 125) g++;
-  } else if (color == head_strip.Color(255, 100, 0)) {
-    if (r < 255) r++;
-    if (g < 100) g++;
+void resetLeds(){
+  r = 0; g = 0; bl = 0;
+  bodyShow();
+}
+
+void setBodyLedOff() {
+  body_led_state = led_off;
+  resetLeds();
+}
+
+void setBodyLedRainbow() {
+  body_led_state = rainbow_cycle;
+  r = 0; g = 0; bl = 255;
+  bodyShow();
+}
+
+void setBodyLedWipe(colors color) {
+  body_led_state = color_wipe;
+  body_color=color;
+  resetLeds();
+}
+void setBodyLedWipe() {
+  body_led_state = color_wipe;
+ resetLeds();
+}
+
+void setBodyLedPulse(colors color) {
+  body_led_state = color_pulse;
+  body_color=color;
+  resetLeds();
+}
+
+void setBodyLedPulse() {
+  body_led_state = color_pulse;
+  resetLeds();
+}
+
+void bodyLedUpdate(ledStates ledState) {
+  if (body_led_state != ledState) {
+    bodyI=0;
+    switch (ledState) {
+      case color_pulse:   setBodyLedPulse(); break;
+      case color_wipe:    setBodyLedWipe(); break;
+      case rainbow_cycle: setBodyLedRainbow(); break;
+      case led_off:       setBodyLedOff(); break;
+    }
   }
 }
 
-void pulseLoop(uint32_t color) {
-  if (color == head_strip.Color(0, 0, 255)) {
+void bodyLedUpdate(colors color) {
+  if(body_color!=color){
+    body_color=color;
+    bodyI=0;
+    resetLeds();
+  }
+}
+
+void bodyLedUpdate(ledStates state, colors color) {
+  if (body_led_state != state || body_color!=color) {
+    bodyI=0;
+    switch (state) {
+      case color_pulse:   setBodyLedPulse(color); break;
+      case color_wipe:    setBodyLedWipe(color); break;
+      case rainbow_cycle: setBodyLedRainbow(); break;
+      case led_off:       setBodyLedOff(); break;
+    }
+  }
+}
+
+
+void wipeLoop(colors color) {
+  if (color == blueC) {
+    if (bl < 255) bl++;
+  } else if (color == redC) {
+    if (r < 255) r++;
+  } else if (color == greenC) {
+    if (g < 255) g++;
+  } else if (color == yellowC) {
+    if (r < 250) r = r + 2;
+    if (g < 125) g++;
+  }
+  //  else if (color == head_strip.Color(255, 100, 0)) {
+  //    if (r < 255) r++;
+  //    if (g < 100) g++;
+  //  }} else if (color == head_strip.Color(0, 255, 255)) {
+  //    if (g < 255) g++;
+  //    if (bl < 255) bl++;
+  //  } else if (color == head_strip.Color(255, 0, 255)) {
+  //    if (r < 255) r++;
+  //    if (bl < 255) bl++;
+}
+
+void pulseLoop(colors color) {
+  if (color == blueC) {
     if (bl < 255 && bodyI == 0) bl++;
     else if (bodyI == 0) bodyI = 1;
     if (bl > 0 && bodyI == 1) bl--;
     else if (bodyI == 1) bodyI = 0;
-  } else if (color == head_strip.Color(255, 0, 0)) {
+  } 
+  else if (color == redC) {
     if (r < 255 && bodyI == 0) r++;
     else if (bodyI == 0) bodyI = 1;
     if (r > 0 && bodyI == 1) r--;
     else if (bodyI == 1) bodyI = 0;
-  } else if (color == head_strip.Color(0, 255, 0)) {
+  } 
+  else if (color == greenC) {
     if (g < 255 && bodyI == 0) g++;
     else if (bodyI == 0) bodyI = 1;
     if (g > 0 && bodyI == 1) g--;
     else if (bodyI == 1) bodyI = 0;
-  } else if (color == head_strip.Color(0, 255, 255)) {
-    if (bodyI == 0) {
-      if (g < 255) g++;
-      if (bl < 255) bl++;
-      if (bl == 255) bodyI = 1;
-    } else if (bodyI == 1) {
-      if (g > 0) g--;
-      if (bl > 0) bl--;
-      if (bl == 0) bodyI = 0;
-    }
-  } else if (color == head_strip.Color(255, 0, 255)) {
-    if (bodyI == 0) {
-      if (r < 255) r++;
-      if (bl < 255) bl++;
-      if (bl == 255) bodyI = 1;
-    } else if (bodyI == 1) {
-      if (r > 0) r--;
-      if (bl > 0) bl--;
-      if (bl == 0) bodyI = 0;
-    }
-  } else if (color == head_strip.Color(255, 170, 0)) {
+  } 
+  else if (color == yellowC) {
     if (bodyI == 0) {
       if (r <= 248) r = r + 2;
       if (g < 125) g++;
@@ -104,18 +157,42 @@ void pulseLoop(uint32_t color) {
       if (g > 0) g--;
       if (r == 0) bodyI = 0;
     }
-  } else if (color == head_strip.Color(255, 100, 0)) {
-    if (bodyI == 0) {
-      if (r < 255) r++;
-      if (g < 100) g++;
-      if (r == 255) bodyI = 1;
-    } else if (bodyI == 1) {
-      if (r > 0) r--;
-      if (g > 0) g--;
-      if (r == 0) bodyI = 0;
-    }
-  }
+  } 
+//  else if (color == head_strip.Color(255, 100, 0)) {
+//    if (bodyI == 0) {
+//      if (r < 255) r++;
+//      if (g < 100) g++;
+//      if (r == 255) bodyI = 1;
+//    } else if (bodyI == 1) {
+//      if (r > 0) r--;
+//      if (g > 0) g--;
+//      if (r == 0) bodyI = 0;
+//    }
+//  }
+//  else if (color == head_strip.Color(0, 255, 255)) {
+//    if (bodyI == 0) {
+//      if (g < 255) g++;
+//      if (bl < 255) bl++;
+//      if (bl == 255) bodyI = 1;
+//    } else if (bodyI == 1) {
+//      if (g > 0) g--;
+//      if (bl > 0) bl--;
+//      if (bl == 0) bodyI = 0;
+//    }
+//  } else if (color == head_strip.Color(255, 0, 255)) {
+//    if (bodyI == 0) {
+//      if (r < 255) r++;
+//      if (bl < 255) bl++;
+//      if (bl == 255) bodyI = 1;
+//    } else if (bodyI == 1) {
+//      if (r > 0) r--;
+//      if (bl > 0) bl--;
+//      if (bl == 0) bodyI = 0;
+//    }
+//  }
 }
+
+
 //
 //void bodyLedUpdate(uint32_t color) {
 //  if(color==head_strip.Color(0, 0, 255)){
@@ -135,33 +212,10 @@ void pulseLoop(uint32_t color) {
 //  }
 //}
 //
-//void bodyLedUpdate(ledStates ledState) {
-//    switch(ledState){
-//        case color_pulse:   setBodyLedPulse(); break;
-//        case color_wipe:    setBodyLedWipe(); break;
-//        case rainbow_cycle: setBodyLedRainbow();break;
-//        case led_off:       setBodyLedOff();break;
-//    }
-//
-//}
 
-void setBodyLedRainbow() {
-  r = 0; g = 0; bl = 255;
-}
 
-void setBodyLedOff() {
-  r = 0; g = 0; bl = 0;
-  bodyShow();
-}
 
-//
-//void setBodyLedPulse(uint32_t color){
-//
-//}
-//
-//void setBodyLedWipe(uint32_t color){
-//
-//}
+
 
 void idleLoop() {
   if (bodyI == 0) {

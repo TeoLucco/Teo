@@ -88,9 +88,9 @@ void sendSerial() {
 void nhits(int i) {
   if (!(testState == test_exe && testType == body_capacitives_t)) {
     switch (i) {
-      case 0: startMovement(make_sad2L, red, color_pulse, 33); break;
-      case 1: startMovement(make_sad2R, red, color_pulse, 33); break;
-      case 2: startMovement(make_sad2,  red, color_pulse, 33); break;
+      case 0: startMovement(make_sad2L, redC, color_pulse, 33); break;
+      case 1: startMovement(make_sad2R, redC, color_pulse, 33); break;
+      case 2: startMovement(make_sad2,  redC, color_pulse, 33); break;
     }
   }
 }
@@ -98,9 +98,9 @@ void nhits(int i) {
 void hitRecived(int i) {
   if (!(testState == test_exe && testType == body_capacitives_t)) {
     switch (i) {
-      case 0: startMovement(scared_hitL, red, color_pulse, 34); break;
-      case 1: startMovement(scared_hitR, red, color_pulse, 34); break;
-      case 2: startMovement(scared_hit,  red, color_pulse, 34); break;
+      case 0: startMovement(scared_hitL, redC, color_pulse, 34); break;
+      case 1: startMovement(scared_hitR, redC, color_pulse, 34); break;
+      case 2: startMovement(scared_hit,  redC, color_pulse, 34); break;
     }
   }
 }
