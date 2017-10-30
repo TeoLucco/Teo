@@ -65,6 +65,7 @@ unsigned long int lastWarning = 0; //last time warning advice
 #define AUDIO_SCARED_ROUND 10
 #define AUDIO_SCARED_BEHIND 11
 #define DONT_WONNA_AUDIO 22
+#define AVVICINATI_AUDIO 33
 #define firstGameAudioNumber 3
 #define firstScenarioAudioNumber 6
 boolean firstSound = false;
