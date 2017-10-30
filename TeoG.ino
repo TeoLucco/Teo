@@ -30,7 +30,7 @@ boolean select;
 //boolean noneB=true;
 char b = ' ';
 //interpreter states
-enum btStates {choose_modality, fam_modality, choose_game, sg_waiting, game_modality, test_modality, discharge};
+enum btStates {choose_modality, fam_modality, choose_game,choose_scenario, sg_waiting, game_modality, test_modality, discharge};
 btStates interpreterState = choose_modality;
 boolean btMov = false;
 
@@ -62,6 +62,11 @@ float voltage = 0.0;            // calculated voltage
 unsigned long int lastWarning = 0; //last time warning advice
 
 //SOUND VARIABLES
+#define AUDIO_SCARED_ROUND 10
+#define AUDIO_SCARED_BEHIND 11
+#define DONT_WONNA_AUDIO 22
+#define firstGameAudioNumber 3
+#define firstScenarioAudioNumber 6
 boolean firstSound = false;
 boolean speakers = true;
 unsigned long int startPlayTime = 0;
@@ -144,6 +149,7 @@ touched_parts touched = noWhere;
 enum touch_types {nothing, hugT, patT, hitT};
 touch_types touch_type = nothing;
 int pressedButton = -1;
+int buttonToTouch=-1;
 boolean headInterpreter = false;
 int pat[N_BODY_SENSORS] = {0, 0, 0};
 int hit[N_BODY_SENSORS] = {0, 0, 0};
@@ -159,10 +165,11 @@ unsigned long int lastHitTime[N_BODY_SENSORS];
 #define FRONT_LED_NUMBER 9
 Adafruit_NeoPixel head_strip = Adafruit_NeoPixel(FRONT_LED_NUMBER, FRONT_LEDPIN, NEO_GRB + NEO_KHZ800);
 //states
-enum colors {redC, blueC, greenC, yellowC};
+enum colors {redC, blueC, greenC, yellowC, lightBlueC, orangeC};
 colors body_color = greenC;
 enum ledStates {led_off, rainbow_cycle, color_wipe, color_pulse};
 boolean body_leds=true;
+boolean head_leds=true;
 ledStates led_state = rainbow_cycle;
 ledStates body_led_state = led_off;
 uint32_t head_color;

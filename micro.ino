@@ -1,5 +1,4 @@
 
-
 void microLoop() {
   if (micro) {
     int wave = analogRead(soundPin);//read the value of A0. range 0-1024
@@ -12,11 +11,11 @@ void microLoop() {
         lastadd = millis();
       }
       if (microI >= microISequence) { //if the value is greater than 384 on 512
-        startMovement(scared_behind);
+        startMovement(scared_behind, blueC, color_pulse, AUDIO_SCARED_BEHIND); //audio: mi stavo per schiantare
         microLowpassFilter.setToNewValue(0.0);
         microI = 0;
       } else if (micro_f < microSoglia && (microI >= microISequenceShortMin && microI <= microISequenceShortMax)) {
-        startMovement(scared_round);
+        startMovement(scared_round, blueC, color_pulse, AUDIO_SCARED_ROUND);
         microLowpassFilter.setToNewValue(0.0);
         microI = 0;
       }

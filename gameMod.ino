@@ -288,7 +288,8 @@ void rightAnswer() {
   int randNumber = rand() % 4 + make_happy0;
   Serial3.println("Disattivo Capacitivi");
   previousWorkingCapacitives = workingCapacitives;
-  workingCapacitives = noOne;
+  if(interpreterState==game_modality)workingCapacitives = noOne;
+  else if(interpreterState==fam_modality)workingCapacitives = body;
   if (dir == 1)
     playS(4);
   else
@@ -300,7 +301,8 @@ void rightAnswer() {
 void wrongAnswer() {
   Serial3.println("Disattivo Capacitivi");
   previousWorkingCapacitives = workingCapacitives;
-  workingCapacitives = noOne;
+  if(interpreterState==game_modality)workingCapacitives = noOne;
+  else if(interpreterState==fam_modality)workingCapacitives = body;
   if (dir == 1)
     playS(6);
   else

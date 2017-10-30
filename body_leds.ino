@@ -7,6 +7,7 @@
 
 unsigned long int lastBodyLedLoop = 0;
 int bodyI = 0;
+unsigned long int resetTime=0;
 
 void bodyLedSetup() {
   pinMode(REDPIN, OUTPUT);
@@ -33,7 +34,8 @@ void bodyLedLoop() {
       case color_pulse: pulseLoop(body_color); break;
     }
     bodyShow();
-  }
+ }
+ 
 }
 
 void resetLeds(){
@@ -74,7 +76,7 @@ void setBodyLedPulse() {
 }
 
 void bodyLedUpdate(ledStates ledState) {
-  if (body_led_state != ledState) {
+  if (body_leds && body_led_state != ledState) {
     bodyI=0;
     switch (ledState) {
       case color_pulse:   setBodyLedPulse(); break;
@@ -86,7 +88,7 @@ void bodyLedUpdate(ledStates ledState) {
 }
 
 void bodyLedUpdate(colors color) {
-  if(body_color!=color){
+  if(body_leds && body_color!=color){
     body_color=color;
     bodyI=0;
     resetLeds();
@@ -94,7 +96,7 @@ void bodyLedUpdate(colors color) {
 }
 
 void bodyLedUpdate(ledStates state, colors color) {
-  if (body_led_state != state || body_color!=color) {
+  if (body_leds && (body_led_state != state || body_color!=color)) {
     bodyI=0;
     switch (state) {
       case color_pulse:   setBodyLedPulse(color); break;
@@ -105,6 +107,9 @@ void bodyLedUpdate(ledStates state, colors color) {
   }
 }
 
+boolean ledTimer=false;
+unsigned long int fullColorTime=0;
+
 
 void wipeLoop(colors color) {
   if (color == blueC) {
@@ -114,8 +119,21 @@ void wipeLoop(colors color) {
   } else if (color == greenC) {
     if (g < 255) g++;
   } else if (color == yellowC) {
-    if (r < 250) r = r + 2;
+    if (r < 254) r = r + 2;
     if (g < 125) g++;
+  }
+  if(color == lightBlueC){
+    if (bl < 255) {bl=bl+2; g=g+2;}
+    if (r<100) r++;
+  }
+  if(color == orangeC){
+    if (r < 254) r = constrain(r++,0,254);
+    if (g < 153) g = constrain((int)0.6*g,0,153);
+    if (bl< 51) b= constrain((int)0.2*bl,0,51);
+  }
+  if(ledTimer && millis()-fullColorTime>resetTime){
+    ledTimer=false;
+    bodyLedUpdate(led_off);
   }
   //  else if (color == head_strip.Color(255, 100, 0)) {
   //    if (r < 255) r++;
@@ -126,6 +144,17 @@ void wipeLoop(colors color) {
   //  } else if (color == head_strip.Color(255, 0, 255)) {
   //    if (r < 255) r++;
   //    if (bl < 255) bl++;
+}
+
+void setLedTimer(){
+  fullColorTime=millis(); 
+  ledTimer=true;
+}
+
+void setLedTimer(unsigned long int reset_time){
+  resetTime=reset_time;
+  fullColorTime=millis(); 
+  ledTimer=true;
 }
 
 void pulseLoop(colors color) {
@@ -190,6 +219,10 @@ void pulseLoop(colors color) {
 //      if (bl == 0) bodyI = 0;
 //    }
 //  }
+  if(ledTimer && millis()-fullColorTime>resetTime){
+    ledTimer=false;
+    bodyLedUpdate(led_off);
+  }
 }
 
 

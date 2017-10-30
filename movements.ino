@@ -130,7 +130,7 @@ void idleMovement() {
     obstacleCount = 0;
   } else {
     if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
-      if (body_led_state != led_off) resetLeds();
+      bodyLedUpdate(led_off);
       triskar.run(20.0f, 0.0f);
       if (millis() - lastObstacleTime > 1000)
         obstacleCount = 0;
@@ -166,6 +166,27 @@ void idleMovement() {
 void broke_ice() {
   if (no_obstacle) {
     timedPlayS(9, 10000); //AVVICINATI!
+    triskar.run(0.0, 0.0);
+  } else {
+    if (actual_obstacle == right) {
+      if (!close_front_obstacle && !close_right_obstacle)
+        triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
+      else triskar.run(0.0, 0.0);
+    } else if (actual_obstacle == left) {
+      if (!close_front_obstacle && !close_left_obstacle)
+        triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
+      else triskar.run(0.0, 0.0);
+    } else if (actual_obstacle == front) {
+      if (!close_front_obstacle)
+        triskar.run(20.0, 0.0);
+      else startMovement(dance, blueC, color_wipe, 18);//inizia ballo e canta
+    }
+  }
+}
+
+void color_game() {
+  if (no_obstacle) {
+    timedPlayS(AVVICINATI_AUDIO, 10000); //AVVICINATI!
     triskar.run(0.0, 0.0);
   } else {
     if (actual_obstacle == right) {
@@ -248,6 +269,26 @@ void autonomousMovementWithCapacitors() {
 }
 
 
+void startMovement(byte movement, colors color, ledStates ledState, byte audio, unsigned long int resetLedTimer) {
+  triskar.resetIterm();
+  movStartTime = millis();
+  triskar.setPosTh(0);
+  triskar.setPosX(0);
+  triskar.setPosY(0);
+  startPosTh = triskar.getPosTh();
+  startPosX = triskar.getPosX();
+  startPosY = triskar.getPosY();
+  prev_movement = actual_movement;
+  actual_movement = movement;
+  bodyLedUpdate(ledState, color);
+  playS(audio);
+  movementI = 0;
+  move = true;
+  setLedTimer(resetLedTimer);
+}
+
+
+
 void startMovement(byte movement, colors color, ledStates ledState, byte audio) {
   triskar.resetIterm();
   movStartTime = millis();
@@ -259,10 +300,11 @@ void startMovement(byte movement, colors color, ledStates ledState, byte audio) 
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if (body_leds) bodyLedUpdate(ledState, color);
+  bodyLedUpdate(ledState, color);
   playS(audio);
   movementI = 0;
   move = true;
+  setLedTimer();
 }
 
 void startMovement(byte movement, ledStates ledState, byte audio) {
@@ -276,10 +318,11 @@ void startMovement(byte movement, ledStates ledState, byte audio) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if (body_leds) bodyLedUpdate(ledState);
+  bodyLedUpdate(ledState);
   playS(audio);
   movementI = 0;
   move = true;
+  setLedTimer();
 }
 
 void startMovement(byte movement, colors color, ledStates ledState) {
@@ -293,10 +336,11 @@ void startMovement(byte movement, colors color, ledStates ledState) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if (body_leds) bodyLedUpdate(ledState, color);
+  bodyLedUpdate(ledState, color);
   updateSong();
   movementI = 0;
   move = true;
+  setLedTimer();
 }
 void startMovement(byte movement, colors color) {
   triskar.resetIterm();
@@ -309,10 +353,11 @@ void startMovement(byte movement, colors color) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if (body_leds) bodyLedUpdate(color);
+  bodyLedUpdate(color);
   updateSong();
   movementI = 0;
   move = true;
+  setLedTimer();
 }
 
 void startMovement(byte movement, ledStates ledState) {
@@ -326,10 +371,11 @@ void startMovement(byte movement, ledStates ledState) {
   startPosY = triskar.getPosY();
   actual_movement = movement;
   prev_movement = actual_movement;
-  if (body_leds) bodyLedUpdate(ledState);
+  bodyLedUpdate(ledState);
   updateSong();
   movementI = 0;
   move = true;
+  setLedTimer();
 }
 
 void startMovement(byte movement) {
@@ -343,10 +389,11 @@ void startMovement(byte movement) {
   startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
-  if (body_leds) bodyLedUpdate(color_pulse);
+  bodyLedUpdate(color_pulse);
   updateSong();
   movementI = 0;
   move = true;
+  setLedTimer();
 }
 
 void stopMovement() {
@@ -358,7 +405,7 @@ void stopMovement() {
   actual_movement = no_movement;
 
   move = false;
-  resetLeds();
+  bodyLedUpdate(led_off);
   stopS();
   movementFinishTime = millis();
   if (gameState == mov) {
@@ -1102,8 +1149,6 @@ void switchToIdle() {
 void makeMovement() {
   if (move) {
     switch (actual_movement) {
-      case idle:                idleMovement(); break;
-      case follow:              iMfollowingU(); break;
       case make_eight:          break;
       case make_circle:         make_Circle(); break;
       case turn180r:            turn180_right(); break;
@@ -1132,6 +1177,12 @@ void makeMovement() {
       case make_sad2:           makeSad2(); break;
       case make_sad2L:          makeSad2L(); break;
       case make_sad2R:          makeSad2R(); break;
+      case autonomous_capa:     autonomousMovementWithCapacitors();break;
+      case brokeIce:            broke_ice();break;
+      case idle:                idleMovement(); break;
+      case follow:              iMfollowingU(); break;
+      case dance:               //makeDance();
+                                break;
     }
     obstacle_stop_movement();
   }//else switchToIdle();

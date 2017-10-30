@@ -16,15 +16,19 @@ void headCapacitiveLoop(){
     lastPressedButtonTime=millis();
     colorByButton=true;
     switch(pressedButton){
-      case 0: if(led_state!=led_off)headLedUpdate(red,color_wipe);break;
-      case 1: if(led_state!=led_off)headLedUpdate(green,color_wipe);break;
-      case 2: if(led_state!=led_off)headLedUpdate(blue,color_wipe);break;
-      case 3: if(led_state!=led_off)headLedUpdate(yellow,color_wipe);break;
+      case 0: headLedUpdate(red,color_wipe);break;
+      case 1: headLedUpdate(green,color_wipe);break;
+      case 2: headLedUpdate(blue,color_wipe);break;
+      case 3: headLedUpdate(yellow,color_wipe);break;
     }
-  }
-  else if(colorByButton && millis()-lastPressedButtonTime>WIPE_DURATION){
-    colorByButton=false;
-    if(led_state!=led_off)headLedUpdate(rainbow_cycle);
+    if(buttonToTouch!=-1){
+      if(pressedButton==buttonToTouch){
+        rightAnswer();
+      }else{
+        wrongAnswer();
+      }
+      buttonToTouch=-1;
+    }
   }
 }
 
@@ -34,6 +38,7 @@ void headCapacitiveInterpreter() {
       case choose_modality: chooseModCap(); break;
       case choose_game:     chooseGameCap(); break;
       case sg_waiting:      startGameWaitCap(); break;
+      case choose_scenario: chooseScenarioCap(); break;
       case game_modality:   break;
       case fam_modality:    break;
       case test_modality:   break;
@@ -45,34 +50,63 @@ void headCapacitiveInterpreter() {
 void chooseModCap() {
   switch (pressedButton) {
     case -1: break;
-    case 0: interpreterState = choose_game; break;
+    case 0: interpreterState = fam_modality; break;
     case 1: interpreterState = fam_modality; break;
-    case 2: interpreterState = test_modality; break;
-    case 3: break;
+    case 2: interpreterState = choose_game; break;
+    case 3: interpreterState = choose_game;break;
   }
 }
 void chooseGameCap() {
   switch (pressedButton) {
     case -1: break;
     case 0:
-      if (gameNumber > 1) gameNumber--;
-      else gameNumber = 1;
-      playS(19 + gameNumber);
+      if (currentGameI > 0) currentGameI--;
+      else currentGameI = 0;
+      playS(firstGameAudioNumber + currentGameI);
       break;
 
     case 1:
-      if (gameNumber < N_GAMES) gameNumber++;
-      else gameNumber = N_GAMES;
-      playS(19 + gameNumber);
-      break;
+      interpreterState = choose_scenario;
+      playS(28); //scegli scenario
+      break;     
 
     case 2:
-      interpreterState = sg_waiting;
-      playS(24 + gameNumber); //come posizionare patch
+
+      if (currentGameI < N_GAMES) currentGameI++;
+      else currentGameI = N_GAMES;
+      playS(firstGameAudioNumber + currentGameI);
       break;
 
     case 3:
       interpreterState = choose_modality;
+      break;
+  }
+}
+
+
+void chooseScenarioCap() {
+  switch (pressedButton) {
+    case -1: break;
+    case 0:
+      if (currentScenarioI > 1) currentScenarioI--;
+      else currentScenarioI = 1;
+      playS(firstScenarioAudioNumber + currentScenarioI);
+      break;
+
+    case 1:
+      interpreterState = sg_waiting;
+      playS(28); //scegli scenario
+      break;     
+
+    case 2:
+
+      if (currentScenarioI < N_GAMES) currentScenarioI++;
+      else currentScenarioI = N_GAMES;
+      playS(firstScenarioAudioNumber + currentScenarioI);
+      break;
+
+    case 3:
+      interpreterState = choose_game;
       break;
   }
 }

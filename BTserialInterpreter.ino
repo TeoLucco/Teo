@@ -7,6 +7,8 @@ void resetButtons() {
   select = false;
 }
 
+
+
 #define SENDSTATETIME 1000
 unsigned long int lastSendState=0;
 double prev_posX=0;
@@ -56,8 +58,16 @@ void famMod() {
     settings();
     ledControl();
     playAudio();
+    headButtonsControl();
   }
   //sendState();
+}
+
+void headButtonsControl(){
+  if(b=='*'){
+      buttonToTouch=Serial.parseInt();
+      CapacitivesUpdate(head);
+  }
 }
 
 void movementPanel() {
@@ -93,7 +103,7 @@ void movementPanel() {
         move = true;
         movementFinishTime = millis();
         triskar.run(speed_trg, 0.0);
-      } else if (veryclose_front_obstacle && actual_movement != dontwonna)  startMovement(dontwonna);
+      } else if (veryclose_front_obstacle && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
       break;
     case '2':
       //Serial3.println("2-GIU'");
@@ -105,7 +115,7 @@ void movementPanel() {
         move = true;
         triskar.run(-speed_trg, 0.0);
         movementFinishTime = millis();
-      } else if (veryclose_back_obstacle && actual_movement != dontwonna)  startMovement(dontwonna);
+      } else if (veryclose_back_obstacle && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
       break;
 
     case '3':
@@ -194,7 +204,7 @@ void settings() {
     case 'M': previousWorkingCapacitives = workingCapacitives; workingCapacitives = noOne; break;
     case 'N': speakers = true; break;
     case 'O': speakers = false; break;
-    case '7': interpreterState = choose_game;break;
+    case '7': interpreterState = choose_modality;break;
   }
 }
 
@@ -205,18 +215,18 @@ void ledControl() {
     case 'Q': headLedSetColor(yellow); break;
     case 'R': headLedSetColor(blue); break;
     case 'S': headLedSetColor(green); break;
-    case 'T': headLedUpdate(led_off); body_leds=false; break;
-    case 'U': headLedUpdate(rainbow_cycle); body_leds=true; break;
-    case 'V': headLedUpdate(color_wipe); body_leds=true; break;
-    case 'W': headLedUpdate(color_pulse);body_leds=true; break;
+    case 'T': headLedUpdate(led_off); head_leds=false; break;
+    case 'U': head_leds=true; headLedUpdate(rainbow_cycle); break;
+    case 'V': head_leds=true; headLedUpdate(color_wipe);  break;
+    case 'W': head_leds=true; headLedUpdate(color_pulse); break;
     case 'X': bodyLedUpdate(redC); break;
     case 'Y': bodyLedUpdate(yellowC); break;
     case 'Z': bodyLedUpdate(blueC); break;
     case '[': bodyLedUpdate(greenC); break;
-    case ']': bodyLedUpdate(led_off); break;
-    case '^': bodyLedUpdate(rainbow_cycle); break;
-    case '_': bodyLedUpdate(color_wipe); break;
-    case 'a': bodyLedUpdate(color_pulse); break;
+    case ']': bodyLedUpdate(led_off);body_leds=false; break;
+    case '^': body_leds=true;bodyLedUpdate(rainbow_cycle); break;
+    case '_': body_leds=true;bodyLedUpdate(color_wipe); break;
+    case 'a': body_leds=true;bodyLedUpdate(color_pulse); break;
   }
 }
 
@@ -238,7 +248,9 @@ void startMovementBT() {
     case 'F': startMovement(29); break;
     case 'G': stopMovement(); startMovement(follow); actual_obstacle = none; last_obstacle = none; break;
     case 'H': stopMovement(); startMovement(autonomous_movement); break;
-    case 'I': break;//START DI MOSCACIECA
+    case 'I': startMovement(autonomous_capa);break;//START DI MOSCACIECA
+    case ',': startMovement(dance);break;
+    case '8': startMovement(brokeIce);break;
   }
 }
 
@@ -253,6 +265,10 @@ void playAudio() {
     case 'g': playS(14); break;
     case 'h': playS(15); break;
     case 'i': playS(16); break;
+  }
+
+  if(b=='%'){
+      playS(Serial.parseInt());
   }
 }
 //  Serial3.println("7-TRIANGOLO");
@@ -366,33 +382,60 @@ void chooseModality() {
   }
   //sendState();
 }
-
 void chooseGame() {
   if (Serial3.available()) {
     b = Serial3.read();
     switch (b) {
-      //      case '0':
-      //        resetButtons();
-      //        break;
-
       case '0':
-        //        Serial3.println("7-TRIANGOLO");
-        //        if (!triangolo) {
-        //          triangolo = true;
-        interpreterState = sg_waiting;
-        currentGameI=0;
-        currentScenarioI=0;
-        //gameNumber = colorGame;
-        playS(03);
+        interpreterState = choose_scenario;
+        currentGameI = 0;
+        playS(firstGameAudioNumber + currentGameI);
         //        }
         break;
       case '1':
-        //        Serial3.println("8-QUADRATO");
-        //        if (!quadrato) {
-        //          quadrato = true;
+        interpreterState = choose_scenario;
+        currentGameI = 1;
+        playS(firstGameAudioNumber + currentGameI);
+        //        }
+        break;
+
+      case '2':
+        //        Serial3.println("9-X");
+        //        if (!croce) {
+        //          croce = true;
+        //interpreterState = sg_waiting;
+        //        }
+        break;
+      case '3':
+        //        Serial3.println("A-CERCHIO");
+        //        if (!cerchio) {
+        //          cerchio = true;
+        //interpreterState = sg_waiting;
+        //        }
+        break;
+      default:
+        // default code (should never run)
+        break;
+    }
+
+  }
+  //sendState();
+}
+
+void chooseScenario(){
+   if (Serial3.available()) {
+    b = Serial3.read();
+    switch (b) {
+      case '0':
         interpreterState = sg_waiting;
-        gameNumber = animalGame;
-        playS(03);
+        currentScenarioI = 0;
+        playS(firstScenarioAudioNumber + currentGameI);
+        //        }
+        break;
+      case '1':
+        interpreterState = sg_waiting;
+        currentScenarioI = 1;
+        playS(firstScenarioAudioNumber + currentGameI);
         //        }
         break;
 
@@ -414,7 +457,6 @@ void chooseGame() {
         // default code (should never run)
         break;
     }
-
   }
   //sendState();
 }
@@ -472,6 +514,7 @@ void btInterpreter() {
   switch (interpreterState) {
     case choose_modality: chooseModality(); break;
     case choose_game:     chooseGame(); break;
+    case choose_scenario: chooseScenario(); break;
     case sg_waiting:      sgWaiting(); break;
     case game_modality:   gameMod(); break;
     case fam_modality:    famMod(); break;

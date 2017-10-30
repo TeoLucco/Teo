@@ -52,6 +52,10 @@ void headLedLoop(){
     case color_wipe: colorWipe(head_color, 65);break;
     case color_pulse: colorPulse(head_color, 65); break;
   }  
+  if(colorByButton && millis()-lastPressedButtonTime>WIPE_DURATION){
+    colorByButton=false;
+    headLedUpdate(rainbow_cycle);
+  }
 }
 
 void headLedSetup(){
@@ -200,7 +204,7 @@ uint32_t Wheel(byte WheelPos) {
 
 //FUNZIONI DI CAMBIO STATO(funzioni "pubbliche") E COLORE
 void headLedUpdate(uint32_t color,ledStates ledState){
-  if(head_color!=color || led_state!=ledState){ 
+  if(head_leds && (head_color!=color || led_state!=ledState)){ 
     //setBodyLedOff();
     //bodyI=0;
     switch(ledState){
@@ -213,7 +217,8 @@ void headLedUpdate(uint32_t color,ledStates ledState){
 }
 
 void headLedUpdate(ledStates ledState){
-  if(led_state!=ledState){
+  
+  if(head_leds && led_state!=ledState){
     //setBodyLedOff();
     //bodyI=0;
     switch(ledState){
@@ -225,14 +230,14 @@ void headLedUpdate(ledStates ledState){
   } 
 }
 void headLedSetColor(uint32_t color){
-  if(head_color!=color){
+  if(head_leds && head_color!=color){
   head_color=color;
   //setBodyLedOff();
   resetCounters();
   }
 }
 
-void headLedSetColor(){
+void headLedSetColor(){  //colori predefiniti per i movimenti
   switch(actual_movement){
       case no_movement:         break;
       case follow:              head_color=green;break;
