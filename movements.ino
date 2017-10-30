@@ -190,17 +190,19 @@ void color_game() {
     triskar.run(0.0, 0.0);
   } else {
     if (actual_obstacle == right) {
-      if (!close_front_obstacle && !close_right_obstacle)
-        triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
-      else triskar.run(0.0, 0.0);
+      if (veryclose_right_obstacle)
+        triskar.run(0.0, -(2.0f * (float)PI) / 20.0f);
+      else triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);      
     } else if (actual_obstacle == left) {
-      if (!close_front_obstacle && !close_left_obstacle)
-        triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
-      else triskar.run(0.0, 0.0);
+      if (veryclose_left_obstacle)
+        triskar.run(0.0, (2.0f * (float)PI) / 20.0f);
+      else triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
     } else if (actual_obstacle == front) {
-      if (!close_front_obstacle)
-        triskar.run(20.0, 0.0);
-      else startMovement(dance, blueC, color_wipe, 18);//inizia ballo e canta
+      if (veryclose_front_obstacle){
+        triskar.run(0.0, 0.0);
+        colorGameSetup();
+        startPlayTime=millis();
+      }else timedPlayS(MiChiamoTeo_AUDIO, 10000); 
     }
   }
 }
@@ -1181,6 +1183,7 @@ void makeMovement() {
       case brokeIce:            broke_ice();break;
       case idle:                idleMovement(); break;
       case follow:              iMfollowingU(); break;
+      case colorGame:           color_game(); break;
       case dance:               //makeDance();
                                 break;
     }

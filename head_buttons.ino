@@ -28,6 +28,7 @@ void headCapacitiveLoop(){
         wrongAnswer();
       }
       buttonToTouch=-1;
+      if(color_Game)color_Game=false;
     }
   }
 }

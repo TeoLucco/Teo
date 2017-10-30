@@ -65,7 +65,9 @@ unsigned long int lastWarning = 0; //last time warning advice
 #define AUDIO_SCARED_ROUND 10
 #define AUDIO_SCARED_BEHIND 11
 #define DONT_WONNA_AUDIO 22
+#define DOMANDA_COLORE_LED_AUDIO 10 
 #define AVVICINATI_AUDIO 33
+#define MiChiamoTeo_AUDIO 01
 #define firstGameAudioNumber 3
 #define firstScenarioAudioNumber 6
 boolean firstSound = false;
@@ -79,7 +81,7 @@ DFRobotDFPlayerMini myDFPlayer;
 #define N_GAMES 3
 enum gameStates {no_game, setting, make_question, wait_answer, right_answer, wrong_answer, end_game, mov};
 gameStates gameState = no_game;
-#define colorGame 1
+//#define colorGame 1
 #define animalGame 2
 int gameNumber = 0;
 int scenarioNumber=0;
@@ -166,7 +168,7 @@ unsigned long int lastHitTime[N_BODY_SENSORS];
 #define FRONT_LED_NUMBER 9
 Adafruit_NeoPixel head_strip = Adafruit_NeoPixel(FRONT_LED_NUMBER, FRONT_LEDPIN, NEO_GRB + NEO_KHZ800);
 //states
-enum colors {redC, blueC, greenC, yellowC, lightBlueC, orangeC};
+enum colors {redC, greenC, blueC, yellowC, lightBlueC, orangeC};
 colors body_color = greenC;
 enum ledStates {led_off, rainbow_cycle, color_wipe, color_pulse};
 boolean body_leds=true;
@@ -269,6 +271,7 @@ boolean move = false;
 #define dance               30
 #define brokeIce            31
 #define autonomous_capa     32
+#define colorGame           33
 
 double alpha = 0;
 byte next_movement = make_circle;

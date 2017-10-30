@@ -1,12 +1,12 @@
-void resetButtons() {
-  triangolo = false;
-  quadrato = false;
-  cerchio = false;
-  croce = false;
-  startbutton = false;
-  select = false;
-}
-
+//void resetButtons() {
+//  triangolo = false;
+//  quadrato = false;
+//  cerchio = false;
+//  croce = false;
+//  startbutton = false;
+//  select = false;
+//}
+//
 
 
 #define SENDSTATETIME 1000
@@ -73,7 +73,7 @@ void headButtonsControl(){
 void movementPanel() {
   switch (b) {
     case '0':
-      resetButtons();
+      //resetButtons();
       if (actual_movement == no_movement && prev_movement != idle && prev_movement != follow && prev_movement != autonomous_movement) {
         triskar.stop2();
         move = false;
