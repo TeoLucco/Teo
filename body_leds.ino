@@ -133,6 +133,7 @@ void wipeLoop(colors color) {
   }
   if(ledTimer && millis()-fullColorTime>resetTime){
     ledTimer=false;
+    resetLeds();
     bodyLedUpdate(led_off);
   }
   //  else if (color == head_strip.Color(255, 100, 0)) {

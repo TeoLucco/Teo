@@ -3,11 +3,11 @@ void capacitiveSerialLoop() {
   sendSerial();
 }
 
-int abbraccioN = 0;
 
 void reciveSerial() {
   resetPatCountTimer();
   resetHitCountTimer();
+  resetHugsCountTimer();
   if (pressedButton != -1) pressedButton = -1;
   if (touched != noWhere) touched = noWhere;
   if (touch_type != nothing) touch_type = nothing;
@@ -31,9 +31,11 @@ void reciveSerial() {
 
 void hugRecived() {
   abbraccioN++;
+  lastHugRecivedTime=millis();
   touch_type = hugT;
   Serial3.print("Abbraccio durata "); Serial3.println(abbraccioN);
-  //playS(23); 
+  //playS(23);
+  setLedTimer(4000);
   bodyLedUpdate(color_pulse,redC);
   resetPats();
   resetHits();
@@ -50,11 +52,14 @@ void patRecived(){
   if (pat[i] == N_PATS) {
     resetPats();
     //playS(23);  
+    setLedTimer(2000);
     bodyLedUpdate(color_wipe,lightBlueC);
   } else {
     pat[i]++;
     pats++;
-    //playS(23);  headLedUpdate(green, color_pulse);
+    setLedTimer(2000);
+    bodyLedUpdate(color_wipe,lightBlueC);
+    //playS(23); 
   }
 }
 
@@ -68,10 +73,14 @@ void hitRecived(){
   setTouched(i);
   if (hit[i] == N_HITS) {
     resetHits();
+    setLedTimer(2000);
+    bodyLedUpdate(color_wipe,blueC);
     //nhits(i);
   } else {
     hit[i]++;
     hits++;
+    setLedTimer(2000);
+    bodyLedUpdate(color_wipe,orangeC);
     //hitRecived(i);
   }
 }
@@ -135,6 +144,12 @@ void resetHitCountTimer() {
       hit[i] = 0;
     }
     hits = hit[i];
+  }
+}
+
+void resetHugsCountTimer(){
+  if(millis() - lastHugRecivedTime>RESET_HUG_TIME){
+       abbraccioN=0;
   }
 }
 

@@ -81,69 +81,21 @@ DFRobotDFPlayerMini myDFPlayer;
 #define N_GAMES 3
 enum gameStates {no_game, setting, make_question, wait_answer, right_answer, wrong_answer, end_game, mov};
 gameStates gameState = no_game;
-//#define colorGame 1
-#define animalGame 2
-int gameNumber = 0;
-int scenarioNumber=0;
-#define timePerAnsw 50000
-#define maxQuestionsPerEx 10
-#define maxAnswersPerEx 4
-#define maxScenariosPerEx 4
-#define GamesNumber 4
-int playI = 0;
-int questionI = 0;
 int currentGameI=0;
 int currentScenarioI=0;
-#define max_q_repeat 5
-int repeatQuestionCounter = 0;
-int gameAnswers[GamesNumber][maxScenariosPerEx][maxQuestionsPerEx][maxAnswersPerEx] ={
-                                                                                      {//GIOCO 0
-                                                                                        {//scenario 0
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        },
-                                                                                        {//scenario 1
-                                                                                           {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        }
-                                                                                      },
-                                                                                      {//GIOCO 1
-                                                                                        {//Scenario 0
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        },
-                                                                                        {//scenario 1
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        }
-                                                                                      },
-                                                                                      {//GIOCO 2
-                                                                                        {//Scenario 0
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        },
-                                                                                        {//scenario 1
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        }
-                                                                                      },
-                                                                                      {//GIOCO 3
-                                                                                        {//Scenario 0
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        },
-                                                                                        {//scenario 1
-                                                                                          {0,-1,-1,-1}, {1,-1,-1,-1}, {2,0,-1,-1}, {1,0,-1,-1}, {-1,-1,-1,-1} 
-                                                                                        }
-                                                                                      },
-                                                                                      
-                                                                                     };
+
 //0-blu 1-giallo 2-verde 3-rosso
 unsigned long int startWaitingTime = 0;
-boolean questionResult[maxQuestionsPerEx];
-float questionTime[maxQuestionsPerEx];
-int tries[maxQuestionsPerEx];
 
 //CAPACITIVES
 #define N_HEAD_SENSORS 4
 #define N_BODY_SENSORS 3
 #define RESET_PAT_TIME 5000
 #define RESET_HIT_TIME 20000
+#define RESET_HUG_TIME 4000
 #define N_PATS 3
 #define N_HITS 3
+int abbraccioN = 0;
 enum warKingsCapacitives {noOne, head, body, both, body_t};
 warKingsCapacitives workingCapacitives = body;
 warKingsCapacitives previousWorkingCapacitives = noOne;
@@ -159,8 +111,9 @@ int hit[N_BODY_SENSORS] = {0, 0, 0};
 int pats = 0;
 int hits = 0;
 int hugsCount = 0;
-unsigned long int lastPatTime[N_BODY_SENSORS];
-unsigned long int lastHitTime[N_BODY_SENSORS];
+unsigned long int lastPatTime[N_BODY_SENSORS]={0,0,0};
+unsigned long int lastHitTime[N_BODY_SENSORS]={0,0,0};
+unsigned long int lastHugRecivedTime=0;
 
 
 //FRONT LEDS PINS, CONSTANT AND VARIABLES
@@ -370,7 +323,7 @@ void loop() {
   //sensori
   btInterpreter();
   capacitiveSerialLoop();
-  headCapacitiveInterpreter();
+  //headCapacitiveInterpreter();
   headCapacitiveLoop();
   voltageCheckloop();
   bodyLedLoop();

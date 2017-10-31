@@ -56,7 +56,7 @@ void famMod() {
     movementPanel();
     startMovementBT();
     settings();
-    ledControl();
+    //ledControl();
     playAudio();
     headButtonsControl();
   }
@@ -64,9 +64,8 @@ void famMod() {
 }
 
 void headButtonsControl() {
-  if (b == '*') {
-    buttonToTouch = Serial.parseInt();
-    Serial3.println(Serial3.read());
+  if (b == '!') {
+    buttonToTouch = Serial3.parseInt();
     CapacitivesUpdate(head);
     Serial3.print("buttonToTouch: ");Serial3.println(buttonToTouch);
   }

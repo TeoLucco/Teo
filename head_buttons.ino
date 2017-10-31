@@ -24,12 +24,13 @@ void headCapacitiveLoop(){
     if(buttonToTouch!=-1){
       if(pressedButton==buttonToTouch){
         rightAnswer();
+        buttonToTouch=-1;
       }else{
         wrongAnswer();
       }
-      buttonToTouch=-1;
       if(color_Game)color_Game=false;
-    }
+      pressedButton=-1;
+    }  
   }
 }
 
