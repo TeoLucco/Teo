@@ -10,37 +10,37 @@
 
 
 #define SENDSTATETIME 1000
-unsigned long int lastSendState=0;
-double prev_posX=0;
-double actual_posX=0;
-double prev_posY=0;
-double actual_posY=0;
-double prev_posTh=0;
-double actual_posTh=0;
+unsigned long int lastSendState = 0;
+double prev_posX = 0;
+double actual_posX = 0;
+double prev_posY = 0;
+double actual_posY = 0;
+double prev_posTh = 0;
+double actual_posTh = 0;
 void sendState() {
-  if(millis()-lastSendState>SENDSTATETIME){
+  if (millis() - lastSendState > SENDSTATETIME) {
     Serial3.print("*A" + String(interpreterState) + "*");
-    lastSendState=millis();
+    lastSendState = millis();
   }
-  prev_posX=actual_posX;
-  actual_posX=triskar.getPosX();
-  prev_posY=actual_posY;
-  actual_posY=triskar.getPosY();
-  prev_posTh=actual_posTh;
-  actual_posTh=triskar.getPosTh();
-  if(actual_posX!=prev_posX){
-    Serial3.print("*X" + String(actual_posX) + "*"); 
+  prev_posX = actual_posX;
+  actual_posX = triskar.getPosX();
+  prev_posY = actual_posY;
+  actual_posY = triskar.getPosY();
+  prev_posTh = actual_posTh;
+  actual_posTh = triskar.getPosTh();
+  if (actual_posX != prev_posX) {
+    Serial3.print("*X" + String(actual_posX) + "*");
   }
-  if(actual_posY!=prev_posY){
-    Serial3.print("*Y" + String(actual_posY) + "*"); 
+  if (actual_posY != prev_posY) {
+    Serial3.print("*Y" + String(actual_posY) + "*");
   }
-  if(actual_posTh!=prev_posTh){
-    Serial3.print("*T" + String(actual_posTh) + "*"); 
+  if (actual_posTh != prev_posTh) {
+    Serial3.print("*T" + String(actual_posTh) + "*");
   }
-  if(millis()-lastBatteryUpdate>BATTERY_UPDATE_TIME){
-   battery_indicator=constrain(mapfloat(voltage,MIN_INDICATOR_VOLTAGE,MAX_INDICATOR_VOLTAGE,MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE),MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE);
-   Serial3.print("*B" + String(battery_indicator) + "*");
-   lastBatteryUpdate=millis();
+  if (millis() - lastBatteryUpdate > BATTERY_UPDATE_TIME) {
+    battery_indicator = constrain(mapfloat(voltage, MIN_INDICATOR_VOLTAGE, MAX_INDICATOR_VOLTAGE, MIN_INDICATOR_VALUE, MAX_INDICATOR_VALUE), MIN_INDICATOR_VALUE, MAX_INDICATOR_VALUE);
+    Serial3.print("*B" + String(battery_indicator) + "*");
+    lastBatteryUpdate = millis();
   }
   Serial3.print("*D" + String(f_front) + "*");
   Serial3.print("*L" + String(f_left) + "*");
@@ -63,10 +63,12 @@ void famMod() {
   //sendState();
 }
 
-void headButtonsControl(){
-  if(b=='*'){
-      buttonToTouch=Serial.parseInt();
-      CapacitivesUpdate(head);
+void headButtonsControl() {
+  if (b == '*') {
+    buttonToTouch = Serial.parseInt();
+    Serial3.println(Serial3.read());
+    CapacitivesUpdate(head);
+    Serial3.print("buttonToTouch: ");Serial3.println(buttonToTouch);
   }
 }
 
@@ -74,21 +76,23 @@ void movementPanel() {
   switch (b) {
     case '0':
       //resetButtons();
-      if (actual_movement == no_movement && prev_movement != idle && prev_movement != follow && prev_movement != autonomous_movement) {
-        triskar.stop2();
-        move = false;
-      } else if (actual_movement == no_movement && prev_movement == follow) {
-        actual_movement = follow;
-        prev_movement = no_movement;
-      }
-      else if (actual_movement == no_movement && prev_movement == autonomous_movement) {
-        actual_movement = autonomous_movement;
-        prev_movement = no_movement;
-      }
-      else if (actual_movement == no_movement && prev_movement == idle) {
-        //startMovement(idle, rainbow_cycle);
-        actual_movement = idle;
-        prev_movement = no_movement;
+      if (actual_movement == no_movement) {
+        if (prev_movement != idle && prev_movement != follow && prev_movement != autonomous_movement) {
+          triskar.stop2();
+          move = false;
+        } else if (prev_movement == follow) {
+          actual_movement = follow;
+          prev_movement = no_movement;
+        }
+        else if (prev_movement == autonomous_movement) {
+          actual_movement = autonomous_movement;
+          prev_movement = no_movement;
+        }
+        else if (prev_movement == idle) {
+          //startMovement(idle, rainbow_cycle);
+          actual_movement = idle;
+          prev_movement = no_movement;
+        }
       }
       //}
       break;
@@ -204,7 +208,7 @@ void settings() {
     case 'M': previousWorkingCapacitives = workingCapacitives; workingCapacitives = noOne; break;
     case 'N': speakers = true; break;
     case 'O': speakers = false; break;
-    case '7': interpreterState = choose_modality;break;
+    case '7': interpreterState = choose_modality; break;
   }
 }
 
@@ -215,24 +219,24 @@ void ledControl() {
     case 'Q': headLedSetColor(yellow); break;
     case 'R': headLedSetColor(blue); break;
     case 'S': headLedSetColor(green); break;
-    case 'T': headLedUpdate(led_off); head_leds=false; break;
-    case 'U': head_leds=true; headLedUpdate(rainbow_cycle); break;
-    case 'V': head_leds=true; headLedUpdate(color_wipe);  break;
-    case 'W': head_leds=true; headLedUpdate(color_pulse); break;
+    case 'T': headLedUpdate(led_off); head_leds = false; break;
+    case 'U': head_leds = true; headLedUpdate(rainbow_cycle); break;
+    case 'V': head_leds = true; headLedUpdate(color_wipe);  break;
+    case 'W': head_leds = true; headLedUpdate(color_pulse); break;
     case 'X': bodyLedUpdate(redC); break;
     case 'Y': bodyLedUpdate(yellowC); break;
     case 'Z': bodyLedUpdate(blueC); break;
     case '[': bodyLedUpdate(greenC); break;
-    case ']': bodyLedUpdate(led_off);body_leds=false; break;
-    case '^': body_leds=true;bodyLedUpdate(rainbow_cycle); break;
-    case '_': body_leds=true;bodyLedUpdate(color_wipe); break;
-    case 'a': body_leds=true;bodyLedUpdate(color_pulse); break;
+    case ']': bodyLedUpdate(led_off); body_leds = false; break;
+    case '^': body_leds = true; bodyLedUpdate(rainbow_cycle); break;
+    case '_': body_leds = true; bodyLedUpdate(color_wipe); break;
+    case 'a': body_leds = true; bodyLedUpdate(color_pulse); break;
   }
 }
 
 void startMovementBT() {
   switch (b) {
-    case '9': stopMovement();break;
+    case '9': stopMovement(); break;
     case ':': startMovement(11); break;
     case ';': startMovement(12); break;
     case '<': startMovement(13); break;
@@ -248,9 +252,10 @@ void startMovementBT() {
     case 'F': startMovement(29); break;
     case 'G': stopMovement(); startMovement(follow); actual_obstacle = none; last_obstacle = none; break;
     case 'H': stopMovement(); startMovement(autonomous_movement); break;
-    case 'I': startMovement(autonomous_capa);break;//START DI MOSCACIECA
-    case ',': startMovement(dance);break;
-    case '8': startMovement(brokeIce);break;
+    case 'I': startMovement(autonomous_capa); break; //START DI MOSCACIECA
+    case ',': startMovement(dance); break;
+    case '8': startMovement(brokeIce); break;
+    case '-': startMovement(colorGame); break;  
   }
 }
 
@@ -267,8 +272,8 @@ void playAudio() {
     case 'i': playS(16); break;
   }
 
-  if(b=='%'){
-      playS(Serial.parseInt());
+  if (b == '%') {
+    playS(Serial.parseInt());
   }
 }
 //  Serial3.println("7-TRIANGOLO");
@@ -352,6 +357,8 @@ void chooseModality() {
         //        if (!triangolo) {
         //          triangolo = true;
         interpreterState = choose_game;
+        Serial3.println();
+        Serial3.println("Selezionare Gioco");
         playS(02);
         //        }
         break;
@@ -390,6 +397,8 @@ void chooseGame() {
         interpreterState = choose_scenario;
         currentGameI = 0;
         playS(firstGameAudioNumber + currentGameI);
+        Serial3.print("Selezionato Gioco: "); Serial3.println(currentGameI);
+        Serial3.println("Selezionare Scenario");
         //        }
         break;
       case '1':
@@ -422,14 +431,16 @@ void chooseGame() {
   //sendState();
 }
 
-void chooseScenario(){
-   if (Serial3.available()) {
+void chooseScenario() {
+  if (Serial3.available()) {
     b = Serial3.read();
     switch (b) {
       case '0':
         interpreterState = sg_waiting;
         currentScenarioI = 0;
-        playS(firstScenarioAudioNumber + currentGameI);
+        playS(firstScenarioAudioNumber + currentScenarioI);
+        Serial3.print("Selezionato Scenario:  "); Serial3.println(currentScenarioI);
+        Serial3.println("Premere '1' per iniziare Gioco");
         //        }
         break;
       case '1':
@@ -465,45 +476,45 @@ void sgWaiting() {
   if (Serial3.available()) {
     b = Serial3.read();
     switch (b) {
-    //      case '0':
-    //        resetButtons();
-    //        break;
+      //      case '0':
+      //        resetButtons();
+      //        break;
 
-  case '1':
-    //        Serial3.println("9-X");
-    //        if (!croce) {
-    //          croce = true;
-    interpreterState = game_modality;
-    gameState = setting;
-    previousWorkingCapacitives = workingCapacitives;
-    workingCapacitives = head;
-    //        }
-    break;
+      case '1':
+        //        Serial3.println("9-X");
+        //        if (!croce) {
+        //          croce = true;
+        interpreterState = game_modality;
+        gameState = setting;
+        previousWorkingCapacitives = workingCapacitives;
+        workingCapacitives = head;
+        //        }
+        break;
 
-  default:
-    // default code (should never run)
-    break;
+      default:
+        // default code (should never run)
+        break;
+    }
+
   }
-
-}
-//sendState();
+  //sendState();
 }
 
 void gameMod() {
   if (Serial3.available()) {
     b = Serial3.read();
     switch (b) {
-    //      case '0':
-    //        resetButtons();
-    //        break;
+      //      case '0':
+      //        resetButtons();
+      //        break;
 
-          default:
-    // default code (should never run)
-          break;
+      default:
+        // default code (should never run)
+        break;
     }
 
   }
-//sendState();
+  //sendState();
 }
 
 void disCharge() {

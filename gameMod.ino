@@ -87,17 +87,17 @@ void settingGame() {
 
 void makeQuestion() {
   t_Scenario s = games[currentGameI].scenarios[currentScenarioI];
-  Serial3.print("currentQuestionI:  " + currentQuestionI);
-  Serial3.print("s.n_questions: " + s.n_questions);
+  Serial3.print("currentQuestionI:  "); Serial3.println(currentQuestionI);
+  Serial3.print("s.n_questions: "); Serial3.println(s.n_questions);
   if (currentQuestionI < s.n_questions) {                                   //se devo fare ancora domande
     Serial3.println("currentQuestionI < s.n_questions");
-    Serial3.println("played audio:  " + s.audio_indices[currentQuestionI]);
+    Serial3.print("played audio: "); Serial3.println(s.audio_indices[currentQuestionI]);
     playS(s.audio_indices[currentQuestionI]);                                 //faccio la domanda I
     Serial3.println("Reset del vettore risposte fino ad ora");
     Serial3.println("currentGivenAnswers: ");
-    for (int i = 0; i < N_BODY_SENSORS; i++) {
+    for (int i = 0; i < N_HEAD_SENSORS; i++) {
       currentGivenAnswers[i] = false;                                         //azzero il vettore delle risposte date fino ad ora
-      Serial3.print(currentGivenAnswers[i] + " ");
+      Serial3.print(currentGivenAnswers[i]);Serial3.print(" ");
     }
     Serial3.println();
     currentNumberAnswered = 0;                                               //azzero il contatore delle risposte date fino ad ora
@@ -203,47 +203,49 @@ void makeQuestion() {
 
 
 void waitAnswer() {
-  Serial3.println("Attivo capacitivi Testa");
-  previousWorkingCapacitives = workingCapacitives;
-  workingCapacitives = head;
+  if(workingCapacitives != head){
+    Serial3.println("Attivo capacitivi Testa");
+    previousWorkingCapacitives = workingCapacitives;
+    workingCapacitives = head;
+  }
   t_Scenario s = games[currentGameI].scenarios[currentScenarioI];
-  Serial3.println("currentNumberAnswered " + currentNumberAnswered);
-  Serial3.println("n answers " + s.n_answers[currentQuestionI]);
+//  Serial3.print("currentNumberAnswered: "); Serial3.println(currentNumberAnswered);
+//  Serial3.print("n answers: "); Serial3.println(s.n_answers[currentQuestionI]);
   if (currentNumberAnswered < s.n_answers[currentQuestionI]) {//se ci sono ancora risposte da dare
-    Serial3.println("currentNumberAnswered < s.n_answers[currentQuestionI]");
+//    Serial3.println("currentNumberAnswered < s.n_answers[currentQuestionI]");
     if (currentNumberAnswered > 0) {  //se ho già dato una risposta
       //say:e poi??
-      Serial3.println("E poi???");
+      //Serial3.println("E poi???");
       timedPlayS(77, 15000);
     }
-    Serial3.println("Pressed Button:  " + pressedButton);
     if (pressedButton != -1) { //resto in attesa che venga premuto un bottone
+      //Serial3.print("Pressed Button: "); //Serial3.println(pressedButton);
       int a = pressedButton;//viene premuto un bottone
-      Serial3.println("currentGivenAnswers: ");
-      for (int i = 0; i < N_HEAD_SENSORS; i++) {
-        Serial3.print(currentGivenAnswers[i] + " ");
-      }
-      Serial3.println();
+//      Serial3.println("currentGivenAnswers: ");
+//      for (int i = 0; i < N_HEAD_SENSORS; i++) {
+//        Serial3.print(currentGivenAnswers[i]);//Serial3.print(" ");
+//      }
+      //Serial3.println();
       if (currentGivenAnswers[a]) {//se il bottone è già stato premuto per questa domanda
-        Serial3.println("Bottone Gia premuto per questa domanda!");
+        //Serial3.println("Bottone Gia premuto per questa domanda!");
         playS(18);// say: hai già dato questa risposta, provane un'altra
       } else {//se invece è la prima volta che prova un bottone
-        Serial3.println("Prima volta che premi il bottone!");
+        //Serial3.println("Prima volta che premi il bottone!");
         currentGivenAnswers[a] = true;  //mi salvo il bottone che ha premuto
-        Serial3.println("currentGivenAnswers: ");
-        for (int i = 0; i < N_HEAD_SENSORS; i++) {
-          Serial3.print(currentGivenAnswers[i] + " ");
-        }
-        Serial3.println();
+//        Serial3.println("currentGivenAnswers: ");
+//        for (int i = 0; i < N_HEAD_SENSORS; i++) {
+//          Serial3.print(currentGivenAnswers[i]);//Serial3.print(" ");
+//        }
+        //Serial3.println();
         if (s.correct_answers[currentQuestionI][a]) {  //se il bottone premuto è una risposta corretta
-          Serial3.println("s.correct_answers[currentQuestionI][a];  " + s.correct_answers[currentQuestionI][a]);
-          Serial3.println("risposta corretta");
+          //Serial3.print("s.correct_answers[currentQuestionI][a]: "); //Serial3.println(s.correct_answers[currentQuestionI][a]);
+          //Serial3.println("risposta corretta");
           // correct
           currentNumberAnswered++;      //incremento il contatore delle risposte corrette
-          Serial3.println("currentNumberAnswered incremented at:  " + currentNumberAnswered);
+          //Serial3.print("currentNumberAnswered incremented at: "); //Serial3.println(currentNumberAnswered);
           rightAnswer();                //eseguo movimento right answer
         } else {                      //se invece la riposta è sbagliata
-          Serial3.println("risposta scorretta");
+          //Serial3.println("risposta scorretta");
           wrongAnswer();//say risposta sbagliata  ed esegui movimento
           // wrong
         }
@@ -254,7 +256,7 @@ void waitAnswer() {
   } else {            //se non ci sono più risposte da dare
     currentQuestionI++;     //incrementa l'indice della domanda
     gameState = make_question; //vado in stato make question
-    Serial3.print("wait answer end");
+    //Serial3.println("wait answer end");
   }
 }
 
@@ -286,7 +288,7 @@ void waitAnswer() {
 
 void rightAnswer() {
   int randNumber = rand() % 4 + make_happy0;
-  Serial3.println("Disattivo Capacitivi");
+  //Serial3.println("Disattivo Capacitivi");
   previousWorkingCapacitives = workingCapacitives;
   if (interpreterState == game_modality)workingCapacitives = noOne;
   else if (interpreterState == fam_modality)workingCapacitives = body;
@@ -295,11 +297,12 @@ void rightAnswer() {
   else
     playS(5);
   dir = rand() % 2;
+  setLedTimer(2000);
   bodyLedUpdate(color_wipe, greenC);
   //startMovement(randNumber); //at the end of makeHappy function there's the gameStateChange
 }
 void wrongAnswer() {
-  Serial3.println("Disattivo Capacitivi");
+  //Serial3.println("Disattivo Capacitivi");
   previousWorkingCapacitives = workingCapacitives;
   if (interpreterState == game_modality)workingCapacitives = noOne;
   else if (interpreterState == fam_modality)workingCapacitives = body;
@@ -308,6 +311,7 @@ void wrongAnswer() {
   else
     playS(7);
   dir = rand() % 2;
+  setLedTimer(2000);
   bodyLedUpdate(color_wipe, redC);
   //startMovement(make_sad1);
 }
@@ -356,11 +360,20 @@ void colorGameSetup() {
 
 void gameModality() {
   switch (gameState) {
-    case setting:         Serial3.println("Setting game begin"); settingGame(); Serial3.println("Setting game end"); break;
-    case make_question:   Serial3.println("make question begin"); makeQuestion(); Serial3.println("make question end"); break;
-    case wait_answer:     waitAnswer(); break;
+    case no_game:         break;
+    case setting:         //Serial3.println("Setting game begin"); 
+                          settingGame(); 
+                          //Serial3.println("Setting game end"); 
+                          break;
+    case make_question:   //Serial3.println("make question begin"); 
+                          makeQuestion(); 
+                          //Serial3.println("make question end"); break;
+    case wait_answer:     waitAnswer(); 
+                          break;
     case mov:             break;
-    case end_game:        Serial3.println("end game"); endGame(); break;
+    case end_game:        //Serial3.println("end game"); 
+                          endGame(); 
+                          break;
   }
 }
 

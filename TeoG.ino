@@ -265,8 +265,6 @@ boolean move = false;
 #define make_sad2R          24
 #define scared_hitL         25
 #define scared_hitR         26
-#define turnAlphaR2         27  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE, dopo scappa all'indetro
-#define turnAlphaL2         28
 #define angrymov            29
 #define dance               30
 #define brokeIce            31
@@ -368,7 +366,7 @@ void setup() {
 }
 
 void loop() {
-  FirstSound();
+  //FirstSound();
   //sensori
   btInterpreter();
   capacitiveSerialLoop();

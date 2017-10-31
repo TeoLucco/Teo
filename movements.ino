@@ -1154,12 +1154,9 @@ void makeMovement() {
       case make_eight:          break;
       case make_circle:         make_Circle(); break;
       case turn180r:            turn180_right(); break;
-      //case turn180r2:           turn180_right2();break;
       case turn180l:            turn180_left(); break;
       case turnAlphaR:          turn_alpha_right(); break;
-      //case turnAlphaR2:          turn_alpha_right2();break;
       case turnAlphaL:          turn_alpha_left(); break;
-      //case turnAlphaL2:         turn_alpha_left2();break;
       case makeOnemF:           makeOneMeterForward(); break;
       case makeOnemB:           makeOneMeterBackward(); break;
       case scared_round:        makeScaredRound(); break;
