@@ -23,5 +23,5 @@ void microLoop() {
     if (millis() - lastadd > 500) {
       microI = 0;
     }
-  }
+  }else micro_f=0;
 }

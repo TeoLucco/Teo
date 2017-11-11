@@ -121,15 +121,13 @@ void wipeLoop(colors color) {
   } else if (color == yellowC) {
     if (r < 254) r = r + 2;
     if (g < 125) g++;
-  }
-  if(color == lightBlueC){
-    if (bl < 255) {bl=bl+2; g=g+2;}
+  } else if(color == lightBlueC){
+    if (bl < 254) bl=bl+2; 
+    if (g < 254) g=g+2;
     if (r<100) r++;
-  }
-  if(color == orangeC){
-    if (r < 254) r = constrain(r++,0,254);
-    if (g < 153) g = constrain((int)0.6*g,0,153);
-    if (bl< 51) b= constrain((int)0.2*bl,0,51);
+  }else if(color == orangeC){
+   if (r < 250) r =r+5;
+   if (g < 50)  g++;
   }
   if(ledTimer && millis()-fullColorTime>resetTime){
     ledTimer=false;
@@ -187,39 +185,17 @@ void pulseLoop(colors color) {
       if (g > 0) g--;
       if (r == 0) bodyI = 0;
     }
+  }else if(color == orangeC){
+   if(bodyI==0){
+      if (r < 250) r =r+5;
+      if (g < 50) g++;
+      if(r==250) bodyI = 1;
+   }else if (bodyI == 1) {
+      if (r > 0) r = r - 5;
+      if (g > 0) g--;
+      if (r == 0) bodyI = 0;
+    } 
   } 
-//  else if (color == head_strip.Color(255, 100, 0)) {
-//    if (bodyI == 0) {
-//      if (r < 255) r++;
-//      if (g < 100) g++;
-//      if (r == 255) bodyI = 1;
-//    } else if (bodyI == 1) {
-//      if (r > 0) r--;
-//      if (g > 0) g--;
-//      if (r == 0) bodyI = 0;
-//    }
-//  }
-//  else if (color == head_strip.Color(0, 255, 255)) {
-//    if (bodyI == 0) {
-//      if (g < 255) g++;
-//      if (bl < 255) bl++;
-//      if (bl == 255) bodyI = 1;
-//    } else if (bodyI == 1) {
-//      if (g > 0) g--;
-//      if (bl > 0) bl--;
-//      if (bl == 0) bodyI = 0;
-//    }
-//  } else if (color == head_strip.Color(255, 0, 255)) {
-//    if (bodyI == 0) {
-//      if (r < 255) r++;
-//      if (bl < 255) bl++;
-//      if (bl == 255) bodyI = 1;
-//    } else if (bodyI == 1) {
-//      if (r > 0) r--;
-//      if (bl > 0) bl--;
-//      if (bl == 0) bodyI = 0;
-//    }
-//  }
   if(ledTimer && millis()-fullColorTime>resetTime){
     ledTimer=false;
     bodyLedUpdate(led_off);

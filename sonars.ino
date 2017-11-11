@@ -41,6 +41,7 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
   f_left = left_sonar_f.output();
   f_back = back_sonar_f.output();
 
+
   previous_distance = actual_distance;
 
 

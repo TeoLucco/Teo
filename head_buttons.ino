@@ -1,36 +1,38 @@
 void checkBT() {
   if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
-    previousWorkingCapacitives=workingCapacitives;
-    workingCapacitives=head;
-    headInterpreter=true;
+    CapacitivesUpdate(head);
+    headInterpreter = true;
     //Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
     playS(17);
-  } else if (Serial3.available()){ firstSoundTime = millis(); headInterpreter=false;
-  } 
+  } else if (Serial3.available()) {
+    firstSoundTime = millis(); headInterpreter = false;
+  }
 }
 unsigned long int lastPressedButtonTime = 0;
-boolean colorByButton=false;
+boolean colorByButton = false;
 #define WIPE_DURATION 2000
-void headCapacitiveLoop(){
-  if(pressedButton!=-1){
-    lastPressedButtonTime=millis();
-    colorByButton=true;
-    switch(pressedButton){
-      case 0: headLedUpdate(red,color_wipe);break;
-      case 1: headLedUpdate(green,color_wipe);break;
-      case 2: headLedUpdate(blue,color_wipe);break;
-      case 3: headLedUpdate(yellow,color_wipe);break;
-    }
-    if(buttonToTouch!=-1){
-      if(pressedButton==buttonToTouch){
+void headCapacitiveLoop() {
+  if (pressedButton != -1) {
+    lastPressedButtonTime = millis();
+    colorByButton = true;
+    //if (interpreterState != game_modality) {
+//      switch (pressedButton) {
+//        case 0: headLedUpdate(red, color_wipe); break;
+//        case 1: headLedUpdate(green, color_wipe); break;
+//        case 2: headLedUpdate(blue, color_wipe); break;
+//        case 3: headLedUpdate(yellow, color_wipe); break;
+//      }
+    //}
+    if (buttonToTouch != -1) {
+      if (pressedButton == buttonToTouch) {
         rightAnswer();
-        buttonToTouch=-1;
-      }else{
+        buttonToTouch = -1;
+      } else {
         wrongAnswer();
       }
-      if(color_Game)color_Game=false;
-      pressedButton=-1;
-    }  
+      if (color_Game)color_Game = false;
+      pressedButton = -1;
+    }
   }
 }
 
@@ -46,7 +48,7 @@ void headCapacitiveInterpreter() {
       case test_modality:   break;
       case discharge:       break;
     }
-  }else checkBT();
+  } else checkBT();
 }
 
 void chooseModCap() {
@@ -55,7 +57,7 @@ void chooseModCap() {
     case 0: interpreterState = fam_modality; break;
     case 1: interpreterState = fam_modality; break;
     case 2: interpreterState = choose_game; break;
-    case 3: interpreterState = choose_game;break;
+    case 3: interpreterState = choose_game; break;
   }
 }
 void chooseGameCap() {
@@ -70,7 +72,7 @@ void chooseGameCap() {
     case 1:
       interpreterState = choose_scenario;
       playS(28); //scegli scenario
-      break;     
+      break;
 
     case 2:
 
@@ -98,7 +100,7 @@ void chooseScenarioCap() {
     case 1:
       interpreterState = sg_waiting;
       playS(28); //scegli scenario
-      break;     
+      break;
 
     case 2:
 

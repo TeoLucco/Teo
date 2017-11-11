@@ -23,6 +23,7 @@ void fotoresSetup() {
 
 
 void fotoresLoop() {
+  if(fotoresistor){
   if ((interpreterState == fam_modality || interpreterState == test_modality) && !btMov ){
     fotores_value = analogRead(FOTORES_PIN);
     if ((fotores_value < averageLight - 240 - error || fotores_value < 80) && fotoresistorState != covered) {
@@ -38,6 +39,10 @@ void fotoresLoop() {
       if ((actual_movement == follow || actual_movement == autonomous_movement) && interpreterState != test_modality)
         stopAutFollow();
     }
+  }
+  }else {
+    fotores_value=0;
+    fotoresistorState=clean;
   }
 }
 

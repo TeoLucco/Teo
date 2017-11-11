@@ -1,6 +1,6 @@
+
 //LIBRARIES
 #include <DualMC33926MotorShield.h>
-#include <MC33926.h>
 #include <Triskar.h>
 #include <Encoder.h>
 #include <NewPing.h>
@@ -72,6 +72,8 @@ unsigned long int lastWarning = 0; //last time warning advice
 #define firstScenarioAudioNumber 6
 boolean firstSound = false;
 boolean speakers = true;
+boolean bodyCapacitor=true;
+boolean fotoresistor=true;
 unsigned long int startPlayTime = 0;
 int lastPlayed = 0;
 DFRobotDFPlayerMini myDFPlayer;
@@ -92,7 +94,7 @@ unsigned long int startWaitingTime = 0;
 #define N_BODY_SENSORS 3
 #define RESET_PAT_TIME 5000
 #define RESET_HIT_TIME 20000
-#define RESET_HUG_TIME 4000
+#define RESET_HUG_TIME 10000
 #define N_PATS 3
 #define N_HITS 3
 int abbraccioN = 0;
@@ -107,7 +109,7 @@ int pressedButton = -1;
 int buttonToTouch=-1;
 boolean headInterpreter = false;
 int pat[N_BODY_SENSORS] = {0, 0, 0};
-int hit[N_BODY_SENSORS] = {0, 0, 0};
+int hit[N_BODY_SENSORS+1] = {0, 0, 0, 0};
 int pats = 0;
 int hits = 0;
 int hugsCount = 0;
@@ -219,7 +221,7 @@ boolean move = false;
 #define scared_hitL         25
 #define scared_hitR         26
 #define angrymov            29
-#define dance               30
+#define dance_mov           30
 #define brokeIce            31
 #define autonomous_capa     32
 #define colorGame           33
@@ -243,17 +245,17 @@ double startPosX = 0;
 double startPosY = 0;
 double startPosTh = 0;
 
-int speed_trg = 18;
+int speed_trg = 30;
 
 
 //---------SONARS---------
 //-----constants-----
 #define SONAR_NUM     4 // Number or sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
-#define FAR_DISTANCE 200.0f
-#define CLOSE_DISTANCE 80.0f
-#define VERYCLOSE_DISTANCE 50.0f
-#define MEDIAN_NUMBER 9
+#define FAR_DISTANCE 100.0f
+#define CLOSE_DISTANCE 60.0f
+#define VERYCLOSE_DISTANCE 45.0f
+#define MEDIAN_NUMBER 7
 #define FILTERFREQUENCY 1.0f        //PB filter frequency
 #define COUNTER 50                  //when targetPos reach COUNTER(right) or -COUNTER(left) the robot is sure about where obstacle is(that's for avoid sonars false readings)
 #define MAX_COUNTER 2*COUNTER             //maximum COUNTER value
@@ -309,7 +311,6 @@ void setup() {
   srand(millis());
   // HC-05 default serial speed for AT mode is 38400
   Serial3.begin(38400);
-  Serial3.println("Are YOU ready??");
   dfPlayerSetup();
   bodyLedSetup();
   fotoresSetup();
@@ -329,13 +330,13 @@ void loop() {
   bodyLedLoop();
   sonarLoop();
   fotoresLoop();
-  //microLoop();
+  microLoop();
   headLedLoop();
   //print();
   //attuatori
   if (interpreterState != test_modality && interpreterState != choose_modality) {
-    //pidLoop();
-    //makeMovement();
+    pidLoop();
+    makeMovement();
     gameModality();
   }
 }
