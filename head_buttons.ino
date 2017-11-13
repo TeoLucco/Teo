@@ -1,6 +1,6 @@
 void checkBT() {
   if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
-    CapacitivesUpdate(head);
+    //CapacitivesUpdate(head);
     headInterpreter = true;
     //Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
     playS(17);

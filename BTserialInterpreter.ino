@@ -45,7 +45,7 @@ void chooseModality() {
         break;
       case '8':
         interpreterState = fam_modality;
-        CapacitivesUpdate(body);
+        //CapacitivesUpdate(body);
         movementFinishTime = millis();
         break;
       default:
@@ -75,7 +75,7 @@ void famMod() {
 void headButtonsControl() {
   if (b == '!') {
     buttonToTouch = Serial3.parseInt();
-    CapacitivesUpdate(head);
+    CapacitivesUpdate(both);
     //Serial3.print("buttonToTouch: ");Serial3.println(buttonToTouch);
   }
 }
@@ -193,7 +193,7 @@ void movementPanel() {
 
 void settings() {
   switch (b) {
-    case 'L': bodyCapacitor = true; CapacitivesUpdate(body); break;
+    case 'L': bodyCapacitor = true; //CapacitivesUpdate(body); break;
     case 'M': CapacitivesUpdate(noOne); bodyCapacitor = false; break;
     case 'N': speakers = true; break;
     case 'O': speakers = false; break;
@@ -402,12 +402,12 @@ void chooseGame() {
         break;
       case '8':
         interpreterState = fam_modality;
-        CapacitivesUpdate(body);
+        //CapacitivesUpdate(body);
         movementFinishTime = millis();
         break;
       case '.':
         interpreterState = choose_modality;
-        CapacitivesUpdate(noOne);
+        //CapacitivesUpdate(noOne);
         break;
 
     }
@@ -473,7 +473,7 @@ void sgWaiting() {
         //          croce = true;
         interpreterState = game_modality;
         gameState = setting;
-        CapacitivesUpdate(head);
+        //CapacitivesUpdate(head);
         //        }
         break;
 

@@ -48,7 +48,7 @@ void setHeadLedOff() {
 void headLedLoop() {
   switch (led_state) {
     case led_off: break;
-    case rainbow_cycle: rainbowCycle5(20); break;
+    case rainbow_cycle: rainbowCycle7(20); break;
     case color_wipe: colorWipe(head_color, 65); break;
     case color_pulse: colorPulse(head_color, 65); break;
   }
@@ -199,9 +199,33 @@ void rainbowCycle5(uint8_t wait) {
       head_strip.show();
       ledJ++;
     }
-  }else ledJ = 0;
+  } else ledJ = 0;
+}
+void rainbowCycle6(uint8_t wait) {
+  if (ledJ < 256 * 5) { // 5 cycles of all colors on wheel
+    for (int i = 0; i < head_strip.numPixels(); i++) {
+      head_strip.setPixelColor(i, Wheel(((i * 256 / head_strip.numPixels()) + ledJ) & 255));
+    }
+    if ((millis() - lastMilliLed) >= wait)   {
+      lastMilliLed = millis();
+      head_strip.show();
+      ledJ++;
+    }
+  } else ledJ = 0;
 }
 
+void rainbowCycle7(uint8_t wait) {
+  if (ledJ < 256 * 5) { // 5 cycles of all colors on wheel
+    if ((millis() - lastMilliLed) >= wait)   {
+      for (int i = 0; i < head_strip.numPixels(); i++) {
+        head_strip.setPixelColor(i, Wheel(((i * 256 / head_strip.numPixels()) + ledJ) & 255));
+      }
+      lastMilliLed = millis();
+      head_strip.show();
+      ledJ++;
+    }
+  } else ledJ = 0;
+}
 
 
 

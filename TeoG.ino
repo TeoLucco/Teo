@@ -194,37 +194,37 @@ unsigned long lastMilliPrint = 0;
 // MOVEMENTS VARIABLES
 boolean move = false;
 #define no_movement         0
-#define idle                1
-#define follow              2
-#define autonomous_movement 3
-#define make_eight          4
-#define turn180r            5  //rotazione 180 gradi USANDO RUOTA DESTRA COME CENTRO DI ROTAZIONE
-#define turn180l            6  //rotazione 180 gradi USANDO RUOTA SINISTRA COME CENTRO DI ROTAZIONE
-#define turnAlphaR          7  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
-#define turnAlphaL          8
-#define makeOnemF           9
-#define makeOnemB           10
-#define make_circle         11
-#define scared_round        12
-#define dontwonna           13
-#define scared_behind       14
-#define make_happy0         15
-#define make_happy1         16
-#define make_happy2         17
-#define make_happy3         18
-#define make_sad0           19
-#define make_sad1           20
-#define scared_hit          21
-#define make_sad2           22
-#define make_sad2L          23
-#define make_sad2R          24
-#define scared_hitL         25
-#define scared_hitR         26
-#define angrymov            29
-#define dance_mov           30
-#define brokeIce            31
-#define autonomous_capa     32
-#define colorGame           33
+#define make_eight          1
+#define turn180r            2  //rotazione 180 gradi USANDO RUOTA DESTRA COME CENTRO DI ROTAZIONE
+#define turn180l            3  //rotazione 180 gradi USANDO RUOTA SINISTRA COME CENTRO DI ROTAZIONE
+#define turnAlphaR          4  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
+#define turnAlphaL          5
+#define makeOnemF           6
+#define makeOnemB           7
+#define make_circle         8
+#define scared_round        9
+#define dontwonna           10
+#define scared_behind       11
+#define make_happy0         12
+#define make_happy1         13
+#define make_happy2         14
+#define make_happy3         15
+#define make_sad0           16
+#define make_sad1           17
+#define scared_hit          18
+#define make_sad2           19
+#define make_sad2L          20
+#define make_sad2R          21
+#define scared_hitL         22
+#define scared_hitR         23
+#define angrymov            24
+#define dance_mov           25
+#define idle                26
+#define follow              27
+#define autonomous_movement 28
+#define brokeIce            29
+#define autonomous_capa     30
+#define colorGame           31
 
 double alpha = 0;
 byte next_movement = make_circle;

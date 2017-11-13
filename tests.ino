@@ -34,7 +34,7 @@ void chooseTest() {
         break;
 
       case '2':
-        CapacitivesUpdate(head);
+        //CapacitivesUpdate(head);
         testType = head_capacitives_t;
         Serial3.println("Viene visualizzato il numero[0-3] del capacitivo toccato. Toccare uno alla volta i capacitivi posti sulla testa del robot per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");
@@ -42,7 +42,7 @@ void chooseTest() {
         break;
 
       case '3':
-        CapacitivesUpdate(body);
+        //CapacitivesUpdate(body);
         testType = body_capacitives_t;
         Serial3.println("Vengono visualizzati il valore e lo stato captato dal capacitivo posto nella parte posteriore sinistra(del robot). Toccare il capacitivo più o meno forte per verificarne il corretto funzionamento.");
         Serial3.println("Premere START per iniziare, END per terminare il test");

@@ -125,7 +125,7 @@ void makeQuestion() {
 void waitAnswer() {
   if (workingCapacitives != head) {
     //Serial3.println("Attivo capacitivi Testa");
-    CapacitivesUpdate(head);
+    //CapacitivesUpdate(head);
   }
   t_Scenario &s = games[currentGameI].scenarios[currentScenarioI];
   if (currentCorrectAnswers < s.n_answers[currentQuestionI]) {    //se ci sono ancora risposte da dare
@@ -272,7 +272,7 @@ void colorGameSetup() {
       case 3: headLedUpdate(yellow, color_wipe); break;
     }
     buttonToTouch = color;
-    CapacitivesUpdate(head);
+    //CapacitivesUpdate(head);
   }
 }
 
