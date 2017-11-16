@@ -8,6 +8,7 @@
 unsigned long int lastBodyLedLoop = 0;
 int bodyI = 0;
 unsigned long int resetTime=0;
+unsigned long int startLedTime=0;
 
 void bodyLedSetup() {
   pinMode(REDPIN, OUTPUT);
@@ -107,6 +108,21 @@ void bodyLedUpdate(ledStates state, colors color) {
   }
 }
 
+void bodyLedUpdate(ledStates state, colors color, unsigned long int timer) {
+  if (body_leds){
+    setLedTimer(timer); 
+    if(body_led_state != state || body_color!=color) {
+      bodyI=0;
+      switch (state) {
+        case color_pulse:   setBodyLedPulse(color); break;
+        case color_wipe:    setBodyLedWipe(color); break;
+        case rainbow_cycle: setBodyLedRainbow(); break;
+        case led_off:       setBodyLedOff(); break;
+      }
+    }
+  }
+}
+
 boolean ledTimer=false;
 unsigned long int fullColorTime=0;
 
@@ -128,6 +144,13 @@ void wipeLoop(colors color) {
   }else if(color == orangeC){
    if (r < 250) r =r+5;
    if (g < 50)  g++;
+  }else if(color == redCrazy){
+    int switchM=millis()-startLedTime%10;
+   if(switchM<5){
+    r=250;
+   }else{
+    r=0;
+   }
   }
   if(ledTimer && millis()-fullColorTime>resetTime){
     ledTimer=false;
@@ -199,6 +222,7 @@ void pulseLoop(colors color) {
   if(ledTimer && millis()-fullColorTime>resetTime){
     ledTimer=false;
     bodyLedUpdate(led_off);
+    headLedUpdate(rainbow_cycle);
   }
 }
 

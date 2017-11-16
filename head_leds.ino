@@ -215,7 +215,7 @@ void rainbowCycle6(uint8_t wait) {
 }
 
 void rainbowCycle7(uint8_t wait) {
-  if (ledJ < 256 * 5) { // 5 cycles of all colors on wheel
+  if (ledJ < 256) { // 5 cycles of all colors on wheel
     if ((millis() - lastMilliLed) >= wait)   {
       for (int i = 0; i < head_strip.numPixels(); i++) {
         head_strip.setPixelColor(i, Wheel(((i * 256 / head_strip.numPixels()) + ledJ) & 255));
@@ -310,5 +310,17 @@ void resetCounters() {
   ledJ = 0;
   ledQ = 0;
   ledZ = 0;
+}
+
+uint32_t chooseColor(colors color){
+  switch(color){
+    case blueC: return blue;break;
+    case redC:  return red;break;
+    case greenC: return green;break;
+    case lightBlueC: return light_blue;break; 
+    //case violetC:return violet;break;
+    case orangeC: return orange;break;
+    case redCrazy: return red;break;
+  }
 }
 

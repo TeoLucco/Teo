@@ -54,35 +54,28 @@ void headCapacitiveInterpreter() {
 void chooseModCap() {
   switch (pressedButton) {
     case -1: break;
-    case 0: interpreterState = fam_modality; break;
-    case 1: interpreterState = fam_modality; break;
-    case 2: interpreterState = choose_game; break;
-    case 3: interpreterState = choose_game; break;
+    case 0: interpreterState = fam_modality;fam_modality_start_time=millis(); break;
+    case 1: interpreterState = choose_game; break;
+    case 2: break;
+    case 3: playS(45); break;
   }
 }
 void chooseGameCap() {
   switch (pressedButton) {
     case -1: break;
     case 0:
-      if (currentGameI > 0) currentGameI--;
-      else currentGameI = 0;
-      playS(firstGameAudioNumber + currentGameI);
-      break;
-
-    case 1:
-      interpreterState = choose_scenario;
-      playS(28); //scegli scenario
-      break;
-
-    case 2:
-
       if (currentGameI < N_GAMES) currentGameI++;
       else currentGameI = N_GAMES;
       playS(firstGameAudioNumber + currentGameI);
       break;
 
+    case 1:break;
+
+    case 2:break;
+
     case 3:
-      interpreterState = choose_modality;
+      interpreterState = choose_scenario;
+      playS(28); //scegli scenario
       break;
   }
 }
@@ -91,27 +84,24 @@ void chooseGameCap() {
 void chooseScenarioCap() {
   switch (pressedButton) {
     case -1: break;
-    case 0:
-      if (currentScenarioI > 1) currentScenarioI--;
-      else currentScenarioI = 1;
-      playS(firstScenarioAudioNumber + currentScenarioI);
-      break;
-
-    case 1:
-      interpreterState = sg_waiting;
-      playS(28); //scegli scenario
-      break;
-
-    case 2:
-
+    case 0: 
       if (currentScenarioI < N_GAMES) currentScenarioI++;
       else currentScenarioI = N_GAMES;
       playS(firstScenarioAudioNumber + currentScenarioI);
       break;
+      
+
+    case 1:
+      
+      break;
+
+    case 2:
+      break;
+     
 
     case 3:
-      interpreterState = choose_game;
-      break;
+      interpreterState = sg_waiting;
+      playS(28); //premo 4 per iniziare
   }
 }
 void startGameWaitCap() {
@@ -119,8 +109,8 @@ void startGameWaitCap() {
     case -1:  break;
     case 0:   break;
     case 1:   break;
-    case 2:   interpreterState = game_modality; break;
-    case 3:   interpreterState = choose_game; break;
+    case 2:   break;
+    case 3:   interpreterState = game_modality; break;
   }
 
 }

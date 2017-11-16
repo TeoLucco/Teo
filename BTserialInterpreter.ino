@@ -21,7 +21,7 @@ double actual_posTh = 0;
 
 void btInterpreter() {
   switch (interpreterState) {
-    case choose_modality: chooseModality(); break;
+    case choose_modality: chooseModality();timedSwitchToGameMod(); break;
     case choose_game:     chooseGame(); break;
     case choose_scenario: chooseScenario(); break;
     case sg_waiting:      sgWaiting(); break;
@@ -45,6 +45,7 @@ void chooseModality() {
         break;
       case '8':
         interpreterState = fam_modality;
+        fam_modality_start_time=millis();
         //CapacitivesUpdate(body);
         movementFinishTime = millis();
         break;
@@ -53,6 +54,25 @@ void chooseModality() {
     }
   }
   sendState();
+}
+
+#define GAME_MODE_SWITCH_TIME 420000
+#define TIME_TO_ANSWER_SWITCH_GAME_MOD 60000
+#define MAKEAGAME_AUDIO 18
+unsigned long int switchToGameMod_time=0;
+
+boolean switchToGameMod=false;
+void timedSwitchToGameMod(){
+  if(millis()-fam_modality_start_time>GAME_MODE_SWITCH_TIME){
+    fam_modality_start_time=millis();
+    switchToGameMod=true;
+    playS(MAKEAGAME_AUDIO);//facciamo un gioco?
+    switchToGameMod_time=millis();
+  }
+  if(switchToGameMod && millis()-switchToGameMod_time>TIME_TO_ANSWER_SWITCH_GAME_MOD){
+    switchToGameMod=false;
+    fam_modality_start_time=millis();
+  }
 }
 
 void famMod() {
@@ -86,7 +106,8 @@ void movementPanel() {
       //resetButtons();
       if (actual_movement == no_movement) {
         if (prev_movement != idle && prev_movement != follow && prev_movement != autonomous_movement) {
-          triskar.stop2();
+          triskar.stop3();
+          //triskar.stop2();
           move = false;
         } else if (prev_movement == follow) {
           actual_movement = follow;
@@ -107,7 +128,7 @@ void movementPanel() {
 
     case '1':
       //Serial3.println("1-SU");
-      if (!veryclose_front_obstacle && actual_movement != dontwonna) {
+      if (front_obstacle!=veryCloseOb && actual_movement != dontwonna) {
         if (actual_movement == idle) {
           prev_movement = idle;
           actual_movement = no_movement;
@@ -115,11 +136,11 @@ void movementPanel() {
         move = true;
         movementFinishTime = millis();
         triskar.run(speed_trg, 0.0);
-      } else if (veryclose_front_obstacle && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
+      } else if (front_obstacle==veryCloseOb && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
       break;
     case '2':
       //Serial3.println("2-GIU'");
-      if (!veryclose_back_obstacle && actual_movement != dontwonna) {
+      if (back_obstacle!=veryCloseOb && actual_movement != dontwonna) {
         if (actual_movement == idle) {
           prev_movement = idle;
           actual_movement = no_movement;
@@ -127,7 +148,7 @@ void movementPanel() {
         move = true;
         triskar.run(-speed_trg, 0.0);
         movementFinishTime = millis();
-      } else if (veryclose_back_obstacle && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
+      } else if (back_obstacle==veryCloseOb && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
       break;
 
     case '3':
@@ -163,30 +184,30 @@ void movementPanel() {
     case '5':
       speed_trg -= 3;
       if (speed_trg < 0)     speed_trg = 0;
-      Serial3.print("*C" + String(speed_trg) + "*");
+      Serial3.println("*C" + String(speed_trg) + "*");
       break;
 
     case '6':
       speed_trg += 3;
       if (speed_trg > 45)   speed_trg = 45;
-      Serial3.print("*C" + String(speed_trg) + "*");
+      Serial3.println("*C" + String(speed_trg) + "*");
       break;
 
     case 'f':
       triskar.setKi(triskar.getKi() + 0.02);
-      Serial3.print("*I" + String(triskar.getKi()) + "*");
+      Serial3.println("*I" + String(triskar.getKi()) + "*");
       break;
     case 'g':
       triskar.setKi(triskar.getKi() - 0.02);
-      Serial3.print("*I" + String(triskar.getKi()) + "*");
+      Serial3.println("*I" + String(triskar.getKi()) + "*");
       break;
     case 'h':
       triskar.setKp(triskar.getKp() + 0.02);
-      Serial3.print("*P" + String(triskar.getKp()) + "*");
+      Serial3.println("*P" + String(triskar.getKp()) + "*");
       break;
     case 'i':
       triskar.setKi(triskar.getKp() - 0.02);
-      Serial3.print("*P" + String(triskar.getKp()) + "*");
+      Serial3.println("*P" + String(triskar.getKp()) + "*");
       break;
   }
 }
@@ -217,10 +238,10 @@ void settings() {
     case 'c': fotoresistor = false; break;
     case 'd': micro = true; break;
     case 'e': micro = false; break;
-    case 'l': /*triskar.setKi(SCARED_KI); triskar.setKp(SCARED_KP);*/ bodyLedUpdate(color_pulse, orangeC); speed_trg = SCARED_SPD;Serial3.print("*C" + String(speed_trg) + "*"); break;
-    case 'm': /*triskar.setKi(HAPPY_KI); triskar.setKp(HAPPY_KP);*/ bodyLedUpdate(color_pulse, greenC); speed_trg = HAPPY_SPD; Serial3.print("*C" + String(speed_trg) + "*");break;
-    case 'n': /*triskar.setKi(SAD_KI); triskar.setKp(SAD_KP);*/ bodyLedUpdate(color_pulse, blueC); speed_trg = SAD_SPD; Serial3.print("*C" + String(speed_trg) + "*");break;
-    
+    case 'f': microSoglia=Serial3.parseInt(); Serial3.println("*g" + String(microSoglia) + "*");break;
+    case 'l': /*triskar.setKi(SCARED_KI); triskar.setKp(SCARED_KP);*/ bodyLedUpdate(color_pulse, orangeC); speed_trg = SCARED_SPD;Serial3.println("*C" + String(speed_trg) + "*"); break;
+    case 'm': /*triskar.setKi(HAPPY_KI); triskar.setKp(HAPPY_KP);*/ bodyLedUpdate(color_pulse, greenC); speed_trg = HAPPY_SPD; Serial3.println("*C" + String(speed_trg) + "*");break;
+    case 'n': /*triskar.setKi(SAD_KI); triskar.setKp(SAD_KP);*/ bodyLedUpdate(color_pulse, blueC); speed_trg = SAD_SPD; Serial3.println("*C" + String(speed_trg) + "*");break;
   }
 }
 
@@ -228,7 +249,7 @@ void settings() {
 
 void startMovementBT() {
   switch (b) {
-    case '#': stopMovement(); break;
+    case '#': stopMovement();stopMovement(); break;
     case '9': startMovement(make_circle); break;
     case ':': startMovement(scared_round); break;
     case ';': startMovement(dontwonna); break;
@@ -338,7 +359,7 @@ void playAudio() {
 
 void sendState() {//send data from arduino to App
   if (millis() - lastSendState > SENDSTATETIME) {
-    Serial3.print("*A" + String(interpreterState) + "*");
+    Serial3.println("*A" + String(interpreterState) + "*");
     lastSendState = millis();
   }
   prev_posX = actual_posX;
@@ -348,29 +369,36 @@ void sendState() {//send data from arduino to App
   prev_posTh = actual_posTh;
   actual_posTh = triskar.getPosTh();
   if (actual_posX != prev_posX) {
-    Serial3.print("*X" + String(actual_posX) + "*");
+    Serial3.println("*X" + String(actual_posX) + "*");
   }
   if (actual_posY != prev_posY) {
-    Serial3.print("*Y" + String(actual_posY) + "*");
+    Serial3.println("*Y" + String(actual_posY) + "*");
   }
   if (actual_posTh != prev_posTh) {
-    Serial3.print("*T" + String(actual_posTh) + "*");
+    Serial3.println("*T" + String(actual_posTh) + "*");
   }
   if (millis() - lastBatteryUpdate > BATTERY_UPDATE_TIME) {
     battery_indicator = constrain(mapfloat(voltage, MIN_INDICATOR_VOLTAGE, MAX_INDICATOR_VOLTAGE, MIN_INDICATOR_VALUE, MAX_INDICATOR_VALUE), MIN_INDICATOR_VALUE, MAX_INDICATOR_VALUE);
-    Serial3.print("*B" + String(battery_indicator) + "*");
+    Serial3.println("*B" + String(battery_indicator) + "*");
     lastBatteryUpdate = millis();
   }
-  Serial3.print("*C" + String(speed_trg) + "*");
-  Serial3.print("*Q" + String(triskar.getSpeedX()) + "*");
-  Serial3.print("*N" + String(actual_movement) + "*");
-  Serial3.print("*O" + String(prev_movement) + "*");
-  Serial3.print("*D" + String(f_front) + "*");
-  Serial3.print("*L" + String(f_left) + "*");
-  Serial3.print("*R" + String(f_right) + "*");
-  Serial3.print("*S" + String(f_back) + "*");
-  Serial3.print("*F" + String(fotores_value) + "*");
-  Serial3.print("*M" + String(micro_f) + "*");
+  Serial3.println("*C" + String(speed_trg) + "*");
+  Serial3.println("*Q" + String(triskar.getSpeedX()) + "*");
+  Serial3.println("*N" + String(actual_movement) + "*");
+  Serial3.println("*O" + String(prev_movement) + "*");
+  Serial3.println("*D" + String(f_front) + "*");
+  Serial3.println("*L" + String(f_left) + "*");
+  Serial3.println("*R" + String(f_right) + "*");
+  Serial3.println("*S" + String(f_back) + "*");
+  Serial3.println("*F" + String(fotores_value) + "*");
+  Serial3.println("*M" + String(micro_f) + "*");
+  Serial3.println("*g" + String(microSoglia) + "*");
+  Serial3.println("*h" + String(actual_obstacle) + "*");
+  Serial3.println("*i" + String(last_obstacle) + "*");
+  Serial3.println("*l" + String(targetPos) + "*");
+  Serial3.println("*m" + String(right_obstacle) + "*");
+  Serial3.println("*n" + String(left_obstacle) + "*");
+  Serial3.println("*o" + String(front_obstacle) + "*");
 }
 
 
@@ -402,6 +430,7 @@ void chooseGame() {
         break;
       case '8':
         interpreterState = fam_modality;
+        fam_modality_start_time=millis();
         //CapacitivesUpdate(body);
         movementFinishTime = millis();
         break;

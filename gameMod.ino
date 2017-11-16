@@ -186,8 +186,8 @@ void rightAnswer() {
   else
     playS(5);
   dir = rand() % 2;
-  setLedTimer(2000);
-  bodyLedUpdate(color_wipe, greenC);
+//  setLedTimer(2000);
+  bodyLedUpdate(color_wipe, greenC,2000);
   headLedUpdate(green, color_wipe);
   startMovement(randNumber); //at the end of makeHappy function there's the gameStateChange
 }
@@ -201,8 +201,7 @@ void wrongAnswer() {
   else
     playS(7);
   dir = rand() % 2;
-  setLedTimer(2000);
-  bodyLedUpdate(color_wipe, redC);
+  bodyLedUpdate(color_wipe, redC,2000);
   headLedUpdate(red, color_wipe);
   startMovement(make_sad1);
 }
@@ -224,13 +223,13 @@ void endGame() {
   Serial3.print("Correct answers number:"); Serial3.println(nRightAns);
   t_Scenario &s = games[currentGameI].scenarios[currentScenarioI];
   
-  Serial3.print("*G");
+  Serial3.println("*G");
   for (int i = 0; i < s.n_questions - 1; i++) {
     Serial3.print(s.questionResponseTime[i]); Serial3.print(",");
   }
   Serial3.print(s.questionResponseTime[s.n_questions - 1]); Serial3.println("*");
   
-  Serial3.print("*H");
+  Serial3.println("*H");
   for (int i = 0; i < s.n_questions - 1; i++) {
     if (s.givenAnswersReport[i]) Serial3.print("t");
     else Serial3.print("f");

@@ -27,7 +27,7 @@ void voltageCheckSetup()
     // 5.015V is the calibrated reference voltage
     voltage = (((float)sum / (float)NUM_SAMPLES * 5.005) / 1024.0)*4.013;
     battery_indicator=constrain(mapfloat(voltage,MIN_INDICATOR_VOLTAGE,MAX_INDICATOR_VOLTAGE,MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE),MIN_INDICATOR_VALUE,MAX_INDICATOR_VALUE);
-    Serial3.print("*B" + String(battery_indicator) + "*");
+    Serial3.println("*B" + String(battery_indicator) + "*");
     lastBatteryUpdate=millis();
     // send voltage for display on Serial Monitor
     // voltage multiplied by 11 when using voltage divider that
@@ -66,7 +66,7 @@ void voltageCheckloop()
     // value
     sample_count = 0;
     sum = 0;
-    if(voltage<=11.5 && millis()-lastWarning>15000){
+    if(voltage<=11.0 && millis()-lastWarning>15000){
       playS(2);
       lastWarning=millis();
     }

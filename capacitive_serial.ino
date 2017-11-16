@@ -36,8 +36,9 @@ void hugRecived() {
     touch_type = hugT;
     Serial3.print("Abbraccio durata "); Serial3.println(abbraccioN);
     //playS(23);
-    setLedTimer(4000);
-    bodyLedUpdate(color_pulse, redC);
+    bodyLedUpdate(color_pulse, redC,4000); 
+//    setLedTimer(4000);
+//    bodyLedUpdate(color_pulse, redC);
     resetPats();
     resetHits();
   }
@@ -52,17 +53,24 @@ void patRecived() {
     lastPatTime[i] = millis();
     Serial3.print("pat at "); Serial3.println(i);
     setTouched(i);
-    if (pat[i] >= N_PATS) {
-      //resetPats();
-      //playS(23);
-      setLedTimer(2000);
-      bodyLedUpdate(color_wipe, lightBlueC);
-    } else {
-      pat[i]++;
-      pats++;
-      setLedTimer(2000);
-      bodyLedUpdate(color_wipe, lightBlueC);
-      //playS(23);
+    if(switchToGameMod && i==2){
+      switchToGameMod=false;
+      interpreterState=game_modality;
+    }else{
+      if (pat[i] >= N_PATS) {
+        //resetPats();
+        //playS(23);
+        bodyLedUpdate(color_wipe, lightBlueC,2000); 
+//        setLedTimer(2000);
+//        bodyLedUpdate(color_wipe, lightBlueC);
+      } else {
+        pat[i]++;
+        pats++;
+        bodyLedUpdate(color_wipe, lightBlueC,2000); 
+//        setLedTimer(2000);
+//        bodyLedUpdate(color_wipe, lightBlueC);
+        //playS(23);
+      }
     }
   }
 }
@@ -78,14 +86,10 @@ void hitRecived() {
     setTouched(i);
     if (hit[i] >= N_HITS) {
       //resetHits();
-      setLedTimer(2000);
-      //bodyLedUpdate(color_wipe, blueC);
       nhits(i);
     } else {
       hit[i]++;
       hits++;
-      setLedTimer(2000);
-      //bodyLedUpdate(color_wipe, orangeC);
       hitRecived(i);
     }
   }
@@ -109,7 +113,7 @@ void sendSerial() {
       case body: Serial.write(2); break;
       case both: Serial.write(3); break;
     }
-    Serial3.print("*E" + String(workingCapacitives) + "*");
+    Serial3.println("*E" + String(workingCapacitives) + "*");
     previousWorkingCapacitives = workingCapacitives;
   }
 }
@@ -130,10 +134,10 @@ void defineWorkingCapacitives(){
 void nhits(int i) {
   if (!(testState == test_exe && testType == body_capacitives_t)) {
     switch (i) {
-      case 0: alpha=0.70*PI;startMovement(make_sad2L, blueC, color_pulse, 33); break;
-      case 1: alpha=0.70*PI;startMovement(make_sad2R, blueC, color_pulse, 33); break;
-      case 2: startMovement(make_sad2,  blueC, color_pulse, 33); break;
-      case 3: startMovement(angrymov,  blueC, color_pulse, 33); break;
+      case 0: alpha=0.70*PI;startMovement(make_sad2L,redCrazy,color_wipe,13); break;
+      case 1: alpha=0.70*PI;startMovement(make_sad2R,redCrazy,color_wipe,13); break;
+      case 2: startMovement(make_sad2,redCrazy,color_wipe,13); break;
+      case 3: startMovement(angrymov,redCrazy,color_wipe,13); break;
     }
   }
 }
@@ -141,10 +145,10 @@ void nhits(int i) {
 void hitRecived(int i) {
   if (!(testState == test_exe && testType == body_capacitives_t)) {
     switch (i) {
-      case 0: alpha=0.70*PI;startMovement(scared_hitL, orangeC, color_pulse, 34); break;
-      case 1: alpha=0.70*PI;startMovement(scared_hitR, orangeC, color_pulse, 34); break;
-      case 2: startMovement(scared_hit,  orangeC, color_pulse, 34); break;
-      case 3: startMovement(scared_round,  orangeC, color_pulse, 33); break;
+      case 0: alpha=0.70*PI;startMovement(scared_hitL,orangeC,color_wipe,13); break;
+      case 1: alpha=0.70*PI;startMovement(scared_hitR,orangeC,color_wipe,13); break;
+      case 2: startMovement(scared_hit,orangeC,color_wipe,13); break;
+      case 3: startMovement(scared_round,orangeC,color_wipe,13); break;
     }
   }
 }

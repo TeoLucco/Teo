@@ -1,20 +1,20 @@
 #define ANGRY_FORWARD_SP 38.0f
 #define HAPPY_FORWARD_SP 34.0f
-#define SCARED_FORWARD_SP 38.0f
+#define SCARED_FORWARD_SP 47.0f
 #define SAD_FORWARD_SP  17.0f //13
 
 #define ANGRY_ANGULAR_SP 4.0f
 #define HAPPY_ANGULAR_SP 1.5f
-#define SCARED_ANGULAR_SP 2.0f
-#define SAD_ANGULAR_SP  0.8f  //0.6
+#define SCARED_ANGULAR_SP 1.0f
+#define SAD_ANGULAR_SP  1.0f  //0.6
 
 int lost = 0;
 
 unsigned long int lastround = 0;
 void iMfollowingU() {
-  follow2 = true;
-  aut_mov = false;
-  idle_mov = false;
+  //  follow2 = true;
+  //  aut_mov = false;
+  //  idle_mov = false;
   if (no_obstacle) {
     if (last_obstacle == none) {
       timedPlayS(9, 10000);
@@ -28,314 +28,320 @@ void iMfollowingU() {
     }
     if (last_obstacle == front) {
       timedPlayS(10, 10000);
-      triskar.run(25.0, 0.0);
+      triskar.run(40.0, 0.0);
     }
   } else {
     if (lost > 5000) {
-      startMovement(make_sad0, yellowC, color_wipe, 11);
+      startMovement(make_sad0);
       lost = 0;
     }
-    else if (veryclose_front_obstacle && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
-    if (veryclose_back_obstacle && millis() - lastround > 10000 && backI >= 100 && triskar.isStopped()) {
+    else if (front_obstacle==veryCloseOb && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
+    if ((back_obstacle==closeOb || back_obstacle==veryCloseOb)  && millis() - lastround > 10000 && backI >= 100 && triskar.isStopped()) {
       lastround = millis();
-      stopMovement();
+      //stopMovement();
       backI = 0;
       last_obstacle = none;
       alpha = PI;
       if (dir == 1)
-        startMovement(turnAlphaL, greenC, color_wipe, 12);
+        startMovement(turnAlphaL);
       else
-        startMovement(turnAlphaR, greenC, color_wipe, 12);
+        startMovement(turnAlphaR);
       dir = rand() % 2;
     } else {
       if (actual_obstacle == right) {
-        if (!close_front_obstacle && !close_right_obstacle) {
-          triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
-        } else triskar.run(0.0, 0.0);
+        if (right_obstacle==closeOb) {
+          triskar.run(30.0, -(2.0f * (float)PI) / 20.0f);
+        } else if(front_obstacle!=veryCloseOb){
+          triskar.run(0.0, -(2.0f * (float)PI) / 20.0f);
+        }else triskar.run(0.0, 0.0);
       } else if (actual_obstacle == left) {
-        if (!close_front_obstacle && !close_left_obstacle)
-          triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
-        else triskar.run(0.0, 0.0);
+        if (left_obstacle==closeOb){
+          triskar.run(30.0f, (2.0f * (float)PI) / 20.0f);
+        }else if(front_obstacle!=veryCloseOb){
+          triskar.run(0.0f, (2.0f * (float)PI) / 20.0f);
+        }else triskar.run(0.0, 0.0);
       } else if (actual_obstacle == front) {
-        if (close_front_obstacle || close_right_obstacle || close_left_obstacle)
+        if (front_obstacle==veryCloseOb || right_obstacle==veryCloseOb || left_obstacle==veryCloseOb)
           triskar.run(0.0, 0.0);
-        else triskar.run(20.0, 0.0);
+        else triskar.run(35.0, 0.0);
       }
     }
   }
 }
 
-void iMfollowingU2() {
-  if (no_obstacle) {
-    if (last_obstacle == none) {
-      timedPlayS(9, 10000);
-      triskar.run(0.0, 0.0);
-    }
-    if (last_obstacle == right) {
-      triskar.run(0.0, -(2.0f * (float)PI) / 6.0f);
-    }
-    if (last_obstacle == left) {
-      triskar.run(0.0, (2.0f * (float)PI) / 6.0f);
-    }
-    if (last_obstacle == front) {
-      timedPlayS(10, 10000);
-      triskar.run(actual_distance/12.0, 0.0);
-    }
-  } else {
-    if (lost > 2000) {
-      startMovement(make_sad0, yellowC, color_wipe, 11);
-      lost = 0;
-    }
-    else if (veryclose_front_obstacle && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
-    else lost=0;
-    if (veryclose_back_obstacle && millis() - lastround > 10000 && backI >= 50 && triskar.isStopped()) {
-      lastround = millis();
-      stopMovement();
-      backI = 0;
-      last_obstacle = none;
-      alpha = PI;
-      if (dir == 1)
-        startMovement(turnAlphaL, greenC, color_wipe, 12);
-      else
-        startMovement(turnAlphaR, greenC, color_wipe, 12);
-      dir = rand() % 2;
-    } else {
-      if (actual_obstacle == right) {
-        if (!close_front_obstacle && !close_right_obstacle) {
-          triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
-        } else{
-          float fwSpeed=constrain(mapfloat(actual_distance-VERYCLOSE_DISTANCE,0,-VERYCLOSE_DISTANCE,0,-35.0),0,-35.0); 
-            triskar.run(fwSpeed, 0.0);
-        }
-      } else if (actual_obstacle == left) {
-        if (!close_front_obstacle && !close_left_obstacle)
-          triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
-        else triskar.run(0.0, 0.0);
-      } else if (actual_obstacle == front) {
-        if (close_front_obstacle || close_right_obstacle || close_left_obstacle)
-          triskar.run(0.0, 0.0);
-        else{
-          float fwSpeed=constrain(mapfloat(actual_distance,0,400,0,35.0),0,35.0); 
-          triskar.run(fwSpeed, 0.0);
-        }
-      }
-    }
-  }
-}
+//void iMfollowingU2() {
+//  if (no_obstacle) {
+//    if (last_obstacle == none) {
+//      timedPlayS(9, 10000);
+//      triskar.run(0.0, 0.0);
+//    }
+//    if (last_obstacle == right) {
+//      triskar.run(0.0, -(2.0f * (float)PI) / 6.0f);
+//    }
+//    if (last_obstacle == left) {
+//      triskar.run(0.0, (2.0f * (float)PI) / 6.0f);
+//    }
+//    if (last_obstacle == front) {
+//      timedPlayS(10, 10000);
+//      triskar.run(actual_distance / 12.0, 0.0);
+//    }
+//  } else {
+//    if (lost > 2000) {
+//      startMovement(make_sad0);
+//      lost = 0;
+//    }
+//    else if (veryclose_front_obstacle && triskar.isStopped() &&  previous_distance == actual_distance) lost++;
+//    else lost = 0;
+//    if (veryclose_back_obstacle && millis() - lastround > 10000 && backI >= 50 && triskar.isStopped()) {
+//      lastround = millis();
+//      //stopMovement();
+//      backI = 0;
+//      last_obstacle = none;
+//      alpha = PI;
+//      if (dir == 1)
+//        startMovement(turnAlphaL);
+//      else
+//        startMovement(turnAlphaR);
+//      dir = rand() % 2;
+//    } else {
+//      if (actual_obstacle == right) {
+//        if (!veryclose_front_obstacle && !veryclose_right_obstacle)
+//          triskar.run(25.0, -(2.0f * (float)PI) / 20.0f);
+//        else triskar.run(0.0, 0.0);
+//
+//      } else if (actual_obstacle == left) {
+//        if (!veryclose_front_obstacle && !veryclose_left_obstacle)
+//          triskar.run(25.0f, (2.0f * (float)PI) / 20.0f);
+//        else triskar.run(0.0, 0.0);
+//
+//      } else if (actual_obstacle == front) {
+//        if (veryclose_front_obstacle || veryclose_right_obstacle || veryclose_left_obstacle) {
+//          float fwSpeed = constrain(mapfloat(actual_distance - VERYCLOSE_DISTANCE, 0, -VERYCLOSE_DISTANCE, 0, -35.0), 0, -35.0);
+//          triskar.run(fwSpeed, 0.0);
+//        } else {
+//          float fwSpeed = constrain(mapfloat(actual_distance, 0, 400, 0, 35.0), 0, 35.0);
+//          triskar.run(fwSpeed, 0.0);
+//        }
+//      }
+//    }
+//  }
+//}
 
 void autonomousMovement() {
-  aut_mov = true;
-  follow2 = false;
-  idle_mov = false;
   if (millis() - movStartTime >= randomTurnTime) {//Turn randomly left/right 90 degrees at random time
     alpha = PI / 2;
-    stopMovement();
-    if (dir == 1)
-      startMovement(turnAlphaL, greenC, color_wipe, 13);
-    else
-      startMovement(turnAlphaR, greenC, color_wipe, 13);
-    dir = rand() % 2;
-    randomTurnTime = 15000 + rand() % (20000);
-    obstacleCount = 0;
-  } else {
-    if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
-      triskar.run(20.0f, 0.0f);
-      if (millis() - lastObstacleTime > 1000)
-        obstacleCount = 0;
-    } else {                                                                    // if obstacles, define a new time for random turn and turn in the opposite direction to the closest obstacle
-      randomTurnTime = 15000 + rand() % (20000);
-      lastObstacleTime = millis();
-      if ((f_right < f_front && f_right < f_left) || (f_front < f_right && f_right < f_left)) {//if closest obstacle on right(or at center, but right sonar reads a closest value than left one), turn left
-        if (f_right > VERYCLOSE_DISTANCE)                 //if not veryclose, turn still going straight
-          triskar.run(10.0f, (2.0f * (float)PI) / 8.0f);
-        else {                                            //if robot is veryclose to an obstacle, stop to go straight and rotates only
-          if (obstacleCount >= 4)  alpha = PI + PI / 6;
-          else                  alpha = PI / 3;
-          stopMovement();
-          startMovement(turnAlphaL, greenC, color_wipe, 14);
-          obstacleCount++;
-        }
-      }
-      else if ((f_left < f_front && f_left < f_right) || (f_front < f_left && f_left < f_right)) {
-        if (f_left > VERYCLOSE_DISTANCE)
-          triskar.run(10.0f, -(2.0f * (float)PI) / 8.0f);
-        else {
-          if (obstacleCount >= 4)  alpha = PI + PI / 6;
-          else                  alpha = PI / 3;
-          stopMovement();
-          startMovement(turnAlphaR, greenC, color_wipe, 14);
-          obstacleCount++;
-        }
-      }
-    }
-  }
-}
-
-
-void idleMovement() {
-  idle_mov = true;
-  aut_mov = false;
-  follow2 = false;
-  if (millis() - movStartTime >= randomIdleTurnTime) {//Turn randomly left/right 90 degrees at random time
-    alpha = PI / 6 + (rand() % (6));
-    stopMovement();
-    if (dir == 1)
-      startMovement(turnAlphaL, rainbow_cycle, 13);
-    else
-      startMovement(turnAlphaR, rainbow_cycle, 13);
-    dir = rand() % 2;
-    randomIdleTurnTime = 3000 + rand() % (7000);
-    obstacleCount = 0;
-  } else {
-    if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
-      if (body_led_state != led_off) resetLeds();
-      triskar.run(20.0f, 0.0f);
-      if (millis() - lastObstacleTime > 1000)
-        obstacleCount = 0;
-    } else {                                                                    // if obstacles, define a new time for random turn and turn in the opposite direction to the closest obstacle
-      randomIdleTurnTime = 3000 + rand() % (7000);
-      lastObstacleTime = millis();
-      if ((f_right < f_front && f_right < f_left) || (f_front < f_right && f_right < f_left)) {//if closest obstacle on right(or at center, but right sonar reads a closest value than left one), turn left
-        if (f_right > VERYCLOSE_DISTANCE)                 //if not veryclose, turn still going straight
-          triskar.run(10.0f, (2.0f * (float)PI) / 8.0f);
-        else {                                            //if robot is veryclose to an obstacle, stop to go straight and rotates only
-          if (obstacleCount >= 4)  alpha = PI + PI / 6;
-          else                  alpha = PI / 3;
-          stopMovement();
-          startMovement(turnAlphaL, rainbow_cycle, 14);
-          obstacleCount++;
-        }
-      }
-      else if ((f_left < f_front && f_left < f_right) || (f_front < f_left && f_left < f_right)) {
-        if (f_left > VERYCLOSE_DISTANCE)
-          triskar.run(10.0f, -(2.0f * (float)PI) / 8.0f);
-        else {
-          if (obstacleCount >= 4)  alpha = PI + PI / 6;
-          else                  alpha = PI / 3;
-          stopMovement();
-          startMovement(turnAlphaR, rainbow_cycle, 14);
-          obstacleCount++;
-        }
-      }
-    }
-  }
-}
-
-void broke_ice() {
-  if (no_obstacle) {
-    timedPlayS(9, 10000); //AVVICINATI!
-    triskar.run(0.0, 0.0);
-  } else {
-    if (actual_obstacle == right) {
-      if (!close_front_obstacle && !close_right_obstacle)
-        triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
-      else triskar.run(0.0, 0.0);
-    } else if (actual_obstacle == left) {
-      if (!close_front_obstacle && !close_left_obstacle)
-        triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
-      else triskar.run(0.0, 0.0);
-    } else if (actual_obstacle == front) {
-      if (!close_front_obstacle)
-        triskar.run(20.0, 0.0);
-      else startMovement(dance_mov, blueC, color_wipe, 18);//inizia ballo e canta
-    }
-  }
-}
-
-
-void color_game() {
-  if (no_obstacle) {
-    timedPlayS(MiChiamoTeo_AUDIO, 10000);
-    timedPlayS(AVVICINATI_AUDIO, 10000); //AVVICINATI!
-    triskar.run(0.0, 0.0);
-  } else {
-    switch (actual_obstacle) {
-      case front: if (veryclose_front_obstacle) {
-          triskar.run(0.0, 0.0);
-          colorGameSetup();
-          startPlayTime = millis();
-        } else triskar.run(20.0, 0.0);
-        break;
-      case right: if (veryclose_right_obstacle) {
-          triskar.run(0.0, -(2.0f * (float)PI) / 20.0f);
-        } else triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
-        break;
-      case left:  if (veryclose_left_obstacle)
-          triskar.run(0.0f, (2.0f * (float)PI) / 20.0f);
-        else triskar.run(15.0, (2.0f * (float)PI) / 20.0f);
-          break;
-    }
-  }
-}
-
-void autonomousMovementWithCapacitors() { 
-  aut_mov = true;
-  follow2 = false;
-  idle_mov = false;
-  if (touch_type == patT || touch_type == hitT) { //Turn randomly left/right 90 degrees at random time
-    stopMovement();
-    switch (touched) {
-      case left: alpha = (2 * PI) / 3; startMovement(turnAlphaL, greenC, color_wipe, 13); break;
-      case right: alpha = (2 * PI) / 3; startMovement(turnAlphaR, greenC, color_wipe, 13); break;
-      case front: 
-//        alpha = PI / 2;
-//        if (dir == 1)
-//          startMovement(turnAlphaL, greenC, color_wipe, 13);
-//        else
-//          startMovement(turnAlphaR, greenC, color_wipe, 13);
-//        dir = rand() % 2; 
-        break;
-    }
+    //stopMovement();
+    if (dir == 1) {
+      timedPlayS(5, 4000);
+      startMovement(turnAlphaL);
+    } else {
+      timedPlayS(5, 10000);
+      startMovement(turnAlphaR);
+    } dir = rand() % 2;
     randomTurnTime = 20000 + rand() % (20000);
-  } else if (millis() - movStartTime >= randomTurnTime) { //Turn randomly left/right 90 degrees at random time
-    alpha = PI / 2;
-    stopMovement();
-    if (dir == 1)
-      startMovement(turnAlphaL, greenC, color_wipe, 13);
-    else
-      startMovement(turnAlphaR, greenC, color_wipe, 13);
-    dir = rand() % 2;
-    randomTurnTime = 15000 + rand() % (20000);
     obstacleCount = 0;
   } else {
-    if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
-      triskar.run(20.0f, 0.0f);
-      if (millis() - lastObstacleTime > 1000)
+    if (front_obstacle==farOb && right_obstacle==farOb && left_obstacle==farOb) {//if no obstacles, go straight
+      triskar.run(35.0f, 0.0f);
+      if (millis() - lastObstacleTime > 2000)
         obstacleCount = 0;
     } else {                                                                    // if obstacles, define a new time for random turn and turn in the opposite direction to the closest obstacle
-      randomTurnTime = 15000 + rand() % (20000);
+      randomTurnTime = 20000 + rand() % (20000);
       lastObstacleTime = millis();
       if ((f_right < f_front && f_right < f_left) || (f_front < f_right && f_right < f_left)) {//if closest obstacle on right(or at center, but right sonar reads a closest value than left one), turn left
         if (f_right > VERYCLOSE_DISTANCE)                 //if not veryclose, turn still going straight
-          triskar.run(10.0f, (2.0f * (float)PI) / 8.0f);
+          triskar.run(25.0f, (2.0f * (float)PI) / 8.0f);
         else {                                            //if robot is veryclose to an obstacle, stop to go straight and rotates only
           if (obstacleCount >= 4)  alpha = PI + PI / 6;
           else                  alpha = PI / 3;
-          stopMovement();
-          startMovement(turnAlphaL, greenC, color_wipe, 14);
+          //stopMovement();
+          timedPlayS(4, 10000);
+          startMovement(turnAlphaL);
           obstacleCount++;
         }
       }
       else if ((f_left < f_front && f_left < f_right) || (f_front < f_left && f_left < f_right)) {
         if (f_left > VERYCLOSE_DISTANCE)
-          triskar.run(10.0f, -(2.0f * (float)PI) / 8.0f);
+          triskar.run(25.0f, -(2.0f * (float)PI) / 8.0f);
         else {
           if (obstacleCount >= 4)  alpha = PI + PI / 6;
           else                  alpha = PI / 3;
-          stopMovement();
-          startMovement(turnAlphaR, greenC, color_wipe, 14);
+          //stopMovement();
+          timedPlayS(4, 3000);
+          startMovement(turnAlphaR);
           obstacleCount++;
         }
       }
     }
   }
 }
+
+
+//void idleMovement() {
+//  //  idle_mov = true;
+//  //  aut_mov = false;
+//  //  follow2 = false;
+//  if (millis() - movStartTime >= randomIdleTurnTime) {//Turn randomly left/right 90 degrees at random time
+//    alpha = PI / 6 + (rand() % (6));
+//    stopMovement();
+//    if (dir == 1)
+//      startMovement(turnAlphaL, rainbow_cycle, 13);
+//    else
+//      startMovement(turnAlphaR, rainbow_cycle, 13);
+//    dir = rand() % 2;
+//    randomIdleTurnTime = 3000 + rand() % (7000);
+//    obstacleCount = 0;
+//  } else {
+//    if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
+//      if (body_led_state != led_off) resetLeds();
+//      triskar.run(20.0f, 0.0f);
+//      if (millis() - lastObstacleTime > 1000)
+//        obstacleCount = 0;
+//    } else {                                                                    // if obstacles, define a new time for random turn and turn in the opposite direction to the closest obstacle
+//      randomIdleTurnTime = 3000 + rand() % (7000);
+//      lastObstacleTime = millis();
+//      if ((f_right < f_front && f_right < f_left) || (f_front < f_right && f_right < f_left)) {//if closest obstacle on right(or at center, but right sonar reads a closest value than left one), turn left
+//        if (f_right > VERYCLOSE_DISTANCE)                 //if not veryclose, turn still going straight
+//          triskar.run(10.0f, (2.0f * (float)PI) / 8.0f);
+//        else {                                            //if robot is veryclose to an obstacle, stop to go straight and rotates only
+//          if (obstacleCount >= 4)  alpha = PI + PI / 6;
+//          else                  alpha = PI / 3;
+//          stopMovement();
+//          startMovement(turnAlphaL, rainbow_cycle, 14);
+//          obstacleCount++;
+//        }
+//      }
+//      else if ((f_left < f_front && f_left < f_right) || (f_front < f_left && f_left < f_right)) {
+//        if (f_left > VERYCLOSE_DISTANCE)
+//          triskar.run(10.0f, -(2.0f * (float)PI) / 8.0f);
+//        else {
+//          if (obstacleCount >= 4)  alpha = PI + PI / 6;
+//          else                  alpha = PI / 3;
+//          stopMovement();
+//          startMovement(turnAlphaR, rainbow_cycle, 14);
+//          obstacleCount++;
+//        }
+//      }
+//    }
+//  }
+//}
+
+//void broke_ice() {
+//  if (no_obstacle) {
+//    timedPlayS(9, 10000); //AVVICINATI!
+//    triskar.run(0.0, 0.0);
+//  } else {
+//    if (actual_obstacle == right) {
+//      if (!close_front_obstacle && !close_right_obstacle)
+//        triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
+//      else triskar.run(0.0, 0.0);
+//    } else if (actual_obstacle == left) {
+//      if (!close_front_obstacle && !close_left_obstacle)
+//        triskar.run(15.0f, (2.0f * (float)PI) / 20.0f);
+//      else triskar.run(0.0, 0.0);
+//    } else if (actual_obstacle == front) {
+//      if (!close_front_obstacle)
+//        triskar.run(20.0, 0.0);
+//      else startMovement(dance_mov, blueC, color_wipe, 18);//inizia ballo e canta
+//    }
+//  }
+//}
+
+
+//void color_game() {
+//  if (no_obstacle) {
+//    timedPlayS(MiChiamoTeo_AUDIO, 10000);
+//    timedPlayS(AVVICINATI_AUDIO, 10000); //AVVICINATI!
+//    triskar.run(0.0, 0.0);
+//  } else {
+//    switch (actual_obstacle) {
+//      case front: if (veryclose_front_obstacle) {
+//          triskar.run(0.0, 0.0);
+//          colorGameSetup();
+//          startPlayTime = millis();
+//        } else triskar.run(20.0, 0.0);
+//        break;
+//      case right: if (veryclose_right_obstacle) {
+//          triskar.run(0.0, -(2.0f * (float)PI) / 20.0f);
+//        } else triskar.run(15.0, -(2.0f * (float)PI) / 20.0f);
+//        break;
+//      case left:  if (veryclose_left_obstacle)
+//          triskar.run(0.0f, (2.0f * (float)PI) / 20.0f);
+//        else triskar.run(15.0, (2.0f * (float)PI) / 20.0f);
+//        break;
+//    }
+//  }
+//}
+//
+//void autonomousMovementWithCapacitors() {
+//  //  aut_mov = true;
+//  //  follow2 = false;
+//  //  idle_mov = false;
+//  if (touch_type == patT || touch_type == hitT) { //Turn randomly left/right 90 degrees at random time
+//    stopMovement();
+//    switch (touched) {
+//      case left: alpha = (2 * PI) / 3; startMovement(turnAlphaL, greenC, color_wipe, 13); break;
+//      case right: alpha = (2 * PI) / 3; startMovement(turnAlphaR, greenC, color_wipe, 13); break;
+//      case front:
+//        //        alpha = PI / 2;
+//        //        if (dir == 1)
+//        //          startMovement(turnAlphaL, greenC, color_wipe, 13);
+//        //        else
+//        //          startMovement(turnAlphaR, greenC, color_wipe, 13);
+//        //        dir = rand() % 2;
+//        break;
+//    }
+//    randomTurnTime = 20000 + rand() % (20000);
+//  } else if (millis() - movStartTime >= randomTurnTime) { //Turn randomly left/right 90 degrees at random time
+//    alpha = PI / 2;
+//    stopMovement();
+//    if (dir == 1)
+//      startMovement(turnAlphaL, greenC, color_wipe, 13);
+//    else
+//      startMovement(turnAlphaR, greenC, color_wipe, 13);
+//    dir = rand() % 2;
+//    randomTurnTime = 15000 + rand() % (20000);
+//    obstacleCount = 0;
+//  } else {
+//    if (!close_front_obstacle && !close_right_obstacle && !close_left_obstacle) {//if no obstacles, go straight
+//      triskar.run(20.0f, 0.0f);
+//      if (millis() - lastObstacleTime > 1000)
+//        obstacleCount = 0;
+//    } else {                                                                    // if obstacles, define a new time for random turn and turn in the opposite direction to the closest obstacle
+//      randomTurnTime = 15000 + rand() % (20000);
+//      lastObstacleTime = millis();
+//      if ((f_right < f_front && f_right < f_left) || (f_front < f_right && f_right < f_left)) {//if closest obstacle on right(or at center, but right sonar reads a closest value than left one), turn left
+//        if (f_right > VERYCLOSE_DISTANCE)                 //if not veryclose, turn still going straight
+//          triskar.run(10.0f, (2.0f * (float)PI) / 8.0f);
+//        else {                                            //if robot is veryclose to an obstacle, stop to go straight and rotates only
+//          if (obstacleCount >= 4)  alpha = PI + PI / 6;
+//          else                  alpha = PI / 3;
+//          stopMovement();
+//          startMovement(turnAlphaL, greenC, color_wipe, 14);
+//          obstacleCount++;
+//        }
+//      }
+//      else if ((f_left < f_front && f_left < f_right) || (f_front < f_left && f_left < f_right)) {
+//        if (f_left > VERYCLOSE_DISTANCE)
+//          triskar.run(10.0f, -(2.0f * (float)PI) / 8.0f);
+//        else {
+//          if (obstacleCount >= 4)  alpha = PI + PI / 6;
+//          else                  alpha = PI / 3;
+//          stopMovement();
+//          startMovement(turnAlphaR, greenC, color_wipe, 14);
+//          obstacleCount++;
+//        }
+//      }
+//    }
+//  }
+//}
 
 
 void startMovement(byte movement, colors color, ledStates ledState, byte audio) {
   startMovementBase(movement);
   playS(audio);
   if (body_leds) bodyLedUpdate(ledState, color);
+  if (head_leds) headLedUpdate(chooseColor(color), ledState);
 }
 
 void startMovement(byte movement, ledStates ledState, byte audio) {
@@ -363,15 +369,15 @@ void startMovement(byte movement) {
   //if (body_leds) bodyLedUpdate(color_pulse);
 }
 
-void startMovementBase(byte movement){
+void startMovementBase(byte movement) {
   triskar.resetIterm();
   movStartTime = millis();
   triskar.setPosTh(0);
   triskar.setPosX(0);
   triskar.setPosY(0);
-//  startPosTh = triskar.getPosTh();
-//  startPosX = triskar.getPosX();
-//  startPosY = triskar.getPosY();
+  //  startPosTh = triskar.getPosTh();
+  //  startPosX = triskar.getPosX();
+  //  startPosY = triskar.getPosY();
   prev_movement = actual_movement;
   actual_movement = movement;
   updateSong();
@@ -381,13 +387,14 @@ void startMovementBase(byte movement){
 
 void stopMovement() {
   triskar.stop();
-//  triskar.setPosTh(0);
-//  triskar.setPosX(0);
-//  triskar.setPosY(0);
+  //  triskar.setPosTh(0);
+  //  triskar.setPosX(0);
+  //  triskar.setPosY(0);
   prev_movement = actual_movement;
   actual_movement = no_movement;
   move = false;
-  resetLeds();
+  bodyLedUpdate(led_off);
+  headLedUpdate(rainbow_cycle);
   //stopS();
   movementFinishTime = millis();
   if (gameState == mov) {
@@ -396,25 +403,25 @@ void stopMovement() {
   }
 }
 
-void stopAutFollow() {
-  aut_mov = false;
-  follow2 = false;
-  idle_mov = false;
-  stopMovement();
-  prev_movement = no_movement;
-  last_obstacle = none;
-}
+//void stopAutFollow() {
+//  aut_mov = false;
+//  follow2 = false;
+//  idle_mov = false;
+//  stopMovement();
+//  prev_movement = no_movement;
+//  last_obstacle = none;
+//}
 
 
 void obstacle_stop_movement() {
-  if (actual_movement != dontwonna && actual_movement != idle && actual_movement != follow && actual_movement != autonomous_movement) {
-    if ( (triskar.getDirection() == 1) && (veryclose_front_obstacle || veryclose_left_obstacle || veryclose_right_obstacle) ){
+  if (actual_movement != dontwonna && actual_movement != idle && actual_movement != follow && actual_movement != autonomous_movement && actual_movement != turnAlphaR && actual_movement != turnAlphaL) {
+    if ( (triskar.getDirection() == 1) && (front_obstacle==veryCloseOb || left_obstacle==veryCloseOb || right_obstacle==veryCloseOb) ) {
       actual_movement = no_movement;
       startMovement(dontwonna, redC, color_pulse, 15);
     }
-    else if ( (triskar.getDirection() == 2 && veryclose_back_obstacle) ) {
-     actual_movement = no_movement;
-     startMovement(makeOnemF, redC, color_pulse, 15);
+    else if ( (triskar.getDirection() == 2 && back_obstacle==veryCloseOb) ) {
+      actual_movement = no_movement;
+      startMovement(makeOnemF, redC, color_pulse, 15);
     }
   }
 }
@@ -437,11 +444,11 @@ void make_Circle() {
 void turn_alpha_left() {
   rotateRobot(- alpha , ANGULAR_SP, 0.0, 0);
   stopMovement(1);
-  if(actual_movement==no_movement){
-    switch(prev_movement){
-      case autonomous_movement:startMovement(autonomous_movement);break;
-      case follow:startMovement(follow);break;
-      case idle:startMovement(idle);break;
+  if (actual_movement == no_movement) {
+    switch (prev_movement) {
+      case autonomous_movement: startMovement(autonomous_movement); break;
+      case follow: startMovement(follow); break;
+      case idle: startMovement(idle); break;
     }
   }
 }
@@ -450,7 +457,7 @@ void turn_alpha_left_test() {
   if (triskar.getPosTh() > startPosTh - alpha)
     triskar.run(0.0, ANGULAR_SP);
   else {
-    stopMovement();
+    //stopMovement();
     startMovement(prev_movement);
   }
 }
@@ -462,32 +469,32 @@ void turn_alpha_left_test() {
 //}
 
 
-void turn_alpha_right() {
-  if (triskar.getPosTh() <  alpha)
-    triskar.run(0.0, -ANGULAR_SP);
-  else {
-    stopMovement();
-    if (aut_mov) {
-      aut_mov = false;
-      startMovement(autonomous_movement);
-    }
-    if (follow2) {
-      follow2 = false;
-      startMovement(follow);
-      actual_obstacle = none;
-      last_obstacle = none;
-    }
-    if (idle_mov) {
-      idle_mov = false;
-      startMovement(idle, rainbow_cycle);
-    }
-  }
-}
+//void turn_alpha_right() {
+//  if (triskar.getPosTh() <  alpha)
+//    triskar.run(0.0, -ANGULAR_SP);
+//  else {
+//    stopMovement();
+//    if (aut_mov) {
+//      aut_mov = false;
+//      startMovement(autonomous_movement);
+//    }
+//    if (follow2) {
+//      follow2 = false;
+//      startMovement(follow);
+//      actual_obstacle = none;
+//      last_obstacle = none;
+//    }
+//    if (idle_mov) {
+//      idle_mov = false;
+//      startMovement(idle, rainbow_cycle);
+//    }
+//  }
+//}
 void turn_alpha_right_test() {
   if (triskar.getPosTh() < startPosTh + alpha)
     triskar.run(0.0, -ANGULAR_SP);
   else {
-    stopMovement();
+    //stopMovement();
     startMovement(prev_movement);
   }
 }
@@ -561,84 +568,104 @@ void makeRunScaredBehind() {
 
 void makeRunScaredForward(int i) {
   rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i);
-  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i+1); 
-  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i+2); 
-  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i+3); 
-  rotateRobot(0.0 , SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i+4); 
+  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i + 1);
+  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i + 2);
+  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i + 3);
+  rotateRobot(0.0 , SCARED_ANGULAR_SP, SCARED_FORWARD_SP, i + 4);
 }
-
+boolean flag = true;
 void makeRunScaredHit() { //at the end of the scared movement the robot will go in the opposite direction in line way like makeonemF
-  scaredRunBasicBL(0); 
+  traslateRobot( -100.0, -SCARED_FORWARD_SP, 0.0, 0);
+  stopRobot(1);
+  traslateRobot( -95.0, SCARED_FORWARD_SP, 0.0, 2);
+  stopRobot(3);
+  traslateRobot( -90.0, SCARED_FORWARD_SP, 0.0, 4);
   stopRobot(5);
-  traslateRobot( 0.0, SAD_FORWARD_SP, 0.0, 6);
-  stopMovement(7);
+  traslateRobot( -80.0, SCARED_FORWARD_SP, 0.0, 5);
+  stopRobot(6);
+  traslateRobot( -70.0, SCARED_FORWARD_SP, 0.0, 7);
+  stopRobot(8);
+  traslateRobot( -60.0, SCARED_FORWARD_SP, 0.0, 9);
+  stopRobot(10);
+  traslateRobot( -50.0, SCARED_FORWARD_SP, 0.0, 11);
+  stopRobot(12);
+  traslateRobot( -35.0, SCARED_FORWARD_SP, 0.0, 13);
+  stopRobot(14);
+  traslateRobot( -10.0, SCARED_FORWARD_SP, 0.0, 15);
+  stopRobot(16);
+  traslateRobot( 0.0, SCARED_FORWARD_SP, 0.0, 17);
+  stopMovement(18);
 }
 
 void makeRunScaredHitL() { //at the end of the scared movement the robot will go in the opposite direction in line way like makeonemF
-  rotateRobot(- alpha , -SCARED_ANGULAR_SP, 0.0, 0);
-  stopRobot2(1);
-  scaredRunBasicBL(2); 
-  stopRobot(7);
-  traslateRobot( 0.0, SAD_FORWARD_SP, 0.0, 8);
-  stopMovement(9);
-  
+  traslateRobot( 50.0, SCARED_FORWARD_SP, SCARED_ANGULAR_SP, 0);
+  stopRobot(1);
+  traslateRobot( 80.0, HAPPY_FORWARD_SP, 0.0, 2);
+  stopRobot(3);
+  traslateRobot( 100.0, SCARED_FORWARD_SP, 0.0, 4);
+  stopRobot(5);
+  rotateRobot(- alpha , -SCARED_ANGULAR_SP, 0.0, 6);
+  traslateRobot( 0.0, SAD_FORWARD_SP, 0.0, 7);
+  stopMovement(8);
 }
 
 void makeRunScaredHitR() { //at the end of the scared movement the robot will go in the opposite direction in line way like makeonemF
-
-  rotateRobot(+ alpha , SCARED_ANGULAR_SP, 0.0, 0);
-  stopRobot2(1);
-  scaredRunBasicBR(2);
-  stopRobot(7);
-  traslateRobot( 0.0, SAD_FORWARD_SP, 0.0, 8);
-  stopMovement(9);
+  traslateRobot( 50.0, SCARED_FORWARD_SP, -SCARED_ANGULAR_SP, 0);
+  stopRobot(1);
+  traslateRobot( 80.0, HAPPY_FORWARD_SP, 0.0, 2);
+  stopRobot(3);
+  traslateRobot( 100.0, SCARED_FORWARD_SP, 0.0, 4);
+  stopRobot(5);
+  rotateRobot( alpha , SCARED_ANGULAR_SP, 0.0, 6);
+  traslateRobot( 0.0, SAD_FORWARD_SP, 0.0, 7);
+  stopMovement(8);
 }
 
-void scaredRunBasicBR(int i){
-  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i); 
-  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+1);
-  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+2); 
-  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+3); 
-  rotateRobot( 0.0 ,  -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+4); 
+void scaredRunBasicBR(int i) {
+  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i);
+  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 1);
+  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 2);
+  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 3);
+  rotateRobot( 0.0 ,  -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 4);
 }
 
-void scaredRunBasicBL(int i){
+void scaredRunBasicBL(int i) {
   rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i);
-  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+1); 
-  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+2); 
-  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+3); 
-  rotateRobot( 0.0 ,  SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i+4); 
+  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 1);
+  rotateRobot(+ PI / 24.0 , SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 2);
+  rotateRobot(- PI / 24.0 , -SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 3);
+  rotateRobot( 0.0 ,  SCARED_ANGULAR_SP, -SCARED_FORWARD_SP, i + 4);
 }
 
 
-void makeHappy0() { 
-  
-    scaredRunBasicBR(0);
-    stopRobot(5);
-    makeRunScaredForward(6);
-    stopMovement(11);
-    
-//  rotateRobot( PI / 12.0 ,  HAPPY_ANGULAR_SP, -HAPPY_FORWARD_SP, 0);
-//  rotateRobot( - PI / 12.0 ,  -HAPPY_ANGULAR_SP, -HAPPY_FORWARD_SP, 1);
-//  rotateRobot( 0.0 ,  HAPPY_ANGULAR_SP, -HAPPY_FORWARD_SP, 2);
-//  stopRobot(3);
-//  rotateRobot( PI / 12.0 ,  HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 4);
-//  rotateRobot( - PI / 12.0 ,  -HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 5);
-//  rotateRobot( 0.0 ,  HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 6);
-//  stopMovement(7);
+void makeHappy0() {
+
+  scaredRunBasicBR(0);
+  stopRobot(5);
+  makeRunScaredForward(6);
+  stopMovement(11);
+
+  //  rotateRobot( PI / 12.0 ,  HAPPY_ANGULAR_SP, -HAPPY_FORWARD_SP, 0);
+  //  rotateRobot( - PI / 12.0 ,  -HAPPY_ANGULAR_SP, -HAPPY_FORWARD_SP, 1);
+  //  rotateRobot( 0.0 ,  HAPPY_ANGULAR_SP, -HAPPY_FORWARD_SP, 2);
+  //  stopRobot(3);
+  //  rotateRobot( PI / 12.0 ,  HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 4);
+  //  rotateRobot( - PI / 12.0 ,  -HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 5);
+  //  rotateRobot( 0.0 ,  HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 6);
+  //  stopMovement(7);
 }
 
 
 void makeHappy1() {
-//  rotateRobot( PI/2.0 ,SAD_ANGULAR_SP, -HAPPY_FORWARD_SP, 0);
-//  stopRobot(1);
-//  rotateRobot( PI , SAD_ANGULAR_SP, HAPPY_FORWARD_SP, 2);
-//  stopRobot(3);
-//  rotateRobot( 3.0 * PI / 2.0 , SAD_ANGULAR_SP, -HAPPY_FORWARD_SP, 4);
-//  stopRobot(5);
-//  rotateRobot( 2.0 * PI , SAD_ANGULAR_SP, HAPPY_FORWARD_SP, 6);
-//  stopMovement(7);
-  
+  //  rotateRobot( PI/2.0 ,SAD_ANGULAR_SP, -HAPPY_FORWARD_SP, 0);
+  //  stopRobot(1);
+  //  rotateRobot( PI , SAD_ANGULAR_SP, HAPPY_FORWARD_SP, 2);
+  //  stopRobot(3);
+  //  rotateRobot( 3.0 * PI / 2.0 , SAD_ANGULAR_SP, -HAPPY_FORWARD_SP, 4);
+  //  stopRobot(5);
+  //  rotateRobot( 2.0 * PI , SAD_ANGULAR_SP, HAPPY_FORWARD_SP, 6);
+  //  stopMovement(7);
+
   if ((triskar.getPosTh() < + PI / 2.0)) {
     triskar.run(-HAPPY_FORWARD_SP, -SAD_ANGULAR_SP);
   }
@@ -699,50 +726,48 @@ void makeSad2() {
   rotateRobot(- PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 4);
   rotateRobot( PI / 40.0, SAD_ANGULAR_SP, 0.0f, 5);
   stopRobot(6);
-  traslateRobot(100.0, SAD_FORWARD_SP, 0.0f, 7);
+  traslateRobot(-200.0, SAD_FORWARD_SP, 0.0f, 7);
   stopMovement(8);
 }
 
 void makeSad2L() {
-  rotateRobot( -alpha, -SCARED_ANGULAR_SP, 0.0f, 0);
-  stopRobot2(1);
-  traslateRobot(-100.f, -SCARED_FORWARD_SP, 0.0f, 2);
-  rotateRobot( PI / 40.0, SAD_ANGULAR_SP, 0.0f, 3);
-  rotateRobot(- PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 4);
-  rotateRobot( PI / 40.0, SAD_ANGULAR_SP, 0.0f, 5);
-  rotateRobot(- PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 6);
-  rotateRobot(PI, SAD_ANGULAR_SP, 0.0f, 7);
-  stopRobot(8);
-  traslateRobot(0.0, SAD_FORWARD_SP, 0.0f, 9);
-  stopMovement(10);
+  traslateRobot(100.f, SCARED_FORWARD_SP, -SCARED_ANGULAR_SP, 0);
+  rotateRobot( alpha, SAD_ANGULAR_SP, 0.0f, 1);
+  rotateRobot(alpha - PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 2);
+  rotateRobot(alpha + PI / 40.0, SAD_ANGULAR_SP, 0.0f, 3);
+  rotateRobot(alpha - PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 4);
+  rotateRobot(alpha + PI / 40.0, SAD_ANGULAR_SP, 0.0f, 5);
+  rotateRobot(0.0, -SAD_ANGULAR_SP, 0.0f, 6);
+  stopRobot(7);
+  traslateRobot(200.0, SAD_FORWARD_SP, 0.0f, 8);
+  stopMovement(9);
 }
 
 void makeSad2R() {
-  rotateRobot(alpha, SCARED_ANGULAR_SP, 0.0f, 0);
-  stopRobot2(1);
-  traslateRobot(-100.f, -SCARED_FORWARD_SP, 0.0f, 2);
-  rotateRobot(PI / 40.0f, SAD_ANGULAR_SP, 0.0f, 3);
-  rotateRobot(-PI / 40.0f, -SAD_ANGULAR_SP, 0.0f, 4);
-  rotateRobot(PI / 40.0f, SAD_ANGULAR_SP, 0.0f, 5);
-  rotateRobot(-PI / 40.0f, -SAD_ANGULAR_SP, 0.0f, 6);
-  rotateRobot(PI, SAD_ANGULAR_SP, 0.0f, 7);
-  stopRobot(8);
-  traslateRobot(0.0, SAD_FORWARD_SP, 0.0f, 9);
-  stopMovement(10);
+  traslateRobot(100.f, SCARED_FORWARD_SP, SCARED_ANGULAR_SP, 0);
+  rotateRobot(-alpha, -SAD_ANGULAR_SP, 0.0f, 1);
+  rotateRobot(alpha + PI / 40.0, SAD_ANGULAR_SP, 0.0f, 2);
+  rotateRobot(alpha - PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 3);
+  rotateRobot(alpha + PI / 40.0, SAD_ANGULAR_SP, 0.0f, 4);
+  rotateRobot(alpha - PI / 40.0, -SAD_ANGULAR_SP, 0.0f, 5);
+  rotateRobot(0.0, SAD_ANGULAR_SP, 0.0f, 6);
+  stopRobot(7);
+  traslateRobot(200.0, SAD_FORWARD_SP, 0.0f, 8);
+  stopMovement(9);
 }
 
-void makeDance(){
-   rotateRobot(PI / 40.0f, HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 0);
-   rotateRobot(-PI / 10.0f, -HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 1);
-   if(triskar.getPosTh() >= 2*PI ) stopMovement();
-   else if(movementI==2) movementI=0;
+void makeDance() {
+  rotateRobot(PI / 5.0f, HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 0);
+  rotateRobot(-PI / 10.0f, -HAPPY_ANGULAR_SP, HAPPY_FORWARD_SP, 1);
+  if (triskar.getPosTh() >= 2 * PI ) stopMovement();
+  else if (movementI == 2) movementI = 0;
 }
 
 
 
 void makeScaredRound() {
   if (dir == 1) {
-    if ((triskar.getPosTh() < 2 * PI && !veryclose_front_obstacle) && movementI == 0)
+    if ((triskar.getPosTh() < 2 * PI && front_obstacle!=veryCloseOb) && movementI == 0)
       triskar.run(0.0f, -SCARED_ANGULAR_SP);
     else if (movementI == 0) movementI = 1;
 
@@ -755,7 +780,7 @@ void makeScaredRound() {
       dir = rand() % 2;
     }
   } else {
-    if ((triskar.getPosTh() > - 2 * PI && !veryclose_front_obstacle) && movementI == 0)
+    if ((triskar.getPosTh() > - 2 * PI && front_obstacle!=veryCloseOb) && movementI == 0)
       triskar.run(0.0f, SCARED_ANGULAR_SP);
     else if (movementI == 0) movementI = 1;
     stopRobot(1);
@@ -796,18 +821,18 @@ void makeDontWonna() {
 
 double error2 = 0.2f;
 void makeBeAngry() {
-  if(movementI==0){
+  if (movementI == 0) {
     triskar.setKi(2.0);
     triskar.setKp(1.5);
   }
-  rotateRobot( 5*PI/3,  ANGRY_ANGULAR_SP, 0.0f, 0);
-  rotateRobot(-4*PI/5,  - ANGRY_ANGULAR_SP, 0.0f, 1);
-  rotateRobot(-2*PI/5,  ANGRY_ANGULAR_SP, 0.0f, 2);
-  rotateRobot(-8*PI/5,  - ANGRY_ANGULAR_SP, 0.0f, 3);
+  rotateRobot( 5 * PI / 3,  ANGRY_ANGULAR_SP, 0.0f, 0);
+  rotateRobot(-4 * PI / 5,  - ANGRY_ANGULAR_SP, 0.0f, 1);
+  rotateRobot(-2 * PI / 5,  ANGRY_ANGULAR_SP, 0.0f, 2);
+  rotateRobot(-8 * PI / 5,  - ANGRY_ANGULAR_SP, 0.0f, 3);
   rotateRobot( PI,  ANGRY_ANGULAR_SP, 0.0f, 4);
-  rotateRobot(-PI/5,  - ANGRY_ANGULAR_SP, 0.0f, 5);
+  rotateRobot(-PI / 5,  - ANGRY_ANGULAR_SP, 0.0f, 5);
   rotateRobot(0.0,  ANGRY_ANGULAR_SP, 0.0f, 6);
-  if(movementI==7){
+  if (movementI == 7) {
     triskar.resetKi();
     triskar.resetKp();
   }
@@ -875,9 +900,9 @@ void makeMovement() {
       case turn180r:            turn180_right(); break;
       //case turn180r2:           turn180_right2();break;
       case turn180l:            turn180_left(); break;
-      case turnAlphaR:          turn_alpha_right(); break;
+      case turnAlphaR:          turn_alpha_right_test(); break;
       //case turnAlphaR2:          turn_alpha_right2();break;
-      case turnAlphaL:          turn_alpha_left(); break;
+      case turnAlphaL:          turn_alpha_left_test(); break;
       //case turnAlphaL2:         turn_alpha_left2();break;
       case makeOnemF:           makeOneMeterForward(); break;
       case makeOnemB:           makeOneMeterBackward(); break;
@@ -898,12 +923,13 @@ void makeMovement() {
       case make_sad2:           makeSad2(); break;
       case make_sad2L:          makeSad2L(); break;
       case make_sad2R:          makeSad2R(); break;
-      case autonomous_capa:     autonomousMovementWithCapacitors(); break;
+     /* case autonomous_capa:     autonomousMovementWithCapacitors(); break;
       case brokeIce:            broke_ice(); break;
       case idle:                idleMovement(); break;
-      case follow:              iMfollowingU(); break;
-      case colorGame:           color_game(); break;
-      case dance_mov:           makeDance();break;
+     */ case follow:              iMfollowingU(); break;
+     /* case colorGame:           color_game(); break;
+      case dance_mov:           makeDance(); break;
+    */
     }
     obstacle_stop_movement();
   }//else switchToIdle();

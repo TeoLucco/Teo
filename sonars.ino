@@ -47,20 +47,11 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
 
   if (f_front > FAR_DISTANCE && f_right > FAR_DISTANCE && f_left > FAR_DISTANCE) {
     //serial.println("NO obstacle");
-    right_obstacle = false;
-    front_obstacle = false;
-    left_obstacle = false;
-    //back_obstacle=false;
+    right_obstacle = farOb;
+    front_obstacle = farOb;
+    left_obstacle = farOb;
+    back_obstacle=farOb;
 
-    close_right_obstacle = false;
-    close_front_obstacle = false;
-    close_left_obstacle = false;
-    //close_back_obstacle=false;
-
-    veryclose_right_obstacle = false;
-    veryclose_front_obstacle = false;
-    veryclose_left_obstacle = false;
-    //veryclose_back_obstacle=false;
     actual_distance = 400;
     no_obstacle = true;
     targetPos = 0;
@@ -69,60 +60,36 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
   } else {
     no_obstacle = false;
 
-    if (f_right <= FAR_DISTANCE) {
-      right_obstacle = true;
-      if (f_right <= CLOSE_DISTANCE) {
-        close_right_obstacle = true;
-        if (f_right <= VERYCLOSE_DISTANCE)
-          veryclose_right_obstacle = true;
-        else veryclose_right_obstacle = false;
-      } else close_right_obstacle = false;
-      //serial.println("OSTACOLODX");
-    } else {
-      right_obstacle = false;
-    }
+    if (f_right > FAR_DISTANCE) 
+      right_obstacle = farOb;
+    else if(f_right <= FAR_DISTANCE && f_right > VERYCLOSE_DISTANCE)
+      right_obstacle = closeOb;
+    else if(f_right <= VERYCLOSE_DISTANCE)
+      right_obstacle = veryCloseOb;
 
-    if (f_left <= FAR_DISTANCE) {
-      left_obstacle = true;
-      if (f_left <= CLOSE_DISTANCE) {
-        close_left_obstacle = true;
-        if (f_left <= VERYCLOSE_DISTANCE)
-          veryclose_left_obstacle = true;
-        else veryclose_left_obstacle = false;
-      } else close_left_obstacle = false;
-      //serial.println("OSTACOLOSX");
-    } else {
-      left_obstacle = false;
-    }
+    if (f_left > FAR_DISTANCE) 
+      left_obstacle = farOb;
+    else if(f_left <= FAR_DISTANCE && f_left > VERYCLOSE_DISTANCE)
+      left_obstacle = closeOb;
+    else if(f_left <= VERYCLOSE_DISTANCE)
+      left_obstacle = veryCloseOb;
 
-    if (f_front <= FAR_DISTANCE) {
-      front_obstacle = true;
-      if (f_front < CLOSE_DISTANCE) {
-        close_front_obstacle = true;
-        if (f_front <= VERYCLOSE_DISTANCE)
-          veryclose_front_obstacle = true;
-        else veryclose_front_obstacle = false;
-      } else close_front_obstacle = false;
-      //serial.println("OSTACOLO");
-    } else {
-      front_obstacle = false;
-    }
+    if (f_front > FAR_DISTANCE) 
+      front_obstacle = farOb;
+    else if(f_front <= FAR_DISTANCE && f_front > VERYCLOSE_DISTANCE)
+      front_obstacle = closeOb;
+    else if(f_front <= VERYCLOSE_DISTANCE)
+      front_obstacle = veryCloseOb;
 
-    if (f_back <= FAR_DISTANCE) {
-      backI++;
-      back_obstacle = true;
-      if (f_back < CLOSE_DISTANCE) {
-        close_back_obstacle = true;
-        if (f_back <= VERYCLOSE_DISTANCE)
-          veryclose_back_obstacle = true;
-        else veryclose_back_obstacle = false;
-      } else close_back_obstacle = false;
-      //serial.println("OSTACOLO");
-    } else {
-      back_obstacle = false;
-    }
-
-    double error = 5.0f;
+    if (f_back > FAR_DISTANCE) 
+      back_obstacle = farOb;
+    else if(f_back <= FAR_DISTANCE && f_back > VERYCLOSE_DISTANCE){
+      back_obstacle = closeOb;
+      backI++;}
+    else if(f_back <= VERYCLOSE_DISTANCE){
+      back_obstacle = veryCloseOb;
+      backI++;}
+    double error = 2.5f;
     //double error2=3.0f;
 
     if ((f_front <= f_left && f_front <= f_right)
@@ -144,13 +111,13 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
 
     if (targetPos >= MAX_COUNTER) targetPos = MAX_COUNTER;
     else if (targetPos <= -MAX_COUNTER) targetPos = -MAX_COUNTER;
+    
     if (targetPos > COUNTER)
       actual_obstacle = right;
-    else {
-      if (targetPos < -COUNTER)
+    else if (targetPos < -COUNTER)
         actual_obstacle = left;
-      else actual_obstacle = front;
-    }
+    else actual_obstacle = front;
+    
   }
 
 }
