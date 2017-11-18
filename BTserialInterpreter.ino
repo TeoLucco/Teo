@@ -39,12 +39,15 @@ void chooseModality() {
     switch (b) {
       case '7':
         interpreterState = choose_game;
+        playS(game_mod_audio);
+        delay(2000);
         Serial3.println();
         Serial3.println("Selezionare Gioco");
-        playS(02);
+        playS(CHOOSE_GAME_AUDIO);
         break;
       case '8':
         interpreterState = fam_modality;
+        playS(Familiarization_mod_audio);
         fam_modality_start_time=millis();
         //CapacitivesUpdate(body);
         movementFinishTime = millis();
@@ -53,12 +56,11 @@ void chooseModality() {
         break;
     }
   }
-  sendState();
+  //sendState();
 }
 
 #define GAME_MODE_SWITCH_TIME 420000
 #define TIME_TO_ANSWER_SWITCH_GAME_MOD 60000
-#define MAKEAGAME_AUDIO 18
 unsigned long int switchToGameMod_time=0;
 
 boolean switchToGameMod=false;
@@ -84,12 +86,13 @@ void famMod() {
     playAudio();
     headButtonsControl();
     switch (b) {
-      case '.': interpreterState = choose_modality; break;
-      case '7': interpreterState = choose_game; break;
+      case '.': interpreterState = choose_modality;loopStartTime=millis(); break;
+      case '7': interpreterState = choose_game; playS(game_mod_audio); delay(2000);playS(CHOOSE_GAME_AUDIO);
+        delay(2000);break;
 
     }
   }
-  sendState();
+  //sendState();
 }
 
 void headButtonsControl() {
@@ -136,7 +139,7 @@ void movementPanel() {
         move = true;
         movementFinishTime = millis();
         triskar.run(speed_trg, 0.0);
-      } else if (front_obstacle==veryCloseOb && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
+      } else if (front_obstacle==veryCloseOb && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO1 + rand()%3);
       break;
     case '2':
       //Serial3.println("2-GIU'");
@@ -148,7 +151,7 @@ void movementPanel() {
         move = true;
         triskar.run(-speed_trg, 0.0);
         movementFinishTime = millis();
-      } else if (back_obstacle==veryCloseOb && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO);
+      } else if (back_obstacle==veryCloseOb && actual_movement != dontwonna)  startMovement(dontwonna, yellowC, color_pulse, DONT_WONNA_AUDIO1 + rand()%3);
       break;
 
     case '3':
@@ -238,7 +241,7 @@ void settings() {
     case 'c': fotoresistor = false; break;
     case 'd': micro = true; break;
     case 'e': micro = false; break;
-    case 'f': microSoglia=Serial3.parseInt(); Serial3.println("*g" + String(microSoglia) + "*");break;
+    case 'f': microSoglia=Serial3.parseInt();EEPROM.put(microEEPROMADDR, microSoglia); Serial3.println("*g" + String(microSoglia) + "*");break;
     case 'l': /*triskar.setKi(SCARED_KI); triskar.setKp(SCARED_KP);*/ bodyLedUpdate(color_pulse, orangeC); speed_trg = SCARED_SPD;Serial3.println("*C" + String(speed_trg) + "*"); break;
     case 'm': /*triskar.setKi(HAPPY_KI); triskar.setKp(HAPPY_KP);*/ bodyLedUpdate(color_pulse, greenC); speed_trg = HAPPY_SPD; Serial3.println("*C" + String(speed_trg) + "*");break;
     case 'n': /*triskar.setKi(SAD_KI); triskar.setKp(SAD_KP);*/ bodyLedUpdate(color_pulse, blueC); speed_trg = SAD_SPD; Serial3.println("*C" + String(speed_trg) + "*");break;
@@ -285,7 +288,7 @@ void playAudio() {
   //      case 'i': playS(16); break;
   //    }
   if (b == '%') {
-    playS(Serial.parseInt());
+    playS(Serial3.parseInt());
   }
 }
 //  Serial3.println("7-TRIANGOLO");
@@ -399,6 +402,9 @@ void sendState() {//send data from arduino to App
   Serial3.println("*m" + String(right_obstacle) + "*");
   Serial3.println("*n" + String(left_obstacle) + "*");
   Serial3.println("*o" + String(front_obstacle) + "*");
+  Serial3.println("*p" + String(previous_distance) + "*");
+  Serial3.println("*q" + String(actual_distance) + "*");
+  Serial3.println("*r" + String(touched) + "*");
 }
 
 
@@ -410,7 +416,7 @@ void chooseGame() {
       case '0':
         interpreterState = choose_scenario;
         currentGameI = 0;
-        playS(firstGameAudioNumber + currentGameI);
+        playS(currentGameI);
         Serial3.print("Selezionato Gioco: "); Serial3.println(currentGameI);
         Serial3.println("Selezionare Scenario");
         //        }
@@ -418,7 +424,7 @@ void chooseGame() {
       case '1':
         interpreterState = choose_scenario;
         currentGameI = 1;
-        playS(firstGameAudioNumber + currentGameI);
+        playS(currentGameI);
         //        }
         break;
 
@@ -430,19 +436,21 @@ void chooseGame() {
         break;
       case '8':
         interpreterState = fam_modality;
+        playS(Familiarization_mod_audio);
         fam_modality_start_time=millis();
         //CapacitivesUpdate(body);
         movementFinishTime = millis();
         break;
       case '.':
         interpreterState = choose_modality;
+        loopStartTime=millis();
         //CapacitivesUpdate(noOne);
         break;
 
     }
 
   }
-  sendState();
+  //sendState();
 }
 
 void chooseScenario() {
@@ -452,7 +460,7 @@ void chooseScenario() {
       case '0':
         interpreterState = sg_waiting;
         currentScenarioI = 0;
-        playS(firstScenarioAudioNumber + currentScenarioI);
+        playS(currentScenarioI);
         Serial3.print("Selezionato Scenario:  "); Serial3.println(currentScenarioI);
         Serial3.println("Premere '1' per iniziare Gioco");
         //        }
@@ -460,7 +468,7 @@ void chooseScenario() {
       case '1':
         interpreterState = sg_waiting;
         currentScenarioI = 1;
-        playS(firstScenarioAudioNumber + currentGameI);
+        playS(currentScenarioI);
         //        }
         break;
 
@@ -478,13 +486,13 @@ void chooseScenario() {
         interpreterState = sg_waiting;
         //        }
         break;
-      case '7': interpreterState = choose_game; break;
+      case '7': interpreterState = choose_game;playS(game_mod_audio); delay(2000);playS(CHOOSE_GAME_AUDIO); break;
       default:
         // default code (should never run)
         break;
     }
   }
-  sendState();
+  //sendState();
 }
 
 void sgWaiting() {
@@ -512,7 +520,7 @@ void sgWaiting() {
     }
 
   }
-  sendState();
+  //sendState();
 }
 
 void gameMod() {
@@ -522,15 +530,16 @@ void gameMod() {
     switch (b) {
       case '.':
         interpreterState = choose_modality;
+        loopStartTime=millis();
         break;
     }
 
   }
-  sendState();
+  //sendState();
 }
 
 void disCharge() {
-  sendState();
+  //sendState();
 }
 
 //void resetButtons() {

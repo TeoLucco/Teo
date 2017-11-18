@@ -27,7 +27,7 @@ unsigned long int stateStartTime = 0;
 void fotoresLoop() {
   if (fotoresistor) {
     setFotoresistorState();
-    startMovements();
+    //startMovements();
   }
 }
 

@@ -9,6 +9,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <CapacitiveSensor.h>
 #include <DFRobotDFPlayerMini.h>
+#include <EEPROM.h>
 
 
 #define WAIT_BT_CONN 60000
@@ -62,14 +63,48 @@ float voltage = 0.0;            // calculated voltage
 unsigned long int lastWarning = 0; //last time warning advice
 
 //SOUND VARIABLES
-#define AUDIO_SCARED_ROUND 10
-#define AUDIO_SCARED_BEHIND 11
-#define DONT_WONNA_AUDIO 22
-#define DOMANDA_COLORE_LED_AUDIO 10 
-#define AVVICINATI_AUDIO 33
-#define MiChiamoTeo_AUDIO 01
-#define firstGameAudioNumber 3
-#define firstScenarioAudioNumber 6
+#define CIAO_SONO_TEOAUDIO 41
+#define CHOOSE_MOD_AUDIO 42
+#define scelta_tutorial_audio 43
+#define TUTORIAL_AUDIO 44
+#define Familiarization_mod_audio 45
+#define game_mod_audio 46
+#define CHOOSE_GAME_AUDIO 47
+#define you_choosed_game_audio 48
+#define choose_scenario_audio 49
+#define you_choosed_scenario_audio 50
+#define put_patches_audio 51
+#define RIGHT_ANSWER_AUDIO1 52
+#define RIGHT_ANSWER_AUDIO2 53
+#define RIGHT_ANSWER_AUDIO3 54
+#define WRONG_ANSWER_AUDIO1 55
+#define WRONG_ANSWER_AUDIO2 56
+#define WRONG_ANSWER_AUDIO3 57
+#define RISPOSTA_GIA_DATA_AUDIO 59
+#define ALTRA_RISPOSTA_AUDIO 60 
+#define No_target_audio 65
+#define lost_target_audio 66
+#define Come_backtome_audio 67
+#define eccoti_audio 68
+#define autonomous_turn 69
+#define autonomous_turn2 70
+#define DONT_WONNA_AUDIO1 71
+#define DONT_WONNA_AUDIO2 72
+#define DONT_WONNA_AUDIO3 73
+#define BEEP_AUDIO 74
+#define BATTERIA_SCARICA_AUDIO 75
+#define NO_BLUETOOTH_AUDIO 76
+#define AUDIO_SCARED_ROUND 77
+#define AUDIO_SCARED_BEHIND 78
+#define HIT_AUDIO 80
+#define N_HIT_AUDIO 81
+#define N_PATS_AUDIO 82
+#define HUG_AUDIO 83
+#define PATS_AUDIO1 84
+#define PATS_AUDIO2 85
+#define END_GAME 86
+#define MAKEAGAME_AUDIO 87
+
 boolean firstSound = false;
 boolean speakers = true;
 boolean bodyCapacitor=true;
@@ -88,6 +123,7 @@ int currentScenarioI=0;
 
 //0-blu 1-giallo 2-verde 3-rosso
 unsigned long int startWaitingTime = 0;
+unsigned long int loopStartTime=0;
 
 //CAPACITIVES
 #define N_HEAD_SENSORS 4
@@ -141,11 +177,12 @@ const uint32_t orange = head_strip.Color(255, 100, 0);
 
 //MICRO PINS, CONSTANT AND VARIABLES
 boolean micro = true;
+#define microEEPROMADDR 0
 #define soundPin  A3 //sound sensor attach to A11
 #define microISequence 100
 #define microISequenceShortMin 3
 #define microISequenceShortMax 50
-int microSoglia=85;
+int microSoglia=500;
 int microI = 0;
 float microFilterFrequency = 0.8;
 float micro_f=0.0;
@@ -199,37 +236,40 @@ boolean move = false;
 #define turn180l            3  //rotazione 180 gradi USANDO RUOTA SINISTRA COME CENTRO DI ROTAZIONE
 #define turnAlphaR          4  //rotazione di alpha(variabile globale) gradi a destra USANDO IL CENTRO DEL ROBOT COME CENTRO DI ROTAZIONE
 #define turnAlphaL          5
-#define makeOnemF           6
-#define makeOnemB           7
-#define make_circle         8
-#define scared_round        9
-#define dontwonna           10
-#define scared_behind       11
-#define make_happy0         12
-#define make_happy1         13
-#define make_happy2         14
-#define make_happy3         15
-#define make_sad0           16
-#define make_sad1           17
-#define scared_hit          18
-#define make_sad2           19
-#define make_sad2L          20
-#define make_sad2R          21
-#define scared_hitL         22
-#define scared_hitR         23
-#define angrymov            24
-#define dance_mov           25
-#define idle                26
-#define follow              27
-#define autonomous_movement 28
-#define brokeIce            29
-#define autonomous_capa     30
-#define colorGame           31
+#define turnAlphaL4         6
+#define turnAlphaR4         7
+#define makeOnemF           8
+#define makeOnemB           9
+#define make_circle         10
+#define scared_round        11
+#define dontwonna           12
+#define scared_behind       13
+#define make_happy0         14
+#define make_happy1         15
+#define make_happy2         16
+#define make_happy3         17
+#define make_sad0           18
+#define make_sad1           19
+#define scared_hit          20
+#define make_sad2           21
+#define make_sad2L          22
+#define make_sad2R          23
+#define scared_hitL         24
+#define scared_hitR         25
+#define angrymov            26
+#define dance_mov           27
+#define idle                28
+#define follow              29
+#define autonomous_movement 30
+#define brokeIce            31
+#define autonomous_capa     32
+#define colorGame           33
 
 double alpha = 0;
 byte next_movement = make_circle;
 byte actual_movement = no_movement;
 byte prev_movement = no_movement;
+byte prev_movement2 = no_movement;
 //boolean follow2 = false;
 //boolean aut_mov = false;
 //boolean idle_mov = false;
@@ -252,9 +292,9 @@ int speed_trg = 30;
 //-----constants-----
 #define SONAR_NUM     4 // Number or sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
-#define FAR_DISTANCE 130.0f
+#define FAR_DISTANCE 150.0f
 //#define CLOSE_DISTANCE 150.0f
-#define VERYCLOSE_DISTANCE 45.0f
+#define VERYCLOSE_DISTANCE 55.0f
 #define MEDIAN_NUMBER 7
 #define FILTERFREQUENCY 1.0f        //PB filter frequency
 #define COUNTER 1                  //when targetPos reach COUNTER(right) or -COUNTER(left) the robot is sure about where obstacle is(that's for avoid sonars false readings)
@@ -299,6 +339,7 @@ boolean no_obstacle = true;
 
 
 
+ 
 void setup() {
   Serial.begin(38400);
   srand(millis());
@@ -309,21 +350,16 @@ void setup() {
   voltageCheckSetup();
   sonarSetup();
   headLedSetup();
-//  playS(1);
-//  delay(2000);
-//  playS(2);
-//  delay(2000);
-//  playS(3);
-//  delay(2000);
-//  playS(4);
-//  delay(2000);
-//  playS(5);
-//  delay(2000);
-//  playS(6);
+  //FirstSound();
+  //loopStartTime=millis();
+  EEPROM.get(microEEPROMADDR,microSoglia);
 }
 
 void loop() {
-  //FirstSound();
+  if((millis()-firstSoundTime>10000) && interpreterState==choose_modality && !firstSound){
+  playS(scelta_tutorial_audio);
+  firstSound=true;
+  }
   //sensori
   btInterpreter();
   capacitiveSerialLoop();
@@ -335,7 +371,7 @@ void loop() {
   fotoresLoop();
   microLoop();
   headLedLoop();
-  //print();
+  print();
   //attuatori
   if (interpreterState != test_modality && interpreterState != choose_modality) {
     pidLoop();
@@ -360,7 +396,6 @@ void print()  {
 
   if ((millis() - lastMilliPrint) >= 50)   {
     lastMilliPrint = millis();
-
 
     /*    Serial.print("DONTWONNA:  ");
         Serial.println(movementI);

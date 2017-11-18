@@ -145,12 +145,14 @@ void wipeLoop(colors color) {
    if (r < 250) r =r+5;
    if (g < 50)  g++;
   }else if(color == redCrazy){
-    int switchM=millis()-startLedTime%10;
-   if(switchM<5){
-    r=250;
-   }else{
-    r=0;
-   }
+   if(r<=235) r=r+20;
+   else r=55;
+//    int switchM=millis()-startLedTime%10;
+//   if(switchM<5){
+//    r=250;
+//   }else{
+//    r=0;
+//   }
   }
   if(ledTimer && millis()-fullColorTime>resetTime){
     ledTimer=false;

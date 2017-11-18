@@ -72,6 +72,7 @@ void chooseTest() {
 
       case '0':
         interpreterState = choose_modality;
+        loopStartTime=millis();
         testState = tests_descr;
         testType = no_one;
         break;

@@ -51,8 +51,14 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
     front_obstacle = farOb;
     left_obstacle = farOb;
     back_obstacle=farOb;
-
+   
     actual_distance = 400;
+    if(actual_distance>f_front)
+    actual_distance=f_front;
+    if(actual_distance>f_right)
+    actual_distance=f_right;
+    if(actual_distance>f_left)
+    actual_distance=f_left;
     no_obstacle = true;
     targetPos = 0;
     last_obstacle = actual_obstacle;
@@ -81,15 +87,19 @@ void check_obstacle() { // Sensor ping cycle complete, do something with the res
     else if(f_front <= VERYCLOSE_DISTANCE)
       front_obstacle = veryCloseOb;
 
-    if (f_back > FAR_DISTANCE) 
+    if (f_back > FAR_DISTANCE){
       back_obstacle = farOb;
+      backI=0;
+    }
     else if(f_back <= FAR_DISTANCE && f_back > VERYCLOSE_DISTANCE){
+      backI++;
       back_obstacle = closeOb;
-      backI++;}
+    }
     else if(f_back <= VERYCLOSE_DISTANCE){
+      backI++;
       back_obstacle = veryCloseOb;
-      backI++;}
-    double error = 2.5f;
+    }
+    
     //double error2=3.0f;
 
     if ((f_front <= f_left && f_front <= f_right)

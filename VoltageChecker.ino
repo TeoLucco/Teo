@@ -36,7 +36,7 @@ void voltageCheckSetup()
     sample_count = 0;
     sum = 0;
     if(voltage<=11.5){
-      playS(2);
+      playS(BATTERIA_SCARICA_AUDIO);
       interpreterState=discharge;
       lastWarning=millis();
       firstSound=true;
@@ -67,7 +67,7 @@ void voltageCheckloop()
     sample_count = 0;
     sum = 0;
     if(voltage<=11.0 && millis()-lastWarning>15000){
-      playS(2);
+      playS(BATTERIA_SCARICA_AUDIO);
       lastWarning=millis();
     }
 }

@@ -1,11 +1,11 @@
 void checkBT() {
-  if (millis() - firstSoundTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
+  if (millis() - loopStartTime >= WAIT_BT_CONN && !Serial3.available() && interpreterState == choose_modality) {
     //CapacitivesUpdate(head);
     headInterpreter = true;
     //Serial3.println("ATTIVAZIONE CAPACITIVI TESTA");
-    playS(17);
+    timedPlayS(NO_BLUETOOTH_AUDIO,20000);
   } else if (Serial3.available()) {
-    firstSoundTime = millis(); headInterpreter = false;
+    loopStartTime = millis(); headInterpreter = false;
   }
 }
 unsigned long int lastPressedButtonTime = 0;
@@ -48,16 +48,17 @@ void headCapacitiveInterpreter() {
       case test_modality:   break;
       case discharge:       break;
     }
-  } else checkBT();
+  } 
+  checkBT();
 }
 
 void chooseModCap() {
   switch (pressedButton) {
     case -1: break;
-    case 0: interpreterState = fam_modality;fam_modality_start_time=millis(); break;
+    case 0: interpreterState = fam_modality;playS(Familiarization_mod_audio);fam_modality_start_time=millis(); break;
     case 1: interpreterState = choose_game; break;
     case 2: break;
-    case 3: playS(45); break;
+    case 3: playS(TUTORIAL_AUDIO); break;
   }
 }
 void chooseGameCap() {
@@ -66,7 +67,7 @@ void chooseGameCap() {
     case 0:
       if (currentGameI < N_GAMES) currentGameI++;
       else currentGameI = N_GAMES;
-      playS(firstGameAudioNumber + currentGameI);
+      playS(currentGameI);
       break;
 
     case 1:break;
@@ -75,7 +76,11 @@ void chooseGameCap() {
 
     case 3:
       interpreterState = choose_scenario;
-      playS(28); //scegli scenario
+      playS(you_choosed_game_audio);
+      delay(2000);
+      playS(currentGameI);
+      delay(2000);
+      playS(choose_scenario_audio); //scegli scenario
       break;
   }
 }
@@ -87,7 +92,7 @@ void chooseScenarioCap() {
     case 0: 
       if (currentScenarioI < N_GAMES) currentScenarioI++;
       else currentScenarioI = N_GAMES;
-      playS(firstScenarioAudioNumber + currentScenarioI);
+      playS(currentScenarioI);
       break;
       
 
@@ -101,7 +106,12 @@ void chooseScenarioCap() {
 
     case 3:
       interpreterState = sg_waiting;
-      playS(28); //premo 4 per iniziare
+      playS(you_choosed_scenario_audio);
+      delay(2000);
+      playS(currentScenarioI);
+      delay(2000);
+      playS(put_patches_audio); //scegli scenario
+      break;
   }
 }
 void startGameWaitCap() {
